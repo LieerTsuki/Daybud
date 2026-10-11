@@ -3,7 +3,7 @@
 日期：2026-10-10。依据：已获用户全文确认的 [设计](../specs/2026-10-10-v1-unified-plans-design.md)。
 分支：`feat/v1-unified-plans`，用户选择在当前干净分支开发，不创建工作树。
 
-`writing-plans` 技能不可用，使用文件级任务、明确依赖与验收记录替代。Buddy 默认的新分支 / PR / 网页验收流程不直接套用原生 Android；不新增 Linear、网页依赖或流程文档。沿用现有 Gradle、TDD、独立审查及 Android 设备验收。总体路线不是一次可交付的单任务，每批在执行前细化并检查覆盖；A/B1/B2/B3 已完成局部验收，下一批 C。
+`writing-plans` 技能不可用，使用文件级任务、明确依赖与验收记录替代。Buddy 默认的新分支 / PR / 网页验收流程不直接套用原生 Android；不新增 Linear、网页依赖或流程文档。沿用现有 Gradle、TDD、独立审查及 Android 设备验收。总体路线不是一次可交付的单任务，每批在执行前细化并检查覆盖；A/B1/B2/B3/C1 已完成局部验收，下一批 C2。
 
 ## 目标与关键连接
 
@@ -90,7 +90,22 @@ B2 是可复用仓库底座，不负责 B3 的迁移/世代推进或 C/E 的提�
 
 ## C · 发生、冲突与提醒资格（依赖 A/B 契约）
 
-- 新建 `domain/plan/PlanOccurrences.kt` / `PlanUseCases.kt`：日期截止点、真实区间、全天闭区间、窗口有界展开、例外过滤、系列完成单标记。共用计算供日历 / 冲突 / 提醒，不能复制不一致重复算法。
+### C1 · 第五批：共享发生计算（2026-10-11）
+
+沿用已批准设计，任务紧密依赖同一发生表示，由主代理顺序 TDD、只读独立审查执行；不切换生产消费者。C2 再处理维护用例、Android 排程/Receiver/身份/校准/通知；C1 不代表整个 C 完成。
+
+1. 新增 `domain/plan/PlanOccurrences.kt`：半开 Instant 查询窗口、点截止/日期截止/真实区间/闭区间全天/系列完成标记的明确类型，使用计划时区比较日期；NONE 不进入日历，已完成单次按原日期、已完成系列按 completedAt 一次显示，缺少历史 completedAt 不捏造。坏读取显式抛错，非活动字段不参与计算。
+2. 新增 `domain/plan/PlanRecurrence.kt`：按原锚点直接跳到查询附近，DAILY/CUSTOM 无星期按天，WEEKLY/CUSTOM 有星期沿用旧锚点起算的七日块（不是改成 ISO 周）；WEEKLY 空星期集合回退到原锚点星期，包含多周间隔。MONTHLY/YEARLY 每次由原月日计算并夹到月末/闰年合法日；TIMED 保持原 elapsed duration，ALL_DAY 保持原 LocalDate 闭区间跨度，不按固定小时平移。非重复/首个锚点保留原 Instant；后续本地时间按 java.time 默认 gap 顺延/overlap 较早偏移解析。结束日期含起始当天，取消例外只过滤重复发生且按来源 ID/起始日。最多 10,000 个候选，超过明确抛展开限制异常，绝不截断成成功或套用旧固定两年提醒 horizon。
+3. 新增 `domain/plan/PlanConflicts.kt` / `PlanReminderRules.kt`：冲突只对窗口内未完成 TIMED/ALL_DAY，按各自时区化为半开比较区间，排除编辑自身，触边不冲突，双方例外均生效。提醒使用同一发生器和锚点，日期截止/全天本地 09:00 减提前分钟，只返回未来 trigger；总/单项/权限/完成/空分钟/例外共同约束，不重设原重复锚点、不追补。世代和广播重新读取属于 C2，调用方不得将本函数视为完整投递授权。
+4. 测试 `PlanOccurrencesTest` / `PlanConflictsTest` / `PlanReminderRulesTest` 的真实 RED/GREEN，覆盖窗口/跨日区间/跨时区/闭区间/DST、月末/闰年/多间隔/自定义、例外/完成/非活动参数、古老锚点跳跃/数值边界/预算、未来 trigger 和两年以上下一次提醒；全量 JVM --rerun、Debug/lint、独立审查、文档及功能分支提交推送。纯领域批不运行设备升级或 Android 闹钟验收，不借用 B3 的设备数字。
+
+依赖核对：发生类型是任务 2–3 的共同事实；预算计数包含被取消的候选，避免全被取消时无界循环。窗口是调用方明确限定的范围，冲突结果不声称所有无限未来均无冲突。10,000 候选仅为计算工作边界，异常向上传递；后续 UI 必须处理，不等同于数据库/备份行数限制。输入只读，不修改 Plan、配置或持久化数据。
+
+提醒接口明确为 `next(plan, now, ...)`，不是截取日历发生窗口：按 now + 提前量推导最早候选，懒加载至下一个未来 trigger、有效重复结束或日期表示边界，不设两年 horizon。返回 null 仅表示关闭/无资格/确实没有后续合格发生；预算耗尽或时间运算溢出必须抛错，不能返回 null。覆盖次日 00:05 发生、提前 15 分钟在前日 23:50 触发的跨窗口边界，以及 ALL_DAY 跨 DST 的日期跨度。
+
+### C2 · 后续统一提醒与用例（尚未实施）
+
+- 复用 C1 的 `PlanOccurrences` / `PlanRecurrence` / `PlanReminderRules`，新增 `domain/plan/PlanUseCases.kt` 接入维护与仓库消费者；发生集成测试验证共用算法，不重建第二套发生/重复计算。
 - 新建 `notification/PlanReminderSchedulerContract.kt`、`PlanReminderScheduler.kt`、`PlanReminderReceiver.kt`、资格 / identity 实现；规划字段和协议，不提前注册未接线 Receiver。
 - 先新增隔离可测试的统一校准与旧身份清理实现，不更换当前 v5 的 Hilt / Worker / Receiver 调用路径。准备 ReminderReconciler / BootReceiver / Worker / Inventory / Notifications / AndroidMaintenanceReminderEffects 的接线变更；实际替换与旧 Receiver 协议拒绝只在 E 激活提交执行。C 结束时旧应用提醒仍正常运行，清理失败重试和不发双份的新版行为在独立装置验证。
 - 测试发生规则、DST / date-only 09:00 / 全天、custom / leap / 月末、未来 trigger 而非仅未来 occurrence、完成/撤销、延迟广播、权限撤销、旧 ID / URI / 世代、旧通知安全落首页与新通知一次消费。
@@ -154,4 +169,5 @@ git diff --check
 - B1 已完成旧字段、双来源身份、关系映射及用户批准的存量读取兼容底座；最终 729 项 JVM / 72 suites 全量重跑通过（本批新增 26 项），Debug 构建检查通过，lint 0 error / 55 warning。独立审查的非法时区测试缺口补齐并复审关闭。详见验收记录。
 - B2 四项任务已完成局部验收（2026-10-11）：统一 Room 存储与事务仓库，历史标签身份保留、取消/故障回滚和 Flow 读取错误覆盖；新增 31 项，最终 760 项 JVM / 74 suites 强制重跑通过，Debug 重新打包成功，lint 0 error / 55 warning。计划及代码审查问题均复审关闭。
 - B3 四项任务已完成局部验收（2026-10-11）：完整 12 实体 v6 迁移装置、历史链/新建/坏源及晚期故障回滚，新增 15 项 JVM / 10 项专用模拟器设备测试。最终 775 项 JVM / 75 suites 强制重跑、Debug/androidTest 构建检查、lint 通过（0 error / 55 warning），计划和代码审查已复审关闭。详见验收中的 TDD、故障点证明和设备串号记录。
-- 下一批 C：发生展开、冲突与提醒资格，执行前细化子计划。C–F 未完成，生产应用仍为 V0.1.1 / schema v5，已发布 APK 未改；B3 的完整目标 fixture 不等于生产接线、真机升级、新页面或整个 V1 已完成。
+- C1 四项任务已完成局部验收（2026-10-11）：共享发生/重复/窗口冲突/未来 trigger，新增 69 项 JVM；最终 844 项 / 78 suites 强制重跑通过，Debug 重新打包成功，lint 0 error / 55 warning，独立计划与代码审查问题已复审关闭。预算上限绕过有真实 RED/GREEN；本批不运行设备验收。
+- 下一批 C2：维护用例、统一提醒身份/排程/Receiver/校准的隔离实现，执行前细化子计划。C2–F 未完成，生产应用仍为 V0.1.1 / schema v5，已发布 APK 未改；底座和完整目标 fixture 不等于生产接线、真机升级、新页面或整个 V1 已完成。

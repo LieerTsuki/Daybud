@@ -150,3 +150,34 @@ $env:JAVA_HOME='D:\jdk'
 - 限制：v1 未导出原始 schema，沿用 v2 三张未变实体的合成构造；不是恢复到原始 v1 asset。未执行大库吞吐/峰值内存测试，不能从流式实现推断性能达标；未做真机/生产 v5→v6 用户库升级或新版覆盖安装，旧设备 suite 未重新运行。全局维护、提醒、副作用、备份及页面未接线，整个 V1 和目标 1.0.0 尚未完成。
 
 提交前复验：暂存检查发现新 Kotlin 文件末尾多余空行，清理后重新执行相同全量命令，BUILD SUCCESSFUL（3 分 33 秒，101 tasks：29 executed / 72 up-to-date），退出 0；实际 XML 仍为 775 项 / 75 suites，0 failure / error / skipped，lint 0 error / 55 warning。Debug/androidTest 本轮重新打包，lint 三类源重新分析、最终报告复用未变结果。同一专用 AVD 再次核验并覆盖安装本轮包，指定迁移类再次 `OK (10 tests)`、4.363 秒、结束 status 全为 0；此为重新运行，不借用前次设备证据。暂存内容仅本批 15 个代码/schema/文档文件，`git diff --cached --check` 通过，工作分支与远端起点一致；交付使用单次 Schannel 配置，不关闭证书校验、不强推。
+
+## C1 · 第五批：共享发生与触发点计算（局部验收通过）
+
+基线 HEAD `2227772`，工作区原先干净，继续用户选择的当前功能分支；已批准 C1 范围后用户中断仅停在阅读，随后明确继续。本批顺序实现紧耦合的纯领域任务并派发只读独立审查；Buddy 本地脚本仍缺失，不引入新分支/PR/Linear 或替换现有流程。
+
+开始基线全量命令：JDK 25 / Gradle 9.4.1，JVM --rerun + Debug/lint，BUILD SUCCESSFUL（1 分 11 秒，66 tasks：2 executed / 64 up-to-date）。实际 XML 775 项 / 75 suites，0 failure / error / skipped；构建/lint 为缓存检查，不能当 C1 实现验证。
+
+细化四项任务并计划独立审查：2 项 Important（WEEKLY 空星期回退、提醒查询完整性）、2 项 Minor（TIMED elapsed 与 ALL_DAY 日期跨度、C2 重复新建归属）已核对批准设计和旧规则后补契约；定向复审确认全部关闭，无新问题。提醒接口 next(now) 不截取日历窗口，无固定两年 horizon，预算/运算耗尽不能报无提醒；C2 复用算法，不再新建另一套。
+
+TDD 首轮实质 RED：57 项新测试 / 3 suites，46 assertion failure / 0 error / skipped，编译成功（1 分 48 秒，40 tasks：12 executed / 28 up-to-date）。补全天跨 DST 日期跨度和跨午夜 trigger、强化多周空集合及古老锚点受限工作预算后，59 项 / 3 suites，48 assertion failure / 0 error / skipped（33 秒，40 tasks：5 executed / 35 up-to-date）。空结果/拒绝路径不能因临时默认返回而算作实现已完成；随后替换 API 临时声明，实现共享内核。当时 GREEN 和代码审查尚未完成，最终结论以以下复验为准。
+
+隔离边界：新增文件仅 domain/plan 与 JVM 测试；生产 Room v5、Hilt、旧 ScheduleRules/提醒、Manifest/页面、版本和备份调用不切换，不写入业务数据、不运行设备升级。10,000 是计算候选工作预算，不是数据库或备份行数上限；取消/窗口外预选也消耗预算，冲突调用共享预算；超限显式抛错，不截断。
+
+首次领域 GREEN 命令执行成功（1 分 25 秒，40 tasks：12 executed / 28 up-to-date），59 项新测试及已有领域规则回归通过。随后补强原始极值时间、古老月锚点、月间隔、冲突共享预算和数值溢出；再次定向 BUILD SUCCESSFUL（30 秒，40 tasks：5 executed / 35 up-to-date），实际 XML 为 103 项 / 5 suites，0 failure / error / skipped，含 66 项本批新增测试。这些测试补强已有正确实现，不虚称修复 RED。
+
+代码独立审查提出 1 项 Important（调用方可传超过 10,000 的预算）和 1 项 Minor（多日重复跨度与跨日提前提醒组合覆盖）。先加三个公共入口 10,001 拒绝断言及两项组合测试，真实 RED 为 106 项 / 5 suites，1 assertion failure / 0 error / skipped（33 秒，40 tasks：5 executed / 35 up-to-date）；失败来自预算上限断言，两个组合用例通过。随后统一预算构造校验限制为 1–10,000，最终全量复验和定向复审另列。
+
+最终复验（2026-10-11）：JDK 25 / Gradle 9.4.1，沿用网络 init 脚本，以下命令 BUILD SUCCESSFUL（2 分 2 秒，66 tasks：19 executed / 47 up-to-date），进程退出 0。
+
+```powershell
+$env:JAVA_HOME='D:\jdk'
+.\.tools\gradle-9.4.1\bin\gradle.bat -I .tools/phase5-test-network.gradle :app:testDebugUnitTest --rerun :app:assembleDebug :app:lintDebug --console=plain
+```
+
+- 实际 XML：844 项 JVM / 78 suites，0 failure / error / skipped，JVM 强制重跑。本批新增 69 项（发生 36、冲突 11、提醒 22）；共享领域定向 106 项 / 5 suites，包括已有规则/统计 37 项回归。
+- Debug 本轮重新编译领域实现并打包；lint 三类源分析和报告本轮执行，实际 XML 0 error / 55 warning，domain/plan 与 data/plan 无 issue。既有 AGP/Kotlin/KAPT 弃用警告仍在，不声称零警告或全库无缓存重编译。
+- 计划审查的 2 Important / 2 Minor 及代码审查的 1 Important / 1 Minor 全部定向复审关闭；无未解决 Critical / Important，静态审查不替代真实测试。69 项覆盖非活动字段、完成、例外、半开/闭区间、跨日/时区/DST、原始模糊偏移、月末/闰年/间隔/古老锚点、极值、操作共享预算、未来触发及无固定两年 horizon。
+- 四项 C1 任务局部验收通过，README / CHANGELOG / 计划同步；仅提交推送当前功能分支，不合并 main / 新建 PR / 发布 APK。不更改生产 schema、Hilt、AndroidManifest、旧提醒、备份、导航或应用版本，不写个人数据，无占位业务入口、破坏性迁移或未实现方法。
+- 限制：纯领域批未运行设备测试、生产升级、真实 Android 闹钟/通知、UI、真机或性能测试；不复用 B3 的 10 项设备结果。窗口冲突只覆盖明确范围；预算/日期运算失败向调用方传递，后续页面须处理。提醒函数只计算候选，尚无完整身份/世代/维护和投递重新读取协议；C2 再复用内核接线，整个 C 和 V1 尚未完成。
+
+提交前检查：暂存仅本批 12 个 Kotlin/测试/文档文件，`git diff --cached --check` 通过；远端功能分支起点为 `2227772`，main 仍为 `b016bcb`。推送沿用单次 Schannel 配置，不关闭证书验证或强推；没有待处理的用户改动被覆盖。
