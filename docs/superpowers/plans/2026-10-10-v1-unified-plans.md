@@ -3,7 +3,7 @@
 日期：2026-10-10。依据：已获用户全文确认的 [设计](../specs/2026-10-10-v1-unified-plans-design.md)。
 分支：`feat/v1-unified-plans`，用户选择在当前干净分支开发，不创建工作树。
 
-`writing-plans` 技能不可用，使用文件级任务、明确依赖与验收记录替代。Buddy 默认的新分支 / PR / 网页验收流程不直接套用原生 Android；不新增 Linear、网页依赖或流程文档。沿用现有 Gradle、TDD、独立审查及 Android 设备验收。总体路线不是一次可交付的单任务，每批在执行前细化并检查覆盖；A/B1/B2 已完成局部验收，下一批 B3。
+`writing-plans` 技能不可用，使用文件级任务、明确依赖与验收记录替代。Buddy 默认的新分支 / PR / 网页验收流程不直接套用原生 Android；不新增 Linear、网页依赖或流程文档。沿用现有 Gradle、TDD、独立审查及 Android 设备验收。总体路线不是一次可交付的单任务，每批在执行前细化并检查覆盖；A/B1/B2/B3 已完成局部验收，下一批 C。
 
 ## 目标与关键连接
 
@@ -69,11 +69,22 @@ B1 对应设计 3/4/7 的共享转换规则与用户历史兼容补充。未包�
 
 B2 是可复用仓库底座，不负责 B3 的迁移/世代推进或 C/E 的提醒、副作用、全局准入/结果发布、页面接线。测试装置只创建合成本批表；不能据此宣称真实 v6 或设备升级通过。
 
-### B 总纲与 B3 后续事项（非 B2 交付清单）
+### B3 · 第四批：隔离的完整 v6 迁移装置（2026-10-11）
+
+沿用已批准的架构设计；以下四项顺序执行、TDD 与独立审查，不改变生产 v5 注册或 APK 版本。迁移代码删除旧表只发生在测试专用数据库；未来 E 接通生产时才执行已验证的迁移。
+
+1. 新增 `data/plan/PlanSettingsEntity.kt` 和 `data/local/migration/PlanV6Schema.kt`：目标设置合并为 planReminders，其他设置保留；定义统一表/索引 SQL 与新建默认初始化回调，测试专用 v6 配置使用真实全部实体（计划、标签、打卡、订阅、设置、维护），不是 B2 的子集 fixture。不注册 Hilt、不修改旧 Converters。
+2. 先新增 `test/.../data/plan/PlanMigrationTest.kt` 与完整 `PlanMigrationTestDatabase.kt`，再实现 `data/local/migration/LegacyPlanSqlRows.kt` / `PlanMigration.kt`：严格 SQLite 类型/字段值读取；TODO 再 SCHEDULE 的旧 ID 升序分配新 ID，调用 B1 共享转换与关系规则，二次父/标签/例外映射。逐行比较转换前后全部字段，校验行数/来源一一对应/FK/树及未触及表；设置/世代损坏或耗尽拒绝，推进一次，最后删除旧关联及旧主表。Room 持有事务，迁移本身不管理提交，不把整库放进内存、不套用外部文件 100k 上限。
+3. JVM 覆盖四开关组合、同号/极值/负旧 ID、父 ID 大于子、原文/空值/重复星期/非活动字段/完成、标签/例外、打卡订阅逐字段、坏源/孤儿/环/设置/世代/SQL 故障后原 v5 完整回滚；包括世代已推进、旧表已删除后的最终 Room schema 校验失败，以及至少一条 4→5→6 失败链恢复原始 v4（不得残留新增设置/维护行或 v6 表）。历史 1–5 链及新建 v6 schema 校验。v1 无导出 asset，沿用现有设备测试已说明的 v2 三张未变实体构造，不虚造官方 v1 快照。
+4. 新增 Android `PlanMigrationDeviceTest` 与完整设备 fixture，项目专用无个人数据 AVD 验证迁移/新建/故障回滚；只指定测试串号/类，不连接个人设备。全量 JVM、Debug/androidTest 构建、lint、独立审查及最终复验；README/CHANGELOG/验收/schema README 同步，提交并推送当前功能分支，不合并 main 或发布包。若真实设备验证未完成明确保留 B3 未完成状态。
+
+计划依赖检查：任务 1 的实体/SQL 是 2–4 的单一目标契约；任务 2 的同一 Migration 被 3/4 使用；测试 fixture 不切换生产；历史链产生 v5 默认设置/世代后仅推进一次；故障由 Room 整体事务回滚。任务内均先实质 RED 再实现，设备结果不替代字段级 JVM 回归。全局维护准入、v2 备份与生产接线仍归 C/D/E。
+
+### B 总纲（非 B2 交付清单）
 
 - 新建 `data/plan/LegacyPlanConverter.kt`：原始字段 DTO / 纯映射共享给 SQL Migration 和旧备份；不经旧 ViewModel，不将原重复星期 String 重编码损失表示。ZoneId 与旧提醒偏好由调用方注入。
 - 新建 `data/plan` 下 PlanEntity、PlanTagCrossRef、PlanExceptionEntity、PlanLegacyRefEntity、PlanDao、PlanRepositoryImpl；新建 `domain/plan/PlanRepository.kt`。事务内 CRUD / parent detach / 防旧草稿复活，Flow 真实读错误向上传递。
-- 新建 `data/local/migration/PlanMigration.kt`：逐行顺序 ID 分配、来源映射、二次 parent / tag / exception 重映射、源字段 / 行数 / FK / 环检查、设置合并和世代推进。先完整校验后 drop 旧表；失败回滚。
+- 新建 `data/local/migration/PlanMigration.kt`：逐行顺序 ID 分配、来源映射、二次 parent / tag / exception 重映射、源字段 / 行数 / FK / 环检查、设置合并和世代推进。先完整校验后 drop 旧表，全部 SQL 结束再次核验未触及表；失败回滚。
 - 修改 Converters；生产 `LifeManagerDatabase`、工厂 / DI 的激活留给 E。测试专用 v6 Room 配置引用同一实体 / Migration，不能另写一套简化迁移测试冒充生产实现。
 - 测试 `LegacyPlanConverterTest`、`PlanRepositoryRoomTest`、`PlanMigrationTest` / `PlanMigrationDeviceTest`：同 ID、Long 极值、父 ID 大于子、标签/例外、全天/跨区、原文本/完成、设置四组合、缺失/损坏设置与世代、插入故障、打卡/订阅逐值不变。历史 1–5 链与新安装 v6 均验证。
 
@@ -142,4 +153,5 @@ git diff --check
 - A1–4 已完成领域底座局部验收：最终 703 项 JVM / 70 suites 全量重跑通过（新增 34 项），Debug 构建检查与 lint 通过（0 error / 55 warning）；计划和代码审查意见已独立复审关闭。
 - B1 已完成旧字段、双来源身份、关系映射及用户批准的存量读取兼容底座；最终 729 项 JVM / 72 suites 全量重跑通过（本批新增 26 项），Debug 构建检查通过，lint 0 error / 55 warning。独立审查的非法时区测试缺口补齐并复审关闭。详见验收记录。
 - B2 四项任务已完成局部验收（2026-10-11）：统一 Room 存储与事务仓库，历史标签身份保留、取消/故障回滚和 Flow 读取错误覆盖；新增 31 项，最终 760 项 JVM / 74 suites 强制重跑通过，Debug 重新打包成功，lint 0 error / 55 warning。计划及代码审查问题均复审关闭。
-- 下一批 B3：SQL 迁移链、回滚及设备验证。B3–F 未实施，生产应用仍为 V0.1.1 / schema v5，已发布 APK 未改；B2 的隔离 fixture 不表示真实 v6、页面、设备升级或整个 V1 已完成。
+- B3 四项任务已完成局部验收（2026-10-11）：完整 12 实体 v6 迁移装置、历史链/新建/坏源及晚期故障回滚，新增 15 项 JVM / 10 项专用模拟器设备测试。最终 775 项 JVM / 75 suites 强制重跑、Debug/androidTest 构建检查、lint 通过（0 error / 55 warning），计划和代码审查已复审关闭。详见验收中的 TDD、故障点证明和设备串号记录。
+- 下一批 C：发生展开、冲突与提醒资格，执行前细化子计划。C–F 未完成，生产应用仍为 V0.1.1 / schema v5，已发布 APK 未改；B3 的完整目标 fixture 不等于生产接线、真机升级、新页面或整个 V1 已完成。

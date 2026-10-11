@@ -43,7 +43,7 @@ TDD：先编写测试与类型契约，以尚未实现行为的临时空规则�
 
 ## 后续及已知限制
 
-- A、B1 与 B2 底座局部验收通过；B3–F 未完成：完整 Room v6 SQL 迁移和生产接线、发生/提醒、v2/v1 备份兼容、统一页面/导航/设置、覆盖安装和版本交付。
+- A、B1、B2、B3 底座局部验收通过；C–F 未完成：发生/提醒、v2/v1 备份兼容、统一页面/导航/设置、生产 v6 原子接线、覆盖安装和版本交付。B3 的完整隔离迁移结果另列，不等于生产激活。
 - 本批构件尚未接入生产业务，不能在已发布软件中使用新的转换 / 完成规则；不以单元测试代替设备迁移验收。
 - 独立统计页、今天真实日程、重复展开 / 例外 / 冲突、UI 移除日期确认均在后续实现；本批没有占位入口。
 - V1 目标为 1.0.0 / code 3 / schema v6，当前仍为 0.1.1 / code 2 / schema v5。main 及已发布 APK 本轮未更新；功能分支交付见下文，不等于发布 APK。
@@ -110,3 +110,43 @@ TDD RED：新增测试和最小 API 声明，运行 `data.plan.*` 与 `domain.pl
 - `git diff --check` 通过。没有未实现方法、占位入口、破坏性迁移或个人数据；合成故障仅在独立内存测试库。版本仍为 0.1.1 / code 2，生产 Room v5 和 schema 文件 2–5、Hilt、导航、备份及提醒调用不变。
 - B2 是可复用底座，不是生产业务激活：未运行设备测试、历史数据库 SQL 迁移、新 UI 或覆盖安装验收，没有重新发布 APK。完整 v6/迁移链/故障回滚装置属于 B3，全局维护准入/提醒/备份/页面接线属于后续批次。
 - README、CHANGELOG 与实施进度同步；按用户已有授权仅提交/推送 `feat/v1-unified-plans`，不合并 main、不创建 PR、不操作个人设备。远端查询默认 OpenSSL 两次 TLS EOF，同一代理临时使用 `git -c http.sslBackend=schannel ls-remote` 成功；交付命令沿用单次 Schannel 设置，不关闭证书校验或修改全局配置。
+
+## B3 · 第四批：完整 v6 隔离迁移装置（局部验收通过）
+
+以下按开发顺序保留中间失败与修复记录；以本节末尾最终全量结果及限制为准。
+
+开始 HEAD `a2073c8`，用户要求下一批开始；工作区原先干净，继续当前功能分支。B2 已推送，远端 SHA 与本地一致，main 未改。已批准设计中的架构改版按细化 B3 四项推进，不重复改变产品决定。
+
+本轮基线：JDK 25 / Gradle 9.4.1，相同 JVM / Debug / lint 三任务命令 BUILD SUCCESSFUL（2 分 37 秒，66 tasks：2 executed / 64 up-to-date）。实际 XML 760 项 / 74 suites，0 failure / error / skipped，JVM 强制重跑；Debug/lint 为缓存检查，不作为 B3 新测试证据。
+
+计划独立审查发现一项 Important：回滚必须覆盖旧表已删后的最终 schema 校验失败及跨 4→5→6 恢复原始 v4，而非只验证 v5 或早期失败。已补明确契约和两条真实 Room 测试，定向复审中。测试先写，Migration / 初始化仅为临时 API 声明，实质 RED 后替换；临时未实现方法不交付。生产 v5/Hilt/版本/UI/提醒/备份尚未切换，未操作用户设备。
+
+计划定向复审已确认该 Important 关闭，无剩余问题；仅为计划审查，不替代实现验证。Buddy 本地流程脚本不可用，沿用项目实施计划、原生 Android TDD 与只读独立审查，不引入 Linear / 新分支 / PR 流程。
+
+TDD 过程：前两轮 fixture 失败分别是历史 JSON 缺少可选 indices 和单列 android_metadata 的 ORDER BY；这两轮不算迁移 RED。修复测试装置后，13 项真实 Room 测试运行，5 项行为断言失败（1 分 1 秒，40 tasks：4 executed / 36 up-to-date），明确捕获缺失迁移和新建初始化；当时 8 项拒绝路径不能因临时未实现异常而算作验证完成。随后实现逐行 SQL 迁移；一次 Kotlin 混合数组推断编译失败不算 GREEN，显式绑定 Any/Any? 后，13 项 / 1 suite 全部通过，androidTest 编译通过（2 分 5 秒，77 tasks：23 executed / 54 up-to-date）。
+
+独立代码审查提出 3 项 Important、1 项 Minor：全部 SQL 结束后的无关表保护、故障阶段到达与原因断言、每条 fixture 的独立 27 列 / 数值边界断言，以及保留 SQLite 类型和 sqlite_sequence 的回滚快照。补强后新增世代触发器篡改打卡的实际回归 RED：15 项 / 1 suite，1 failure / 0 error / skipped（1 分 14 秒，40 tasks：5 executed / 35 up-to-date），其余加强断言通过。迁移结尾增加第二次无关表指纹校验；JVM 和设备故障装置均核验推进世代、旧表已删、注入点到达及预期异常，回滚对比包含类型、自增状态和 schema。修复后复验与定向复审执行中，不将中间 GREEN 当作最终结论。
+
+修复后定向 GREEN：15 项 JVM / 1 suite，0 failure / error / skipped，BUILD SUCCESSFUL（1 分 29 秒，92 tasks：19 executed / 73 up-to-date）；Debug 和 androidTest APK 本次重新打包。只读定向代码复审确认原 3 项 Important / 1 项 Minor 全部关闭，未发现修复引入的新问题，未把静态审查当作测试证据。
+
+设备局部验收：先核对 adb 唯一串号 `emulator-5580` 对应项目 AVD `Rizhiya_Branding`，API 35 / x86_64、启动完成；未连接或操作个人设备。使用 `adb -s emulator-5580 install -r` 覆盖安装本轮两个测试 APK，不卸载 / 清库 / wipe；随后只运行 `PlanMigrationDeviceTest`，AndroidJUnitRunner 原始结果 `OK (10 tests)`、3.54 秒，10 个结束 status 均为 0。这些测试只创建并删除自身唯一命名的合成 DB，使用全部 12 个真实目标实体和同一迁移实现。不是手机真机、正式数据库生产切换或新版覆盖安装验收，旧 57 项设备用例本轮未重跑。
+
+设备命令（指定串号与类，不使用会遍历所有设备的 connected 任务）：
+
+```powershell
+.\.tools\android-sdk\platform-tools\adb.exe -s emulator-5580 shell am instrument -w -r -e class com.example.lifemanager.data.plan.PlanMigrationDeviceTest com.example.lifemanager.test/androidx.test.runner.AndroidJUnitRunner
+```
+
+最终全量复验：JDK 25 / Gradle 9.4.1，沿用网络 init 脚本，命令如下。BUILD SUCCESSFUL（2 分 55 秒，101 tasks：9 executed / 92 up-to-date），进程退出 0。
+
+```powershell
+$env:JAVA_HOME='D:\jdk'
+.\.tools\gradle-9.4.1\bin\gradle.bat -I .tools/phase5-test-network.gradle :app:testDebugUnitTest --rerun :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --console=plain
+```
+
+- 实际 XML 汇总：775 项 JVM / 75 suites，0 failure / error / skipped；JVM 强制重跑，新增迁移 suite 15 项。Debug/androidTest 为本批前次重新打包后的 UP-TO-DATE 检查；lint 三类源分析和报告本轮执行，XML 0 error / 55 warning，新增 plan/migration 路径无 issue。AGP/Kotlin/KAPT/旧 Robolectric 弃用警告仍在，不声称零警告或全库无缓存重编译。
+- KAPT 导出 `PlanMigrationTestDatabase/6.json`：12 个实体、plans 27 列，identityHash `69d421d86d38020570784322041cbe38`；同一目标实体和同一 `PlanMigration` 在 JVM/设备真实 Room 文件开库时验证，而非手工简化 schema。生产 `LifeManagerDatabase` 的 2–5 快照、版本/Manifest/Hilt 未改，无破坏性 fallback、未实现方法或用户数据。
+- 四项 B3 任务局部验收通过，计划审查与代码审查均复审关闭。按用户授权仅交付当前 `feat/v1-unified-plans`，不合并 main、不创建 PR、不发布 APK；README/CHANGELOG/schema README/计划同步。
+- 限制：v1 未导出原始 schema，沿用 v2 三张未变实体的合成构造；不是恢复到原始 v1 asset。未执行大库吞吐/峰值内存测试，不能从流式实现推断性能达标；未做真机/生产 v5→v6 用户库升级或新版覆盖安装，旧设备 suite 未重新运行。全局维护、提醒、副作用、备份及页面未接线，整个 V1 和目标 1.0.0 尚未完成。
+
+提交前复验：暂存检查发现新 Kotlin 文件末尾多余空行，清理后重新执行相同全量命令，BUILD SUCCESSFUL（3 分 33 秒，101 tasks：29 executed / 72 up-to-date），退出 0；实际 XML 仍为 775 项 / 75 suites，0 failure / error / skipped，lint 0 error / 55 warning。Debug/androidTest 本轮重新打包，lint 三类源重新分析、最终报告复用未变结果。同一专用 AVD 再次核验并覆盖安装本轮包，指定迁移类再次 `OK (10 tests)`、4.363 秒、结束 status 全为 0；此为重新运行，不借用前次设备证据。暂存内容仅本批 15 个代码/schema/文档文件，`git diff --cached --check` 通过，工作分支与远端起点一致；交付使用单次 Schannel 配置，不关闭证书校验、不强推。
