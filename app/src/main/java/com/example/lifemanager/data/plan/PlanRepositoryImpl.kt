@@ -13,6 +13,7 @@ import com.example.lifemanager.domain.plan.PlanException
 import com.example.lifemanager.domain.plan.PlanLegacySource
 import com.example.lifemanager.domain.plan.PlanRepository
 import com.example.lifemanager.domain.plan.PlanRules
+import com.example.lifemanager.domain.plan.cancellablePlanWriteBody
 import java.time.Clock
 import java.time.LocalDate
 import kotlinx.coroutines.currentCoroutineContext
@@ -136,12 +137,14 @@ class PlanRepositoryImpl(
         PlanException(planId, LocalDate.ofEpochDay(occurrenceDate), isCancelled)
 
     private suspend fun <T> mutate(expected: DataGeneration, block: suspend () -> T): T = database.withTransaction {
-        checkGeneration(expected)
-        val result = block()
-        currentCoroutineContext().ensureActive()
-        // Detect unexpected metadata changes made by triggers before committing business writes.
-        checkGeneration(expected)
-        result
+        cancellablePlanWriteBody {
+            checkGeneration(expected)
+            val result = block()
+            currentCoroutineContext().ensureActive()
+            // Detect unexpected metadata changes made by triggers before committing business writes.
+            checkGeneration(expected)
+            result
+        }
     }
 
     private fun checkGeneration(expected: DataGeneration) {

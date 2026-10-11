@@ -3,7 +3,7 @@
 日期：2026-10-10。依据：已获用户全文确认的 [设计](../specs/2026-10-10-v1-unified-plans-design.md)。
 分支：`feat/v1-unified-plans`，用户选择在当前干净分支开发，不创建工作树。
 
-`writing-plans` 技能不可用，使用文件级任务、明确依赖与验收记录替代。Buddy 默认的新分支 / PR / 网页验收流程不直接套用原生 Android；不新增 Linear、网页依赖或流程文档。沿用现有 Gradle、TDD、独立审查及 Android 设备验收。总体路线不是一次可交付的单任务，每批在执行前细化并检查覆盖；A/B1/B2/B3/C1 已完成局部验收，下一批 C2。
+`writing-plans` 技能不可用，使用文件级任务、明确依赖与验收记录替代。Buddy 默认的新分支 / PR / 网页验收流程不直接套用原生 Android；不新增 Linear、网页依赖或流程文档。沿用现有 Gradle、TDD、独立审查及 Android 设备验收。总体路线不是一次可交付的单任务，每批在执行前细化并检查覆盖；A/B1/B2/B3/C1/C2a 已完成局部验收，下一批 C2b。
 
 ## 目标与关键连接
 
@@ -103,9 +103,30 @@ B2 是可复用仓库底座，不负责 B3 的迁移/世代推进或 C/E 的提�
 
 提醒接口明确为 `next(plan, now, ...)`，不是截取日历发生窗口：按 now + 提前量推导最早候选，懒加载至下一个未来 trigger、有效重复结束或日期表示边界，不设两年 horizon。返回 null 仅表示关闭/无资格/确实没有后续合格发生；预算耗尽或时间运算溢出必须抛错，不能返回 null。覆盖次日 00:05 发生、提前 15 分钟在前日 23:50 触发的跨窗口边界，以及 ALL_DAY 跨 DST 的日期跨度。
 
-### C2 · 后续统一提醒与用例（尚未实施）
+### C2 · 统一提醒与用例（分批实施）
 
-- 复用 C1 的 `PlanOccurrences` / `PlanRecurrence` / `PlanReminderRules`，新增 `domain/plan/PlanUseCases.kt` 接入维护与仓库消费者；发生集成测试验证共用算法，不重建第二套发生/重复计算。
+#### C2a · 第六批：维护安全用例与提醒身份底座（2026-10-11）
+
+紧耦合的准入/提交交接/副作用由主代理顺序 TDD；只读独立审查并行，不切换生产消费者。C2a 不是整个 C2 的 Android 提醒验收。
+
+1. 新增 `domain/plan/PlanOperationCoordinator.kt`、`PlanReminderEffects.kt`、`PlanUseCases.kt`。顺序为共享 MaintenanceCoordinator 原世代准入 → 计划模块锁 → Room 事务 → 已提交回执交接 → 提醒同步。保存、完成/撤销、删除和例外均传原 token；普通写不推进世代，不重取 token 或排队重放。领域只依赖领域接口，提醒 Android 实现留 C2b。
+2. 保存回执含持久化 planId/原世代，必须在第一次提醒挂起前交接给调用方；短交接采用 NonCancellable，可用于 E 的实际状态发布，不在其中做文件/网络/用户确认。数据库失败无回执/无提醒；交接失败异常携带已提交回执，取消仍是 CancellationException 且携带回执。提醒普通失败返回“已保存但提醒失败”，专门 retryReminders 仅重新读取当前身份，不再次保存/完成/删除。必须拒绝维护忙、旧世代，维护等待已准入操作及交接/提醒结束。E 不得再次套全局许可导致嵌套；真实 UI 的主线程发布和草稿消费仍须 E 验收。
+3. 新增 `domain/plan/PlanReminderToken.kt`、`notification/PlanReminderIdentity.kt`。身份含完整正 Long planId、原世代、发生 LocalDate 与毫秒 trigger；专用 `lifemanager://plan-reminder/v1/` 命名空间，canonical 数字路径严格读取，不接纳旧 namespace、未知版本/路径、缺失/溢出/非 canonical 元数据或不精确的亚毫秒时间。完整 data URI 参与未来 PendingIntent 区分，requestCode hash 不充当唯一身份。无标题/个人内容；解析成功不等于 Room/权限/世代投递授权。此批不创建或注册 Receiver。
+4. 先写真实 RED，再 GREEN：维护准入/顺序/交接/取消、提交后提醒失败与只重试副作用、模块串行、读错误；使用真实隔离 Room 与同一 PlanRepositoryImpl/MaintenanceCoordinator 验证身份转换、完成/撤销、例外与 C1 提醒计算共用事实、删除清理、世代和故障回滚。身份测试使用独立 literal、极值/collision、旧协议及坏输入。全量 JVM --rerun、Debug/lint、独立审查、README/CHANGELOG/验收同步，提交推送当前功能分支，不合并 main 或发包。
+
+任务连接检查：事务返回 ID 是交接/提醒/重试唯一身份；准入包住模块锁及副作用，不能嵌套全局准入；提醒 port 消费当前仓库值而非旧表单，缺失项应撤销。真实库 fixture 的世代由同一库查询，合成故障仅作用于测试库。协议仅是值身份，C2b 才提供 Android Intent 的类型交叉检查、当前 Room 资格、投递去重及排程实现；不把纯协议测试算成 Android 行为验收。
+
+计划审查补充：所有用例实例和 retryReminders 共用同一 PlanOperationCoordinator，锁覆盖当前事实读取、回执交接和 effects 完成；维护外层不得提前释放。PlanReminderEffects 的义务是撤销此计划的旧发生/trigger 闹钟与通知，再按当前 Room/开关/权限/例外安排合格候选；完成、删除、改时间、关闭单项或变 NONE 均适用，读失败不能当作无资格。C2b 实现/测试真实 Android 行为，C2a 的记录型 port 只验证当前事实和调用顺序。
+
+取消边界补充：新增领域内部 PlanWriteCancellation 标记，由用例捕获原 writer Job；Room 的 mutate 仅在此标记存在时把事务 body 放回原 writer 的可取消上下文。事务外的提交确认、ID 返回和短回执交接在 NonCancellable 交付桥中完成，提交前的 body 取消/异常仍由真实 Room 回滚。body 成功后的取消不把已提交行当未保存；返回后仍传递带回执的 CancellationException，不吞取消或继续提醒。无标记的直接仓库路径保持 B2 语义。测试增加真实 SQL 执行时取消，以及真实事务已返回、用例尚未接收到 ID 时取消的确定性边界；并验证共用锁的完成/删除/retry 与维护排空。
+
+异常交付补充：已提交回执保存在整个 maintenance.run 之外，取消在该外层调用退出后包装，防止内部可取消 withContext 保留原始 Job 取消原因而丢失 receipt；retry 在同一外层边界用已有回执包装。交接/提醒挂起/retry/已提交返回测试均实际取消 Job，在 writer 内直接捕获用例异常并检查真实 ID/原世代；取消后的 Deferred.await 可返回原始取消，不把它作为包装类型保证。提醒仍在 NonCancellable 交付桥之外，未提交取消无回执。
+
+协议固定为 `lifemanager://plan-reminder/v1/<planId>/<generation>/<epochDay>/<epochMillis>`。planId 为 1..Long.MAX_VALUE，generation 为 0..Long.MAX_VALUE，日期必须是有效 LocalDate epochDay，触发毫秒为完整 signed Long；十进制 canonical 表示（只有负值带减号，无加号、前导零、负零或空白），不接受 percent 编码别名、尾斜杠、query/fragment、额外字段或其它 scheme/host/version。固定 literal `lifemanager://plan-reminder/v1/17/4/20454/1767260700000` 对应 2026-01-01 / 09:45Z，不以实现生成期望值。
+
+#### C2b / C2c · 后续 Android 提醒与校准（尚未实施）
+
+- 复用 C1 的 `PlanOccurrences` / `PlanRecurrence` / `PlanReminderRules` 和 C2a 用例/身份协议；发生集成测试验证共用算法，不重建第二套发生/重复计算。C2a port 的完整 Android 提醒实现和真实 UI 发布接线不得遗漏。
 - 新建 `notification/PlanReminderSchedulerContract.kt`、`PlanReminderScheduler.kt`、`PlanReminderReceiver.kt`、资格 / identity 实现；规划字段和协议，不提前注册未接线 Receiver。
 - 先新增隔离可测试的统一校准与旧身份清理实现，不更换当前 v5 的 Hilt / Worker / Receiver 调用路径。准备 ReminderReconciler / BootReceiver / Worker / Inventory / Notifications / AndroidMaintenanceReminderEffects 的接线变更；实际替换与旧 Receiver 协议拒绝只在 E 激活提交执行。C 结束时旧应用提醒仍正常运行，清理失败重试和不发双份的新版行为在独立装置验证。
 - 测试发生规则、DST / date-only 09:00 / 全天、custom / leap / 月末、未来 trigger 而非仅未来 occurrence、完成/撤销、延迟广播、权限撤销、旧 ID / URI / 世代、旧通知安全落首页与新通知一次消费。
@@ -170,4 +191,5 @@ git diff --check
 - B2 四项任务已完成局部验收（2026-10-11）：统一 Room 存储与事务仓库，历史标签身份保留、取消/故障回滚和 Flow 读取错误覆盖；新增 31 项，最终 760 项 JVM / 74 suites 强制重跑通过，Debug 重新打包成功，lint 0 error / 55 warning。计划及代码审查问题均复审关闭。
 - B3 四项任务已完成局部验收（2026-10-11）：完整 12 实体 v6 迁移装置、历史链/新建/坏源及晚期故障回滚，新增 15 项 JVM / 10 项专用模拟器设备测试。最终 775 项 JVM / 75 suites 强制重跑、Debug/androidTest 构建检查、lint 通过（0 error / 55 warning），计划和代码审查已复审关闭。详见验收中的 TDD、故障点证明和设备串号记录。
 - C1 四项任务已完成局部验收（2026-10-11）：共享发生/重复/窗口冲突/未来 trigger，新增 69 项 JVM；最终 844 项 / 78 suites 强制重跑通过，Debug 重新打包成功，lint 0 error / 55 warning，独立计划与代码审查问题已复审关闭。预算上限绕过有真实 RED/GREEN；本批不运行设备验收。
-- 下一批 C2：维护用例、统一提醒身份/排程/Receiver/校准的隔离实现，执行前细化子计划。C2–F 未完成，生产应用仍为 V0.1.1 / schema v5，已发布 APK 未改；底座和完整目标 fixture 不等于生产接线、真机升级、新页面或整个 V1 已完成。
+- C2a 四项任务已完成局部验收（2026-10-11）：维护安全统一写入、已提交回执/只重试提醒与值身份协议；新增 43 项 JVM，最终 887 项 / 81 suites 强制重跑、Debug 重新打包和 lint 通过（0 error / 55 warning），计划 3 Important / 1 Minor、代码 1 Important 均独立复审关闭。真实 Room 提交交付桥和外层取消回执均有实质 RED/GREEN；无设备或 Android 闹钟验收。
+- 下一批 C2b：统一 Android 排程/Receiver/严格 Intent 交叉校验/资格/去重的隔离实现；C2c 负责旧身份清理和校准，执行前细化子计划。C2b–F 未完成，生产应用仍为 V0.1.1 / schema v5，已发布 APK 未改；底座和完整目标 fixture 不等于生产接线、真机升级、新页面或整个 V1 已完成。

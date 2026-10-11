@@ -181,3 +181,39 @@ $env:JAVA_HOME='D:\jdk'
 - 限制：纯领域批未运行设备测试、生产升级、真实 Android 闹钟/通知、UI、真机或性能测试；不复用 B3 的 10 项设备结果。窗口冲突只覆盖明确范围；预算/日期运算失败向调用方传递，后续页面须处理。提醒函数只计算候选，尚无完整身份/世代/维护和投递重新读取协议；C2 再复用内核接线，整个 C 和 V1 尚未完成。
 
 提交前检查：暂存仅本批 12 个 Kotlin/测试/文档文件，`git diff --cached --check` 通过；远端功能分支起点为 `2227772`，main 仍为 `b016bcb`。推送沿用单次 Schannel 配置，不关闭证书验证或强推；没有待处理的用户改动被覆盖。
+
+## C2a · 第六批：维护安全用例与提醒身份底座（局部验收通过）
+
+用户要求先推送再下一批；本次已成功推送 C1 `4c9b417`，随后远端查询 SHA 一致、main 仍为 `b016bcb`。工作区原先干净，继续当前功能分支，不创建新工作树。C2 按维护/身份、Android 排程/Receiver、升级校准分批验收；不把子批当全部 C2 完成。
+
+基线 JDK 25 / Gradle 9.4.1，JVM --rerun + Debug/lint 三任务 BUILD SUCCESSFUL（1 分 45 秒，66 tasks：2 executed / 64 up-to-date）。实际 XML 844 项 / 78 suites，0 failure / error / skipped；Debug/lint 为缓存检查，不当作本批实现验收。旧 using-superpowers 本机文件及 Buddy 流程脚本不可用，沿用项目实施计划、原生 TDD 和只读独立审查；任务紧密耦合，由主代理顺序实施。
+
+计划独立审查提出 3 Important（Room 提交/回执返回取消边界、共享锁生命周期与 retry、旧提醒及通知撤销范围）和 1 Minor（canonical URI 完整语法）。已核对仓库与设计后补精确契约，计划定向复审中。取消不能仅保护回调，测试必须覆盖真实事务已提交但用例尚未获得 ID 的交付窗口；提交前取消仍回滚，不采用整段写入不可取消来绕过原约束。
+
+首轮测试先写，API 仅临时声明：33 项 / 3 suites，28 failure（3 分 15 秒，40 tasks：11 executed / 29 up-to-date），成功编译；失败包含缺失 API 抛错及身份/精度断言，不是 fixture/编译失败。临时默认抛错或空解析使部分拒绝路径通过，不能据此声称实现或回滚已验证；随后替换临时声明并开始实现复验。新的 Room 取消边界再做独立 RED/GREEN，不把单次通过当整批完成。
+
+首次实现复验：33 项 / 3 suites 中 32 项通过，一项测试过度要求跨协程异常对象完全相同（2 分 22 秒，40 tasks：11 executed / 29 up-to-date）。查看实际堆栈后确认是 coroutine stack-trace recovery 的异常复制，测试改为核对异常类型及原因链保留原始故障；不改变错误处理实现，不将这一测试装置修正声称业务修复。
+
+计划的 3 Important / 1 Minor 定向复审均已关闭。补六项真实 Room 的 SQL 插入取消、提交后 dispatched return 取消、交接/effects 取消，以及并发完成/删除/retry 与维护排空测试；加强后的 39 项 / 3 suites，只有提交后返回取消这一项 assertion failure（52 秒，40 tasks：5 executed / 35 up-to-date）。实际行已提交，但期望回执列表含已存 ID、实际为空，证明仅保护回调不足；其它 38 项通过。随后加原 writer Job 标记与提交交付桥，真实 Room body 仍可取消，已有无标记 B2 直接仓库行为不变；修复后同时运行本批与 B2 仓库回归，结果另列。
+
+提交桥定向 GREEN：本批 39 项及已有 B2 Room 仓库 29 项，共 68 项 / 4 suites，实际 XML 0 failure / error / skipped；BUILD SUCCESSFUL（1 分 44 秒，40 tasks：12 executed / 28 up-to-date）。随后增加真实 Room 改时间/关闭/重新打开/变 NONE 的当前资格覆盖，以及 URI 负零/前导零拒绝断言；全量 JVM + Debug/lint 候选检查成功（2 分 48 秒，66 tasks：17 executed / 49 up-to-date），但独立审查仍发现下述取消异常边界，因此该候选不是最终验收。
+
+代码独立审查提出 1 Important：实际 writer Job 取消会使外层 MaintenanceCoordinator 的 withContext 保留原始取消根因，内部包装的异常可能丢失 receipt。此前测试证明短交接保存了 receipt，但未证明用例调用者的异常类型。核对实际外层实现后，新增交接/提醒挂起/retry 的真实 Job 取消测试，并强化已提交 dispatched return 测试；直接在 writer 内捕获用例异常，不要求已取消 Deferred.await 保留包装异常。RED/GREEN 与定向复审结果另列。
+
+该边界实质 RED：20 项真实 Room 用例 / 1 suite，4 assertion failure / 0 error / skipped，编译成功（1 分 23 秒，40 tasks：5 executed / 35 up-to-date）；失败分别来自交接、提醒挂起、retry 和已提交返回的实际 Job 取消。随后将 committed 保存在整个维护调用外，并在外层退出后包装取消；retry 同样使用外层已有回执，避免重复包装。事务 body 可取消和提醒所处上下文未变。
+
+修复定向 GREEN：实际 XML 72 项 / 4 suites（本批 43 项：用例 13、真实 Room 20、值身份 10；已有 B2 Room 仓库 29），0 failure / error / skipped；BUILD SUCCESSFUL（1 分 57 秒，40 tasks：11 executed / 29 up-to-date）。独立复审的 spec / quality 均 PASS，原 1 Important 已关闭，无新增 Critical / Important / Minor；静态复核不替代下列最终全量结果。
+
+隔离与剩余边界：本批用例、模块锁和 URI 值协议只构建底座；Room 测试使用完整 B3 内存 fixture、同一真实仓库和本库世代。记录型提醒 port 复用 C1 规则验证当前行/例外的计算结果和顺序，不声称实际 Android AlarmManager 排程/通知清理已通过。C2b 提供 Android effects、严格 Intent 元数据交叉检查、当前资格/投递去重；C2c 提供旧身份清理和校准。Hilt/生产 Room v6/页面/备份/通知入口/版本等消费者统一激活仍归 E。本批未运行设备、个人手机升级、UI、Release 或性能验收，不借用 B3 设备结果，也不新增未实现模块入口、修改现有业务数据或使用 destructive migration。
+
+最终全量复验（2026-10-11）：JDK 25 / Gradle 9.4.1，以下命令 BUILD SUCCESSFUL（3 分 5 秒，66 tasks：12 executed / 54 up-to-date），进程退出 0。
+
+```powershell
+$env:JAVA_HOME='D:\jdk'
+.\.tools\gradle-9.4.1\bin\gradle.bat -I .tools/phase5-test-network.gradle :app:testDebugUnitTest --rerun :app:assembleDebug :app:lintDebug --console=plain
+```
+
+- 实际 XML：887 项 JVM / 81 suites，0 failure / error / skipped；JVM 强制重跑。本批新增 43 项，定向连同已有 B2 Room 回归共 72 项 / 4 suites。
+- Debug 本轮重新 dex/打包最终修复，生产 Kotlin 编译为此前修复后定向命令已执行的 UP-TO-DATE 检查；lint 三类源分析及最终报告本轮执行，XML 0 error / 55 warning，domain/plan、data/plan、PlanReminderIdentity 无 issue。AGP/Kotlin/KAPT/旧测试弃用警告仍存在，不声称全库无缓存重编译或零警告。
+- 四项 C2a 任务局部验收：原世代全局准入→共享模块锁→真实事务→提交回执→提醒；同身份日期转换/完成/撤销/例外/删父解绑，取消/故障回滚及维护排空；失败后只重试当前事实，不把坏读取当空结果；完整 URI literal/极值/碰撞/拒绝路径。计划 3 Important / 1 Minor 和代码 1 Important 均复审关闭，无未解决 Critical / Important。
+- README、CHANGELOG、实施计划及本记录同步；交付仅当前 `feat/v1-unified-plans`，不合并 main / 创建 PR / 发布 APK。实际仍为 0.1.1 / code 2 / schema v5；本批不修改 Manifest/Hilt/Gradle/生产数据库实体或旧提醒消费者，不提交密钥/个人数据，不覆盖用户改动。整个 C2、D–F 和 V1 未完成，下一批 C2b。
