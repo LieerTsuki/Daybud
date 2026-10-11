@@ -1,6 +1,6 @@
 # V1 统一计划分批验收
 
-日期：2026-10-10；分支 `feat/v1-unified-plans`。全文设计与当前分支开发方式已获用户确认。
+开始日期：2026-10-10；B2 最终复验日期：2026-10-11。分支 `feat/v1-unified-plans`。全文设计与当前分支开发方式已获用户确认。
 
 ## 本轮基线
 
@@ -43,7 +43,7 @@ TDD：先编写测试与类型契约，以尚未实现行为的临时空规则�
 
 ## 后续及已知限制
 
-- A 与 B1 底座局部验收通过；B2/B3–F 未完成：Room v6 迁移/仓库、发生/提醒、v2/v1 备份兼容、统一页面/导航/设置、覆盖安装和版本交付。
+- A、B1 与 B2 底座局部验收通过；B3–F 未完成：完整 Room v6 SQL 迁移和生产接线、发生/提醒、v2/v1 备份兼容、统一页面/导航/设置、覆盖安装和版本交付。
 - 本批构件尚未接入生产业务，不能在已发布软件中使用新的转换 / 完成规则；不以单元测试代替设备迁移验收。
 - 独立统计页、今天真实日程、重复展开 / 例外 / 冲突、UI 移除日期确认均在后续实现；本批没有占位入口。
 - V1 目标为 1.0.0 / code 3 / schema v6，当前仍为 0.1.1 / code 2 / schema v5。main 及已发布 APK 本轮未更新；功能分支交付见下文，不等于发布 APK。
@@ -77,3 +77,36 @@ TDD RED：新增测试和最小 API 声明，运行 `data.plan.*` 与 `domain.pl
 边界：转换器是字段转换，不是完整旧备份/数据库验证器；新 ID 由调用方分配，不能把 helper 当成已执行顺序 SQL 自增。父先 null，保留旧来源供二次修复；全库环/外键、设置/世代损坏、逐表快照、事务回滚和设备迁移在 B2/B3 验证。纯 lookup 可由 SQL 实现；内存 registry 只用于受限文件，不在迁移中要求整库入内存。
 
 生产 v5 / Hilt / UI / 备份格式 / 提醒调用均未切换，未操作用户库。用户选择的兼容修正只在新的统一领域底座，不改变已发布 V0 运行路径。
+
+## B2 · 第三批：统一存储及事务（局部验收通过）
+
+下列保留本批 RED/GREEN 与审查的时间顺序；最终复验结论在本节末尾，不将中间状态当作最终状态。
+
+开始基线：相同三任务命令，BUILD SUCCESSFUL（43 秒，65 tasks：2 executed / 63 up-to-date）。729 项 JVM / 72 suites 强制重跑，0 failure / error / skipped；Debug/lint 为缓存检查。工作分支 HEAD 为 `9d87a73`；开始时只有本批实施计划改动。
+
+范围：新增隔离的 Room 实体/DAO、统一仓库及原世代事务检查。存储 fixture version 1、exportSchema=false，只含本批表，绝不将此装置当作完整 schema v6 / 真实迁移验证。生产数据库、Hilt、旧业务、备份、提醒和页面维持现状。
+
+初次运行在 kapt 编译阶段发现挂起 RawQuery 返回 Cursor 被当成数据类；与现有 BackupSnapshotDao 对比，改为相同非挂起 Cursor 查询，在事务线程中使用并关闭。该编译错误不算 TDD RED。实质 RED/GREEN 与审查尚在执行，不宣称本批验收通过。
+
+首轮实质 RED：`data.plan.* --rerun` 编译成功，48 项 / 4 suites，22 项 assertion failure / 0 error / 0 skipped，BUILD FAILED（3 分 43 秒，40 tasks：14 executed / 26 up-to-date）。缺失的映射、真实保存/勾选/世代行为被断言捕获；已有旧转换测试和 Room 约束不假称新失败。计划审查提出完成操作存量校验边界及取消/交错保存覆盖，已补明确契约和测试，正复跑 RED。
+
+补充后 RED：51 项 / 4 suites，25 项 assertion failure / 0 error / 0 skipped，编译成功，BUILD FAILED（1 分 1 秒，40 tasks：5 executed / 35 up-to-date）。本批 28 项新增测试（Mapping 2、Room 26）；随后替换临时声明为实际实现，GREEN 执行中。
+
+独立计划审查：1 项 Important（完成/撤销采用存量校验）及 2 项 Minor（取消/交错场景、批次说明歧义）已核对设计并补契约/测试；定向复审确认全部关闭，无新增发现。仅表示计划闭环，不把它算作实现验收。
+
+首次定向 GREEN：`data.plan.*` + `domain.plan.* --rerun`，BUILD SUCCESSFUL（1 分 43 秒，40 tasks：11 executed / 29 up-to-date）。88 项 / 6 suites，0 failure / error / skipped，含本批 28 项及 A/B1 回归。独立代码审查随后发现普通编辑归一化历史标签的 Important，以及 Flow 首值同步和关系读取失败测试的两项 Minor；正在补复现和修复，不以这轮 GREEN 宣称最终完成。
+
+审查修复 RED：新增历史三种标签（带空格/规范名/空白）同时关联的 Room 回归，并补关系 SQL/例外日期错误与同一 Flow 订阅的首值同步。29 项 Room / 1 suite，只有历史标签回归失败，0 error / skipped，编译成功（1 分 27 秒，40 tasks：7 executed / 33 up-to-date）。断言明确捕获 ID 被换绑，而不是编译问题。关系失败覆盖属于已有正确实现的测试补强，不虚称另外两次功能 RED。
+
+修复采用原始名称精确匹配已关联历史标签，保留其 ID/颜色，仅对新选择的标签规范化；去重按 ID。Flow 同一订阅收到旧值后才触发改名，测试专用改名 DAO 留在 fixture；DROP TABLE 故障只操作独立内存测试库。本批最终 31 项新增测试（Mapping 2、Room 29）。独立定向代码复审确认上述 1 项 Important / 2 项 Minor 全部关闭，无新增 Critical / Important / Minor；此为静态复审，不替代真实测试。
+
+中断后检查：上一轮定向 XML 为 91 项 / 6 suites，0 failure / error / skipped；终端会话已经失效，不能凭 XML 补称进程退出成功。2026-10-11 重新运行完整 JVM / Debug / lint，最终结果另列，不复用旧测试计数或设备结果。
+
+最终复验（2026-10-11）：JDK 25 / Gradle 9.4.1，`:app:testDebugUnitTest --rerun :app:assembleDebug :app:lintDebug --console=plain`（沿用网络 init 脚本）。BUILD SUCCESSFUL，5 分 6 秒，66 tasks：15 executed / 51 up-to-date，进程退出 0。
+
+- 实际 XML：760 项 JVM / 74 suites，0 failure / error / skipped，JVM 强制重跑。本批新增 31 项（Mapping 2、Room 29）；统一计划定向共 91 项 / 6 suites，包含 A/B1 回归。
+- Debug 本轮重新打包；lint production / AndroidTest / UnitTest 分析及 report 本轮执行，实际 XML 0 error / 55 warning，data/plan 与 domain/plan 无 issue。既有 AGP/Kotlin 弃用警告仍在，未声称零警告或整库无缓存重编译。
+- 31 项新增测试覆盖字段/原文/历史标签身份、存量读取与严格编辑、同身份转换、完成幂等/父子独立、旧草稿、FK/环/来源唯一、原世代及元数据拒绝、真实事务故障/取消回滚、同订阅标签 Flow 通知和关系/日期读失败。计划与代码独立复审均关闭，无未解决 Critical / Important。
+- `git diff --check` 通过。没有未实现方法、占位入口、破坏性迁移或个人数据；合成故障仅在独立内存测试库。版本仍为 0.1.1 / code 2，生产 Room v5 和 schema 文件 2–5、Hilt、导航、备份及提醒调用不变。
+- B2 是可复用底座，不是生产业务激活：未运行设备测试、历史数据库 SQL 迁移、新 UI 或覆盖安装验收，没有重新发布 APK。完整 v6/迁移链/故障回滚装置属于 B3，全局维护准入/提醒/备份/页面接线属于后续批次。
+- README、CHANGELOG 与实施进度同步；按用户已有授权仅提交/推送 `feat/v1-unified-plans`，不合并 main、不创建 PR、不操作个人设备。远端查询默认 OpenSSL 两次 TLS EOF，同一代理临时使用 `git -c http.sslBackend=schannel ls-remote` 成功；交付命令沿用单次 Schannel 设置，不关闭证书校验或修改全局配置。

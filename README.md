@@ -14,11 +14,13 @@
 
 已确认以统一计划模型和表替代独立待办 / 日程：无日期归待办，有日期归日程；添加截止日期更新同一条记录，两类均可完成 / 撤销，重复日程完成表示整个系列结束。目标导航为「计划 / 打卡 / 订阅 / 设置」，目标版本 1.0.0 / versionCode 3。
 
-当前在 `feat/v1-unified-plans` 分批开发。已完成第一批领域模型与规则、第二批 B1 旧数据转换与来源映射底座，尚未接入页面、Room、备份或提醒；实际应用仍是 0.1.1 / code 2 / schema v5，顶部下载包和 main 不包含 V1，不能从设计批准推断数据迁移或新版发布已完成。统一接线验收前不切换数据库版本、不开放空入口，不使用 destructive migration。详见仓库内 [完整设计](docs/superpowers/specs/2026-10-10-v1-unified-plans-design.md)、[实施计划](docs/superpowers/plans/2026-10-10-v1-unified-plans.md)及[分批验收](docs/v1-unified-plans-acceptance.md)。
+当前在 `feat/v1-unified-plans` 分批开发。第一批领域模型与规则、第二批 B1 旧数据转换与来源映射、第三批 B2 隔离的 Room 存储与事务仓库均已完成局部验收。这些底座尚未接入生产数据库、页面、备份或提醒；实际应用仍是 0.1.1 / code 2 / schema v5，顶部下载包和 main 不包含 V1，不能从设计批准推断数据迁移或新版发布已完成。统一接线验收前不切换数据库版本、不开放空入口，不使用 destructive migration。详见仓库内 [完整设计](docs/superpowers/specs/2026-10-10-v1-unified-plans-design.md)、[实施计划](docs/superpowers/plans/2026-10-10-v1-unified-plans.md)及[分批验收](docs/v1-unified-plans-acceptance.md)。
 
 第一批领域底座局部验收通过：按 TDD 实现分类、完成 / 撤销、日期转换及全库统计规则，新增 34 项测试；该批 703 项 JVM / 70 suites 使用 `--rerun` 全量重跑通过，Debug 构建检查成功，lint 0 error / 55 warning。独立审查问题已关闭；未运行新迁移 / 新 UI 的设备验收，不把领域测试当作整个 V1 已完成。
 
-第二批 B1 局部验收通过：共享转换器逐值保留旧字段，以来源区分同号待办/日程并映射父、标签及例外；历史空白标题和合法固定偏移时区保留，新建/编辑仍严格校验。按 TDD 新增 26 项测试；最终 729 项 JVM / 72 suites 强制重跑通过，Debug 构建检查通过，lint 0 error / 55 warning，独立审查意见已关闭。真实 SQL 迁移、Room 仓库/事务和设备升级仍待 B2/B3，不能将 helper 测试当作迁移验收。
+第二批 B1 局部验收通过：共享转换器逐值保留旧字段，以来源区分同号待办/日程并映射父、标签及例外；历史空白标题和合法固定偏移时区保留，新建/编辑仍严格校验。按 TDD 新增 26 项测试；该批最终 729 项 JVM / 72 suites 强制重跑通过，Debug 构建检查通过，lint 0 error / 55 warning，独立审查意见已关闭。B1 不包含 Room 仓库/事务或 SQL 迁移，不能将 helper 测试当作迁移验收。
+
+第三批 B2 局部验收通过（2026-10-11）：实现统一实体、关系 DAO、Flow 快照和事务 CRUD / 完成 / 撤销，添加日期保留身份，旧编辑不能覆盖最新完成状态或复活删除项，父删除只解绑子项；标签保留历史原始名称对应的 ID/颜色，坏日期/关系读取与原世代错误明确上报。按 TDD 新增 31 项测试；最终 760 项 JVM / 74 suites 强制重跑通过，Debug 重新打包成功，lint 0 error / 55 warning，独立审查意见已关闭。测试使用独立内存 Room fixture，包含取消和故障回滚，不是完整 v6 或设备升级验收；全局维护准入由后续用例层接线，真实 SQL 迁移链与设备验证仍待 B3 及后续批次。
 
 ## 名称与图标 · 0.1.1 预览版
 
