@@ -59,6 +59,14 @@
 - 新增 43 项 JVM 测试；最终 887 项 / 81 suites 强制重跑通过，Debug 重新打包成功，lint 0 error / 55 warning，计划及代码审查意见全部关闭。
 - Android 排程/Receiver/通知清理/投递资格与校准待 C2b/C2c；实际 UI 回执消费与生产统一接线仍归 E。本批无设备/UI/Release/性能验收，不改变生产 v5/Hilt/版本、旧提醒、备份、main 或已发布 APK。完整证据见[分批验收](docs/v1-unified-plans-acceptance.md)。
 
+### 2026-10-12 · 第七批 C2b：隔离 Android 排程与投递（局部验收通过）
+
+- 实现 Room 提醒技术库存、canonical URI 与四项 Long 元数据交叉检查、当前 Room 资格校验、隔离 Android 排程/通知及异步 Receiver；重复/旧/篡改/提前/过期广播不消费。
+- 完成/删除/改期/开关/例外按当前事实撤旧重排，精确权限拒绝使用非精确兜底；读错、通知/标记/推进故障与实际取消保留明确结果及可清理身份，不重复写业务数据。
+- 审查发现的过去 trigger 安装与可观察通知阻止已按实质 RED/GREEN 修复；post 后撤本次完整 tag 保留另一计划卡片的回归有 mutation RED 证明。Receiver 测试只补模拟安装的私有签名权限，保留非导出和通知拒绝检查。
+- 新增 56 项 JVM（协议/资格 8、真实 Room/系统服务集成 48）；最终 943 项 / 83 suites 强制重跑无 failure / error / skipped，Debug 缓存构建检查成功，lint 测试源重新分析通过（0 error / 55 既有 warning）。独立计划/代码审查意见关闭。
+- 本批不注册生产 Receiver/Hilt 或切换数据库、页面、备份、版本、main 和 APK；新增技术表的完整升级链及旧身份清理/统一校准仍需 C2c，统一生产接线归 E。未做设备/UI/Release/性能验收，不借用 B3 历史结果。通知提交不等于用户收到，Room 与系统通知非原子、崩溃窗口可能再次提示；完整证据见[分批验收](docs/v1-unified-plans-acceptance.md)。
+
 ## 0.1.1 预览版 · 2026-10-09
 
 - 应用更名为「日子芽」，提供圆润卡通手账/新芽的原生矢量自适应、圆形及单色图标。

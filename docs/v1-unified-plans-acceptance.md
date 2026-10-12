@@ -217,3 +217,51 @@ $env:JAVA_HOME='D:\jdk'
 - Debug 本轮重新 dex/打包最终修复，生产 Kotlin 编译为此前修复后定向命令已执行的 UP-TO-DATE 检查；lint 三类源分析及最终报告本轮执行，XML 0 error / 55 warning，domain/plan、data/plan、PlanReminderIdentity 无 issue。AGP/Kotlin/KAPT/旧测试弃用警告仍存在，不声称全库无缓存重编译或零警告。
 - 四项 C2a 任务局部验收：原世代全局准入→共享模块锁→真实事务→提交回执→提醒；同身份日期转换/完成/撤销/例外/删父解绑，取消/故障回滚及维护排空；失败后只重试当前事实，不把坏读取当空结果；完整 URI literal/极值/碰撞/拒绝路径。计划 3 Important / 1 Minor 和代码 1 Important 均复审关闭，无未解决 Critical / Important。
 - README、CHANGELOG、实施计划及本记录同步；交付仅当前 `feat/v1-unified-plans`，不合并 main / 创建 PR / 发布 APK。实际仍为 0.1.1 / code 2 / schema v5；本批不修改 Manifest/Hilt/Gradle/生产数据库实体或旧提醒消费者，不提交密钥/个人数据，不覆盖用户改动。整个 C2、D–F 和 V1 未完成，下一批 C2b。
+
+## C2b · 第七批：隔离 Android 排程与投递（局部验收通过）
+
+2026-10-12（Asia/Shanghai），基线 HEAD `2bd38dc`、工作区干净，继续用户选择的当前功能分支。C2a 已推送，main 和已发布 APK 不切换。Buddy 本地 state 脚本仍不存在；沿用已批准架构和仓库执行计划，紧耦合流程顺序 TDD，独立计划/代码审查。
+
+基线复验：JDK 25 / Gradle 9.4.1，JVM --rerun + Debug/lint，BUILD SUCCESSFUL（3 分 24 秒，66 tasks：2 executed / 64 up-to-date），退出 0。实际 XML 887 项 / 81 suites，0 failure / error / skipped；Debug/lint 为缓存检查，不当本批实现验收。
+
+本批新增 Room 技术库存，保存每个 planId 的当前完整 token 与状态，不保留标题或个人内容、不作为授权或备份业务数据。现有 12 实体 B3 迁移结果保持历史范围；新增技术表先在隔离完整目标装置验证，C2c 必须扩展同一 v6 SQL/迁移/fixture，E 才激活生产与 Receiver 依赖。Room 与系统提醒不是原子事务，不承诺跨任意崩溃点 exactly-once；成功标记后持久去重，notify 与标记之间故障仅替换同 tag 卡片，可能再次提示，不能假称完全消除该窗口。
+
+计划独立审查的 2 Important（库存推进后的旧通知撤销、notify/mark/advance 故障恢复）与 2 Minor（C1 严格未来查询和到达资格的边界、C2c 技术表迁移责任）已明确精确契约，定向复审 spec / 可执行性均 PASS，无新增问题。Receiver 故障由独立排队回调申请新校准，不嵌套准入或保留旧 payload。
+
+首组实质 RED：8 项 Android 协议/领域资格用例，7 assertion failure / 0 error / skipped，编译成功（5 分，40 tasks：11 executed / 29 up-to-date）。一项拒绝测试因临时默认 false 通过，不能当实现证明；随后替换协议/资格声明并新增真实 Room/系统服务集成测试，继续独立 RED/GREEN。
+
+协议实现后的第二轮：30 项 / 2 suites，21 failure（3 分 2 秒，40 tasks：13 executed / 27 up-to-date），协议 8 项全部通过；集成 22 项中多数因缺少排程/API 实现、空闹钟或回执错误失败，一项坏库存拒绝路径因临时默认抛错通过，不能当实现证明。其中三项文件重开测试发生 SQLiteCantOpenDatabaseException，不算业务 RED；按 systematic-debugging 查看 native SQLite 打开堆栈，并比较已有真实文件迁移装置。父目录初始化及预建文件的两次假设均未解决失败，不将猜测当根因；继续补路径长度/存在/可写性诊断。新增 CAS 未命中、notify/advance 故障和 Receiver 实际流程覆盖后的 40 项 / 2 suites 仍 31 failure，协议 8 项通过，核心 API 尚为临时声明；本阶段不能提交或声称局部验收。
+
+文件装置诊断实际输出：父目录存在/可写，数据库绝对路径长度 259；原生 SQLite 在打开或设置 WAL 时失败。改用测试专用短名称（保留唯一性与严格限定清理范围）、移除无效的预建文件尝试后，三个重开测试到达业务断言且通过；不修改正式数据库配置，不把宿主测试路径修正算作应用修复。中断前的诊断进程没有可恢复 session；恢复后重跑单项诊断，再复验实现。
+
+核心实现第一轮 GREEN：40 项 / 2 suites（协议/资格 8、真实 Room/系统集成 32），0 failure / error / skipped；BUILD SUCCESSFUL（2 分 56 秒，40 tasks：11 executed / 29 up-to-date）。SQL 技术库存、当前事实排程/资格、通知/决定/推进故障、数据库重开、hash 碰撞和 Receiver 真实异步路径通过；随后再补实际取消、维护排空/并发完成、最终设置重读和 API31/33 权限覆盖，不以此定向结果当最终全量验收。
+
+补强后的 50 项 / 2 suites（协议 8、集成 42），0 failure / error / skipped；BUILD SUCCESSFUL（4 分 28 秒，40 tasks：4 executed / 36 up-to-date）。包含实际 Job 取消、Receiver 8 秒超时 finish、并发真实完成与维护排空、最终 Room 设置重读、后续发生只保留最新卡片、API31 非精确兜底、API33 通知拒绝、禁用频道、其它频道/坏元数据不误清和未接线 Application 安全拒绝。此前一次测试编译使用实例调用 static 的 ShadowAlarmManager API，按本机 javap 核对后修正为类调用；这一编译失败不当业务 RED。
+
+代码独立审查提出 2 Important：挂起读取/库存写入耗时可能把未来候选变成过去闹钟，以及 notify 正常返回但可观察权限已关闭时不应消费。已核对公开 AlarmManager/NotificationManager API；通知提交没有用户收到确认，不能用 activeNotifications 的即时快照伪造回执。先新增实质 RED：46 项真实集成 / 1 suite，3 assertion failure / 0 error / skipped（2 分 46 秒，40 tasks：5 executed / 35 up-to-date）；分别为预计 Failed 实际 Applied、预计次日未来 trigger 实际当日过去 trigger、预计 NOT_SENT 实际 DELIVERED。其它 43 项通过，延迟的既有未来闹钟仍可在发生未过期时投递。
+
+修复限定：例外读取结束后再取 Clock，写库存之后/系统安装之前再次要求严格未来；越过触发点则显式提醒失败，保留可清理身份及 advance 的刚发卡片，重试复算当前候选。notify 前/后检查系统权限及频道，提交后可观察阻止时撤本次完整 tag、返回 NOT_SENT，不 CAS/推进。增加不允许主线程查询的真实 Room 装置验证库存读 IO。DELIVERED/delivered 仅表示持久决定的提交尝试，不保证视觉送达/已读；系统异步策略/配额/最后检查后撤权不可完全确认，此平台限制和跨系统崩溃窗口分别记录，业务数据与设置不丢失。
+
+修复定向 GREEN：55 项 / 2 suites（协议 8、真实集成 47），0 failure / error / skipped；BUILD SUCCESSFUL（2 分 8 秒，40 tasks：12 executed / 28 up-to-date）。第一次全量候选检查中，JVM 942 项 / 83 suites 实际强制重跑均无失败/错误/跳过，Debug 重新打包；但 lint 的测试 Receiver 缺少显式导出标志导致整条命令 FAILED（2 分 57 秒，66 tasks：12 executed / 54 up-to-date），实际 1 error / 57 warning，其中两条新增 UseKtx 提示。使用 ContextCompat.RECEIVER_NOT_EXPORTED 和等价 toUri 扩展修正，不增加 baseline 或抑制安全检查。
+
+独立复审已关闭两项 Important，spec PASS / quality PASS；新增一项 Minor：已有静默阻止装置在真实 shadow post 前返回，尚不能证明 post 后的精确撤回。新增实际 post 后再暴露阻止、同时保留另一计划真实卡片的回归；临时移除本次撤回调用做单项 mutation RED，再恢复调用重新验证，结果另列。不提交临时 mutation。
+
+撤回覆盖 mutation RED：单项用例 / 1 suite，1 failure / 0 error / skipped（2 分 15 秒，40 tasks：11 executed / 29 up-to-date）。failure 原因明确为 activeNotifications 包含多于一张卡片，触发 single() 的 IllegalArgumentException；前面的 NOT_SENT 与 pending 状态断言已通过，不是数据库/协议装置故障。随后立即恢复本次完整 tag / ID=0 的 cancel 调用并全量重跑；不存在待提交的临时 mutation。
+
+Receiver 装置修正后的首次全量命令失败（2 分 3 秒，64 tasks：16 executed / 48 up-to-date）：实际 XML 943 项 / 83 suites，9 failure / 0 error / skipped。九项均在 ContextCompat 注册非导出 Receiver 时因模拟安装没有授予私有签名权限而失败，未进入业务路径。核对实际合并 Manifest 已声明且使用 `com.example.lifemanager.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`；仅在 Robolectric helper 中授予对应包名的这项权限，不更改正式 Manifest、不放宽 RECEIVER_NOT_EXPORTED，不额外授予通知权限。随后启动的检查被用户中断，session 无法恢复，XML 仍是上述失败结果，不能当通过；2026-10-12 恢复后重新执行完整命令及本次修正的独立只读复审。
+
+恢复后的定向独立复审已通过，无新增 Critical / Important / Minor：确认 post 后精确撤回只作用于本次完整 tag / ID=0，另一计划真实卡片保留、pending 不消费/不推进；私有签名权限授权仅修正模拟安装装置，实际非导出广播/异步 finish 路径和通知权限拒绝测试保留；toUri 的编译结果仍调用等价 Uri.parse。此复核关闭原 Minor，仅是静态检查，不替代下列全量命令与实际 XML。
+
+最终全量复验（2026-10-12 16:39–16:45，Asia/Shanghai）：JDK 25 / Gradle 9.4.1，以下命令 BUILD SUCCESSFUL（6 分 10 秒，66 tasks：7 executed / 59 up-to-date），进程退出 0。
+
+```powershell
+$env:JAVA_HOME='D:\jdk'
+.\.tools\gradle-9.4.1\bin\gradle.bat -I .\.tools\phase5-test-network.gradle :app:testDebugUnitTest --rerun :app:assembleDebug :app:lintDebug --console=plain
+```
+
+- 实际 XML：943 项 JVM / 83 suites，0 failure / error / skipped；本批新增 56 项，协议/资格 8、真实 Room/Android 系统服务 Robolectric 集成 48，全部通过。前述 9 项 Receiver 装置失败已消除，post 后精确撤回回归也通过。
+- JVM 强制重跑，测试 Kotlin 编译、转换及 lint 测试源分析实际执行；正式源编译和 Debug 为缓存构建检查，不能描述为本轮全部重新编译/打包。最终 lint XML 0 error / 55 warning，新提醒文件无 lint issue，不增加 baseline 或抑制；既有 AGP/Kotlin/kapt 与测试 shadow API 弃用提示仍保留。
+- 独立计划 2 Important / 2 Minor、代码 2 Important / 1 Minor 均已复审关闭；恢复后的定向只读审查无新增问题。审核不替代测试，不声称实际设备已验收。
+- 新增技术库存使用全部 13 实体隔离 Room 装置；三项短名称文件重开测试为真实 SQLite/Room 持久化，不是完整历史升级链。C2c 必须扩展统一 v6 SQL、新建、schema、完整迁移/设备装置与回滚验收，不能复用 B3 的 12 实体历史数字。
+- 本批未运行设备、个人手机覆盖安装、UI、Release 或性能验收；Room/通知非原子窗口和无法确认用户收到的限制仍存在。正式生产仍为 0.1.1 / code 2 / schema v5，不修改 Manifest/Hilt/Gradle/生产数据库或旧业务入口，不新增空页面、不使用 destructive migration、不提交密钥或个人数据。
+- README、CHANGELOG、实施计划及本记录同步；交付仅当前 `feat/v1-unified-plans`，不合并 main / 创建 PR / 发布 APK。整个 C2、D–F 和 V1 未完成；下一批 C2c 旧身份清理、统一校准及提醒技术表完整迁移。
