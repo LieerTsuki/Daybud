@@ -13,6 +13,8 @@ import android.os.Build
 import androidx.core.content.ContextCompat
 import com.example.lifemanager.MainActivity
 import com.example.lifemanager.domain.plan.PlanReminderToken
+import com.example.lifemanager.domain.maintenance.DataGeneration
+import android.service.notification.StatusBarNotification
 
 interface PlanReminderNotifier {
     fun permitted(): Boolean
@@ -20,7 +22,22 @@ interface PlanReminderNotifier {
     fun show(token: PlanReminderToken, title: String): Boolean
     fun clear(planId: Long, keep: PlanReminderToken? = null)
 }
-class PlanNotificationHelper(private val context: Context) : PlanReminderNotifier {
+class PlanNotificationHelper(private val context: Context) : PlanReminderNotifier, PlanNotificationInventory {
+    override fun tokens(): List<PlanReminderToken> = manager.activeNotifications.mapNotNull(::ownedToken).distinct()
+    override fun cancelCaptured(token: PlanReminderToken) {
+        manager.activeNotifications.filter { ownedToken(it) == token }.forEach { manager.cancel(it.tag, it.id) }
+    }
+    override fun clearStale(current: DataGeneration, validIds: Set<Long>) {
+        manager.activeNotifications.forEach { active ->
+            val token = ownedToken(active) ?: return@forEach
+            if (token.generation != current || token.planId !in validIds) manager.cancel(active.tag, active.id)
+        }
+    }
+    private fun ownedToken(active: StatusBarNotification): PlanReminderToken? {
+        if (active.id != 0 || active.notification.channelId != CHANNEL) return null
+        val token = PlanReminderIdentity.parse(active.tag) ?: return null
+        return token.takeIf { PlanReminderIntents.matchesMetadata(active.notification.extras, it) }
+    }
     private val manager get() = context.getSystemService(NotificationManager::class.java)
     override fun permitted(): Boolean = manager.areNotificationsEnabled() &&
         (Build.VERSION.SDK_INT < 33 || ContextCompat.checkSelfPermission(context,
@@ -52,10 +69,8 @@ class PlanNotificationHelper(private val context: Context) : PlanReminderNotifie
         require(planId > 0)
         // Inventory may already describe tomorrow; today's card lives in the system inventory.
         manager.activeNotifications.forEach { active ->
-            if (active.notification.channelId != CHANNEL) return@forEach
-            val token = PlanReminderIdentity.parse(active.tag) ?: return@forEach
-            if (token.planId == planId && token != keep &&
-                PlanReminderIntents.matchesMetadata(active.notification.extras, token)) {
+            val token = ownedToken(active) ?: return@forEach
+            if (token.planId == planId && token != keep) {
                 manager.cancel(active.tag, active.id)
             }
         }

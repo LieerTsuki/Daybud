@@ -45,7 +45,7 @@ class PlanReminderIntegrationTest {
         val intent = shadowOf(alarm.operation).savedIntent
         assertEquals("lifemanager://plan-reminder/v1/${receipt.planId}/0/20454/1767260700000", intent.dataString)
         val token = assertNotNull(PlanReminderIntents.read(context, intent))
-        assertEquals(PlanReminderState(token, false), f.store.get(receipt.planId))
+        assertEquals(PlanReminderState(token, false, true), f.store.get(receipt.planId))
         assertTrue(shadowOf(alarm.operation).isImmutable)
         assertEquals(1, f.db.plans().allEntities().size)
     }
@@ -121,7 +121,7 @@ class PlanReminderIntegrationTest {
         val notification = notifications.allNotifications.single()
         assertEquals("最新 Room 标题", notification.extras.getCharSequence("android.text"))
         assertEquals(PlanReminderIdentity.data(token), shadowOf(notification.contentIntent).savedIntent.dataString)
-        assertEquals(0, f.store.all().size)
+        assertEquals(listOf(PlanReminderState(token, true)), f.store.all())
     }
     @Test fun `request hash collisions do not replace other alarms or notifications`() = withDatabase { f ->
         val first = f.cases.save(draft(), emptyList(), generation) {}.receipt.planId
@@ -140,7 +140,8 @@ class PlanReminderIntegrationTest {
         val id = f.cases.save(draft(), emptyList(), generation) {}.receipt.planId
         val token = f.token()
         f.clock.at = token.triggerAt.minusMillis(1)
-        assertEquals(PlanDeliveryOutcome.IGNORED, f.deliver(token)); assertNotNull(f.store.get(id))
+        assertEquals(PlanDeliveryOutcome.NOT_SENT, f.deliver(token)); assertNotNull(f.store.get(id))
+        f.reconcile(id)
         f.clock.at = draft().dueAt!!
         assertEquals(PlanDeliveryOutcome.IGNORED, f.deliver(token)); assertEquals(0, notifications.size())
     }
@@ -163,7 +164,7 @@ class PlanReminderIntegrationTest {
     }
     @Test fun `corrupt inventory is failure rather than missing or authorized`() = withDatabase { f ->
         val id = f.cases.save(draft(), emptyList(), generation) {}.receipt.planId
-        f.db.openHelper.writableDatabase.execSQL("UPDATE plan_reminder_state SET delivered=2")
+        f.db.openHelper.writableDatabase.execSQL("UPDATE plan_reminder_state SET delivered=3")
         assertFailsWith<IllegalStateException> { f.store.get(id) }
         f.db.openHelper.writableDatabase.execSQL("UPDATE plan_reminder_state SET delivered=0,generation='not-a-number'")
         assertFailsWith<IllegalStateException> { f.store.all() }
@@ -171,7 +172,7 @@ class PlanReminderIntegrationTest {
     @Test fun `inventory survives real database reopen and duplicate never posts again`() = withDatabase(onFile = true) { f ->
         f.cases.save(draft(), emptyList(), generation) {}
         val token = f.token()
-        f.reopen(); assertEquals(PlanReminderState(token, false), f.store.get(token.planId))
+        f.reopen(); assertEquals(PlanReminderState(token, false, true), f.store.get(token.planId))
         f.clock.at = token.triggerAt
         assertEquals(PlanDeliveryOutcome.DELIVERED, f.deliver(token))
         f.reopen()
@@ -202,25 +203,26 @@ class PlanReminderIntegrationTest {
         assertEquals(PlanReminderUpdate.Applied, f.cases.retryReminders(result.receipt).reminders)
         assertEquals(1, alarms.scheduledAlarms.size); assertEquals(1, f.db.plans().allEntities().size)
     }
-    @Test fun `notification failure leaves pending decision for retry`() = withDatabase { f ->
+    @Test fun `notification failure records consumed arrival and duplicate cannot replay payload`() = withDatabase { f ->
         f.cases.save(draft(), emptyList(), generation) {}
         val token = f.token(); f.clock.at = token.triggerAt
         PlanNotificationService.fail = true
         assertFailsWith<IllegalStateException> { f.deliver(token) }
         assertEquals(PlanReminderState(token, false), f.store.get(token.planId)); assertEquals(0, notifications.size())
         PlanNotificationService.fail = false
-        assertEquals(PlanDeliveryOutcome.DELIVERED, f.deliver(token))
-        assertEquals(1, notifications.size())
+        assertEquals(PlanDeliveryOutcome.IGNORED, f.deliver(token))
+        f.reconcile(token.planId)
+        assertEquals(0, notifications.size()); assertTrue(alarms.scheduledAlarms.isEmpty())
     }
-    @Test fun `mark transaction failure retains identity and retries same notification tag`() = withDatabase { f ->
+    @Test fun `decision transaction failure retains consumed identity without replaying duplicate`() = withDatabase { f ->
         f.cases.save(draft(), emptyList(), generation) {}
         val token = f.token(); f.clock.at = token.triggerAt
-        f.db.openHelper.writableDatabase.execSQL("CREATE TRIGGER reject_mark BEFORE UPDATE ON plan_reminder_state BEGIN SELECT RAISE(ABORT,'synthetic mark failure'); END")
+        f.db.openHelper.writableDatabase.execSQL("CREATE TRIGGER reject_mark BEFORE UPDATE ON plan_reminder_state WHEN NEW.delivered=1 BEGIN SELECT RAISE(ABORT,'synthetic mark failure'); END")
         assertFailsWith<android.database.sqlite.SQLiteException> { f.deliver(token) }
         assertEquals(PlanReminderState(token, false), f.store.get(token.planId)); assertEquals(1, notifications.size())
         f.db.openHelper.writableDatabase.execSQL("DROP TRIGGER reject_mark")
-        assertEquals(PlanDeliveryOutcome.DELIVERED, f.deliver(token))
-        assertEquals(1, notifications.size()); assertEquals(2, PlanNotificationService.posts)
+        assertEquals(PlanDeliveryOutcome.IGNORED, f.deliver(token))
+        assertEquals(1, notifications.size()); assertEquals(1, PlanNotificationService.posts)
     }
     @Test fun `advance inventory failure keeps decided token and just shown notification`() = withDatabase { f ->
         f.cases.save(draft().copy(timeMode = PlanTimeMode.TIMED, startAt = draft().dueAt,
@@ -249,7 +251,7 @@ class PlanReminderIntegrationTest {
     @Test fun `delivery CAS miss never advances or reports success`() = withDatabase { f ->
         f.cases.save(draft(), emptyList(), generation) {}
         val token = f.token(); f.clock.at = token.triggerAt
-        f.db.openHelper.writableDatabase.execSQL("CREATE TRIGGER ignore_mark BEFORE UPDATE ON plan_reminder_state BEGIN SELECT RAISE(IGNORE); END")
+        f.db.openHelper.writableDatabase.execSQL("CREATE TRIGGER ignore_mark BEFORE UPDATE ON plan_reminder_state WHEN NEW.delivered=1 BEGIN SELECT RAISE(IGNORE); END")
         assertFailsWith<IllegalStateException> { f.deliver(token) }
         assertEquals(PlanReminderState(token, false), f.store.get(token.planId)); assertEquals(1, notifications.size())
     }
@@ -296,7 +298,7 @@ class PlanReminderIntegrationTest {
                 awaitReceiver(beginReceiver(receiver(f), PlanReminderIntents.alarm(context, token)))
                 assertEquals(1, f.retries); assertEquals(0, notifications.size())
             }
-            assertEquals(0, notifications.size()); assertEquals(PlanReminderState(token, false), f.store.get(token.planId))
+            assertEquals(0, notifications.size()); assertEquals(PlanReminderState(token, false, true), f.store.get(token.planId))
         }
     }
     @Test fun `receiver ordinary read failure requests fresh calibration and does not consume`() = runTest {
@@ -324,7 +326,7 @@ class PlanReminderIntegrationTest {
             val token = f.token(); f.clock.at = token.triggerAt
             val target = PlanReminderReceiver { error("Malformed protocol must never access dependencies") }
             awaitReceiver(beginReceiver(target, PlanReminderIntents.alarm(context, token).putExtra(PlanReminderIntents.EXTRA_ID, token.planId.toInt())))
-            assertEquals(0, notifications.size()); assertEquals(PlanReminderState(token, false), f.store.get(token.planId))
+            assertEquals(0, notifications.size()); assertEquals(PlanReminderState(token, false, true), f.store.get(token.planId))
         }
     }
     @Test fun `receiver provider failure finishes acquired async result`() = runTest {
@@ -369,7 +371,7 @@ class PlanReminderIntegrationTest {
             awaitUntil { entered.isCompleted }
             advanceTimeBy(8_001); awaitReceiver(pending)
             assertEquals(PlanReminderState(token, false), f.store.get(token.planId)); assertEquals(0, notifications.size())
-            assertEquals(0, f.retries); f.coordinator.withSession {}
+            assertEquals(1, f.retries); f.coordinator.withSession {}
         }
     }
     @Test fun `delivery and completion share module lock and maintenance drains both`() = withDatabase { f ->
@@ -462,7 +464,7 @@ class PlanReminderIntegrationTest {
             f.cases.save(draft(), emptyList(), generation) {}
             val token = f.token(); f.clock.at = token.triggerAt
             awaitReceiver(beginReceiver(PlanReminderReceiver(), PlanReminderIntents.alarm(context, token)))
-            assertEquals(0, notifications.size()); assertEquals(PlanReminderState(token, false), f.store.get(token.planId))
+            assertEquals(0, notifications.size()); assertEquals(PlanReminderState(token, false, true), f.store.get(token.planId))
         }
     }
     @Test fun `elapsed candidate after Room inventory write fails without catchup and retry uses next future`() = withDatabase { f ->
@@ -498,7 +500,7 @@ class PlanReminderIntegrationTest {
         assertEquals(PlanDeliveryOutcome.NOT_SENT, f.deliver(token))
         assertEquals(PlanReminderState(token, false), f.store.get(token.planId)); assertEquals(0, notifications.size())
         PlanNotificationService.silentBlock = false; notifications.setNotificationsEnabled(true)
-        assertEquals(PlanDeliveryOutcome.DELIVERED, f.deliver(token)); assertEquals(1, notifications.size())
+        assertEquals(PlanDeliveryOutcome.IGNORED, f.deliver(token)); assertEquals(0, notifications.size())
     }
     @Test fun `already installed future alarm may arrive late before occurrence expiry`() = withDatabase { f ->
         f.cases.save(draft(), emptyList(), generation) {}

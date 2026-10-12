@@ -16,6 +16,7 @@ class SubscriptionReminderScheduler(
     context: Context,
     private val stateProvider: () -> ReminderSchedulingState = { ReminderSchedulingState.fromApplication(context) },
 ) : SubscriptionReminderSchedulerContract {
+    private var unifiedState: SubscriptionReminderStateReader? = null
     internal var nowProvider: () -> Instant = Instant::now
     internal var zoneProvider: () -> ZoneId = ZoneId::systemDefault
     private val context = context.applicationContext
@@ -25,10 +26,11 @@ class SubscriptionReminderScheduler(
     private val alarmIndex = this.context.getSharedPreferences("subscription_alarm_identities", Context.MODE_PRIVATE)
 
     override suspend fun scheduleCurrent(subscription: Subscription, reminderDays: Set<Int>) {
-        val (generation, settings) = stateProvider().read()
-        if (!settings.subscriptionReminders) {
+        val (generation, enabled) = unifiedState?.read() ?: stateProvider().read().let { it.first to it.second.subscriptionReminders }
+        if (!enabled) {
             cancelAll(subscription.id)
-            ReminderNotifications(context).clearModule("subscription")
+            if (unifiedState == null) ReminderNotifications(context).clearModule("subscription")
+            else SubscriptionNotificationHelper.clearOwned(context, generation, emptySet(), true)
             return
         }
         synchronized(lock) {
@@ -95,7 +97,8 @@ class SubscriptionReminderScheduler(
 
     override fun cancelAll(subscriptionId: Long) = synchronized(lock) {
         cancel(subscriptionId, SubscriptionReminderRules.supportedDays)
-        SubscriptionNotificationHelper.cancelAll(context, subscriptionId)
+        if (unifiedState == null) SubscriptionNotificationHelper.cancelAll(context, subscriptionId)
+        else SubscriptionNotificationHelper.cancelOwnedForId(context, subscriptionId)
     }
 
     override fun cancelObsolete(currentIds: Set<Long>) = synchronized(lock) {
@@ -147,6 +150,9 @@ class SubscriptionReminderScheduler(
     }
 
     companion object {
+        /** Explicit target-only seam; original constructor/Hilt/legacy defaults stay unchanged. */
+        internal fun forUnified(context: Context, reader: SubscriptionReminderStateReader): SubscriptionReminderScheduler =
+            SubscriptionReminderScheduler(context).apply { unifiedState = reader }
         // The worker and Hilt can create different instances; serialize their cancel/replace operations.
         private val lock = Any()
 

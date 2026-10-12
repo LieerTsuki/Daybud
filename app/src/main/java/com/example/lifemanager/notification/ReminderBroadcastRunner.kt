@@ -30,7 +30,23 @@ class ReminderBroadcastRunner @Inject constructor(
         onBusy: () -> Unit,
         sourceGeneration: DataGeneration? = null,
         operation: suspend () -> Unit,
+    ): Job = start(finish, onBusy, sourceGeneration, null, operation)
+
+    /** Plan-only opt-in. The enqueue callback runs after admission/module permits unwind. */
+    fun launchWithCancellationRepair(
+        finish: () -> Unit,
+        requestFutureRepair: () -> Unit,
+        sourceGeneration: DataGeneration,
+        operation: suspend () -> Unit,
+    ): Job = start(finish, requestFutureRepair, sourceGeneration, requestFutureRepair, operation)
+
+    private fun start(finish: () -> Unit, onBusy: () -> Unit, sourceGeneration: DataGeneration?,
+        onCancelled: (() -> Unit)?, operation: suspend () -> Unit,
     ): Job = CoroutineScope(dispatcher).launch(start = CoroutineStart.UNDISPATCHED) {
+        fun repair(error: CancellationException) {
+            try { onCancelled?.invoke() }
+            catch (retry: Exception) { if (retry !== error) error.addSuppressed(retry) }
+        }
         try {
             withTimeout(8_000) {
                 if (coordinator.state.value != com.example.lifemanager.domain.maintenance.MaintenanceState.IDLE) {
@@ -57,8 +73,10 @@ class ReminderBroadcastRunner @Inject constructor(
             Log.d(TAG, "Discarded stale reminder broadcast")
         } catch (error: TimeoutCancellationException) {
             Log.w(TAG, "Reminder broadcast timed out")
+            repair(error)
             throw error
         } catch (error: CancellationException) {
+            repair(error)
             throw error
         } catch (_: Exception) {
             // Exceptions may contain repository/payload contents; log only the failure category.

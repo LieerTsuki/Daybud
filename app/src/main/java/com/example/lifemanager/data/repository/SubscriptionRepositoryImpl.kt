@@ -1,7 +1,9 @@
 package com.example.lifemanager.data.repository
 
 import androidx.room.withTransaction
+import androidx.room.RoomDatabase
 import com.example.lifemanager.data.local.LifeManagerDatabase
+import com.example.lifemanager.data.local.dao.SubscriptionDao
 import com.example.lifemanager.data.local.entity.SubscriptionEntity
 import com.example.lifemanager.data.local.entity.SubscriptionPaymentEntity
 import com.example.lifemanager.domain.model.Subscription
@@ -14,8 +16,8 @@ import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.flow.map
 
-class SubscriptionRepositoryImpl @Inject constructor(private val database: LifeManagerDatabase) : SubscriptionRepository {
-    private val dao = database.subscriptionDao()
+class SubscriptionRepositoryImpl(private val database: RoomDatabase, private val dao: SubscriptionDao) : SubscriptionRepository {
+    @Inject constructor(database: LifeManagerDatabase) : this(database, database.subscriptionDao())
     override fun observeSubscriptions() = dao.observeSubscriptions().map { it.map(SubscriptionEntity::toDomain) }
     override fun observeAllPayments() = dao.observeAllPayments().map { it.map(SubscriptionPaymentEntity::toDomain) }
     override fun observePayments(subscriptionId: Long) = dao.observePayments(subscriptionId).map { it.map(SubscriptionPaymentEntity::toDomain) }

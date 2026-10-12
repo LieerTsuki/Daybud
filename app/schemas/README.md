@@ -39,6 +39,15 @@ delivery decisions; fresh creation uses Room's generated entity schema. The same
 `PlanMigration(5,6)` / `PlanV6Schema` is used by JVM and Android fixtures. Operational
 inventory is not business backup content or proof that a user saw a notification.
 
+C2c2 refines the existing INTEGER state without changing this DDL: `0` means
+unconfirmed installation or consumed arrival awaiting repair, `1` a decided
+submission, and `2` a completed installation request awaiting arrival. Old `0/1`
+values remain readable. Full-token, expected-state CAS separates failed installs
+from delayed alarms. Latest chronological markers survive ordinary exhaustion to
+prevent clock rollback from rearming a decided occurrence under unchanged facts;
+this is not an all-history delivery ledger or an OS delivery guarantee. Business
+restore/clear must retain this device-only inventory until exact cleanup succeeds.
+
 Only the later atomic activation batch E may register the production v6 entities,
 migration and initialization callback together with all consumers. No destructive
 fallback is allowed, and this fixture does not authorize upgrading personal data.

@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat
 import com.example.lifemanager.MainActivity
 import com.example.lifemanager.domain.model.Subscription
 import java.time.LocalDate
+import android.service.notification.StatusBarNotification
 
 object SubscriptionNotificationHelper {
     const val CHANNEL_ID = "subscription_reminders"
@@ -63,4 +64,34 @@ object SubscriptionNotificationHelper {
     }
 
     private fun notificationTag(subscriptionId: Long, daysBefore: Int) = "subscription/$subscriptionId/$daysBefore"
+
+    /** Target-only cleanup: never sweep the combined legacy channel or foreign cards. */
+    internal fun clearOwned(context: Context, current: DataGeneration, validIds: Set<Long>, disabled: Boolean = false) {
+        val manager = context.getSystemService(NotificationManager::class.java)
+        manager.activeNotifications.filter { card ->
+            val identity = owned(card) ?: return@filter false
+            disabled || identity.second != current.value || identity.first !in validIds
+        }.forEach { manager.cancel(it.tag, it.id) }
+    }
+
+    internal fun cancelOwnedForId(context: Context, subscriptionId: Long) {
+        val manager = context.getSystemService(NotificationManager::class.java)
+        manager.activeNotifications.filter { owned(it)?.first == subscriptionId }
+            .forEach { manager.cancel(it.tag, it.id) }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun owned(card: StatusBarNotification): Pair<Long, Long>? {
+        if (card.id != 0 || card.notification.channelId != CHANNEL_ID) return null
+        val pieces = card.tag?.split('/') ?: return null
+        if (pieces.size != 3 || pieces[0] != "subscription") return null
+        val id = pieces[1].toLongOrNull() ?: return null
+        val days = pieces[2].toIntOrNull() ?: return null
+        if (id <= 0 || days !in SubscriptionReminderRules.supportedDays || card.tag != notificationTag(id, days)) return null
+        val extras = card.notification.extras
+        if (extras.get(ReminderNotifications.MODULE) != "subscription") return null
+        val generation = extras.get(ReminderGeneration.EXTRA) as? Long ?: return null
+        if (generation < 0) return null
+        return id to generation
+    }
 }

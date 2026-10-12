@@ -43,9 +43,9 @@ TDD：先编写测试与类型契约，以尚未实现行为的临时空规则�
 
 ## 后续及已知限制
 
-- A、B1、B2、B3 底座局部验收通过；C–F 未完成：发生/提醒、v2/v1 备份兼容、统一页面/导航/设置、生产 v6 原子接线、覆盖安装和版本交付。B3 的完整隔离迁移结果另列，不等于生产激活。
+- 截至2026-10-13，A、B1–B3、C1–C2c2底座局部验收通过；D–F未完成：v2/v1备份兼容、统一页面/导航/设置、生产v6原子接线、覆盖安装和版本交付。发生/提醒及完整隔离迁移结果另列，不等于生产激活。
 - 本批构件尚未接入生产业务，不能在已发布软件中使用新的转换 / 完成规则；不以单元测试代替设备迁移验收。
-- 独立统计页、今天真实日程、重复展开 / 例外 / 冲突、UI 移除日期确认均在后续实现；本批没有占位入口。
+- 重复展开/例外/冲突等领域规则已验证，独立统计页、今天真实日程和UI移除日期确认等页面接线仍在E实现；没有占位入口。
 - V1 目标为 1.0.0 / code 3 / schema v6，当前仍为 0.1.1 / code 2 / schema v5。main 及已发布 APK 本轮未更新；功能分支交付见下文，不等于发布 APK。
 - 真机、稳定 60fps、Gradle Wrapper、正式签名等历史发布限制仍保留；不声称改版自动解决。
 
@@ -296,3 +296,68 @@ $env:JAVA_HOME='D:\jdk'
 
 - 四项任务局部验收通过，计划2 Minor/代码意见已独立关闭；目标13实体schema、早晚故障完整回滚与库存持久化由真实Room/SQLite证明，不把生成JSON当验收本身。测试仅操作唯一命名合成数据库，并限定清理自身文件；生产数据库仍v5、旧提醒/Manifest/Hilt/UI/备份/版本和已发布APK不变，不使用destructive migration，不提交密钥/个人数据。
 - 同步 README/CHANGELOG/schema README/实施计划/本记录后，仅提交推送当前功能分支，不合并main/创建PR/发布APK。限制：v1缺少原始schema，仍从未变v2三实体合成重建；无真机、生产用户库覆盖升级、大库性能、UI/Release验收。下一批C2c2仍需旧身份清理/统一校准，D–F与整个V1未完成。
+
+## C2c2 · 第九批：隔离统一校准与旧身份清理（局部验收通过）
+
+2026-10-12（Asia/Shanghai），基线HEAD `2cee697`、工作区干净，沿用用户指定的 `feat/v1-unified-plans`。本批按已批准架构开发未接线构件，不激活生产v6或修改旧Worker/Boot/Receiver路径。Buddy状态脚本仍缺失，使用顺序TDD及独立只读计划/代码审查。
+
+基线复验：JDK25 / Gradle9.4.1，JVM --rerun + Debug/lint，BUILD SUCCESSFUL（2分32秒，66 tasks：2 executed / 64 up-to-date），退出0；实际XML 948项 / 83 suites，0 failure / error / skipped。Debug/lint为缓存检查，不作为本批实现验收。先新增真实Room开关/来源读取与系统旧身份清理测试；临时API声明用于编译观察RED，不得带占位实现提交。
+
+第一轮未进入RED：测试fixture误用SubscriptionRepositoryImpl通用构造，实际仓库仅接受LifeManagerDatabase；compileDebugUnitTestKotlin失败（1分48秒，35 tasks：9 executed /26 up-to-date）。移除首组尚未使用的订阅getter，后续按已读取的原@Inject构造显式保留生产兼容，并抽取Room+Dao通用依赖以测试同一实现，不把此编译失败当业务RED。计划独立审查2 Important/1 Minor：权威计划/库存读源须在同一Plan锁内；维护须另捕获A卡片及无技术行卡片的完整通知token、不可bulk按ID误清新世代；新清理器需严格枚举旧cache并分别尝试两种旧PI，均已细化并补对应测试要求。
+
+首组实质RED：12项 / 1 suite，12 assertion failure /0 error/skipped（1分24秒，40 tasks：7 executed/33 up-to-date）。实际错误为Room开关/来源未读取、旧闹钟/三张旧通知未移除、坏配置/缓存和平台失败/取消未传递；完整URI/无data及碰撞闹钟由真实系统shadow持有，不是装置故障。计划定向复审关闭2 Important/1 Minor，spec/可执行性PASS，无新增问题；随后替换首组临时声明，继续GREEN与下游集成。
+
+首组GREEN：12项 /1 suite，0 failure/error/skipped，BUILD SUCCESSFUL（1分48秒，40 tasks：11 executed/29 up-to-date）。严格IO读取和旧平台清理已实现，原v5调度路径不变；随后扩展校准/维护集成测试，暂不把定向结果当本批整体完成。订阅仓库仅抽取既有Room+Dao依赖、保留原@Inject构造和全部业务方法，实际v6校准行为由后续真实Room/订阅测试验证。
+
+第二组实质RED：17项 /1 suite，15 assertion failure /0 error/skipped（1分53秒，40 tasks：13 executed/27 up-to-date）。失败是延迟pending被朴素reconcile忘记、已发A卡片误撤、孤儿/旧世代/维护捕获未清理、缺订阅排程和故障未报告；两项未来重装/重置仅未来行为由现有C2b实现已经通过，是覆盖而非新增RED。随后实现同一C1/C2b校准、锁内读源、精确捕获清理和显式v6订阅reader；后续Worker及并发/取消/文件重开补强尚待验证。
+
+第二组首轮GREEN命令未执行测试：订阅校准表达式尾部的可空throw分支推导为Nothing?而非接口Unit，compileDebugKotlin失败（51秒，25 tasks：3 executed/22 up-to-date）；明确Unit返回后重跑，不计为新的业务RED或测试通过。
+
+第二组及既有回归GREEN：实际XML 95项 /5 suites（本批29、C2b56、被同一glob匹配的C2a身份10），0 failure/error/skipped，BUILD SUCCESSFUL（2分11秒，40 tasks：11 executed/29 up-to-date）。已按真实suite清单纠正最初只按C2b名字估算的85/4，不把遗漏的旧身份suite算作新增。这不是最终全量验收；继续补并发创建、提交后文件重开新鲜校准及已决定单次在系统时间回拨后的防重排边界。
+
+补强首轮RED：20项 /1 suite，1 assertion failure/0 error/skipped（56秒，40 tasks：5 executed/35 up-to-date），实质失败是单次已提交决定、用户划掉卡片、文件重开并时钟回拨后重新创建闹钟；并发创建模块锁及提交后保留设备库存的新鲜校准两项通过。代码独立审查提出3 Important：这一回拨重排、订阅adapter的旧全频道stale清理越界、以及只有pending无法区分安装失败/广播已消费。先继续补真实系统失败用例，再更新技术状态与限定通知命名空间，不借审查当运行证明。
+
+后续实际XML：23项 /1 suite，4 assertion failure/0 error/skipped，覆盖安装失败、实际NOT_SENT后修复及订阅清理归属。追加三项审查边界时首轮编译因测试字段名误写 repeatUntil 失败（21秒，35 tasks：3 executed/32 up-to-date），改为已有 repeatEndDate 后实质RED 26项 /1 suite、7 assertion failure/0 error/skipped（58秒，40 tasks：4 executed/36 up-to-date）。新增三项分别证明重装失败也需失效安装状态、匹配的早到广播也已消耗系统闹钟、有限重复的未来B在耗尽后仍需保存回拨边界。
+
+技术语义细化但不改变五列DDL：delivered INTEGER 的0代表未确认安装/已到达待修复，1代表已决定提交，2代表安装请求返回且匹配CAS成功、等待广播；旧0/1仍能严格读取，不把2当OS交付保证。每次重装/取消已接受身份前先持久失效2，安装成功才由全token及预期状态CAS到2；匹配到达在当前事实读取前CAS到0，早到/NOT_SENT请求未来校准、旧世代/不匹配/重复不改另一条身份。决定及最新pending的时间边界在同事实/世代内保存；耗尽不丢弃，业务编辑仍可重新授权，不创建全历史投递账本。新订阅清理仅识别订阅自己的canonical tag/channel/module/Long世代，原生产helper默认不变。
+
+上述修复后定向104项 /5 suites 实际运行（2分49秒，40 tasks：12 executed/28 up-to-date）：校准26、旧清理12、协议8、身份10全通过，C2b 48项中2断言失败。超时仍未请求独立修复是新增RED；单次原断言库存0与新保留决定标记冲突，需按已批准防回拨语义更新，不隐藏失败。Worker补齐中；应用重启后原Worker测试进程/审查代理不可恢复、未取得该命令终态及XML，因此不写成通过；2026-10-13重新运行并由新只读复审继续同一三项问题闭环。
+
+2026-10-13 Worker首个可恢复运行因fixture漏用WorkManager `close`扩展而编译失败（1分28秒，35 tasks：1 executed/34 up-to-date），修正装置后9项 /1 suite 实质RED、6 failure/0 XML error/skipped（1分47秒，40 tasks：4 executed/36 up-to-date）。3项为断言失败（未执行当前Room成功路径/取消传播），3项因未创建队列而没有预期WorkInfo（NoSuchElement），并非平台fixture崩溃；缺依赖retry/坏输入拒绝等3项由临时失败关闭行为通过。随后实现实际Worker，临时空实现不得提交。
+
+新只读核心复审确认回拨和安装/到达状态两项已闭合；组合频道sweep已去除，但发现cancelAll仍按tag无条件删除不满足所有权的订阅卡片。补真实canonical tag/id0/Int世代的重置、关闭、维护清理用例；同时补计划同canonical tag/合法元数据但实际ID9的bulk清理一致性用例。继续先验证RED再限定新版取消路径，旧生产默认不变。新增Runner opt-in取消hook测试验证许可退出后请求未来重置、取消传播及finish，另补全token/预期状态CAS和安装后CAS故障精确取消的实际Room用例。
+
+上述定向命令实际119项 /7 suites、2 assertion failure/0 error/skipped（2分55秒，40 tasks：12 executed/28 up-to-date），仅两项新增所有权用例失败；9项Worker（包含实际Processor运行和第二轮新鲜Room事实）、4项广播修复、全部旧C2b/协议/身份及旧清理通过。不把尚未GREEN的校准suite写成本批通过。其后新版订阅取消共享严格owned predicate，维护用alarm-only cancel再owned通知清理、计划bulk清理共享实际id0判定；旧生产订阅cancelAll默认不变，继续重跑。
+
+定向最终GREEN（2026-10-13）：119项 /7 suites，0 failure/error/skipped，BUILD SUCCESSFUL（2分25秒，40 tasks：11 executed/29 up-to-date），退出0。实际suite：UnifiedLegacyCleanupTest 12、UnifiedPlanCalibrationTest 28、UnifiedWorkerRoutingTest 9、UnifiedBroadcastRepairTest 4、旧PlanReminderIntegrationTest 48/Protocol 8/Identity 10；本批新增53项，旧测试的状态预期按新协议更新，不把重命名算作新增。仍需全量JVM/构建/lint、独立复审及最终文档/推送核对。
+
+### 实现范围与后续接线
+
+- 严格只读总开关/双来源ID和技术库存，权威计划/来源/库存/通知快照及孤儿决策共享Plan锁，原世代全局许可贯穿计划及后续订阅锁；维护排空、并发创建和取消均由实际Room装置验证。
+- 旧闹钟清理合并来源、完整signed Long技术缓存和发生hint，逐个取消原component/hash的完整URI及无data形式；失败尝试另一形式、保留清理线索并报告，取消立即传播。旧通知只按其频道/无tag/合法旧module或历史无module，hash碰撞不撤订阅/新计划闹钟。
+- 当前计划排程复用C1/C2b。普通校准只保留状态2且资格仍匹配的延迟pending，重置只安装未来；安装/到达/决定状态分开，时钟回拨与有限系列耗尽保留最新边界，真正业务编辑仍可授权新的时间。计划通知bulk/库存/捕获均共用完整canonical token、四Long及实际id0归属判断。
+- 订阅复用原仓库、偏移、重复、金额、投递去重算法；原@Inject LifeManagerDatabase构造保留，仅增加RoomDatabase+Dao构造及显式目标库状态reader。新版stale/单项取消/重置/关闭/维护清理全程限定自己的合法通知，旧生产默认行为不变。
+- 维护DTO默认空追加闹钟和通知tokens；实际A通知/B闹钟、无技术行卡片及同ID新世代不误撤通过。D须在提交前同时捕获两种库存、事务内保留设备技术行，提交失败不得平台清理、提交后副作用失败可由新鲜校准恢复。本批仅实现并测试adapter，不更换生产BackupMaintenanceWorkflow。
+- 独立新Worker实际读取同一当前Room，缺Application绑定/维护忙/普通故障retry，CancellationException传播；Java两参反射构造可用，输入仅严格Boolean reset_system或空，不接受旧id/title/token。即时独立唯一队列APPEND_OR_REPLACE，实际RUNNING期间的新请求排队并执行下一轮；终态不会毒化新请求，周期独立一天KEEP。新任务不自动调度，E须同时提供依赖、切换启动/系统事件策略及取消旧唯一队列。
+- Plan Receiver启用取消/8秒超时的opt-in future-repair enqueue hook，默认旧Runner调用不变；许可退出后修复且finish/取消保留，不同步重进许可、不重放旧payload。E的Plan失败/忙/取消回调必须绑定resetSystem=true，启动/周期ordinary=false，boot/时间变更/重置true。
+
+### 验收边界
+
+本批不激活生产v6、Hilt、Manifest、BootReceiver或旧Worker/Receiver替换，不创建新页面/假数据，不修改版本/已发布APK/main。没有本批设备执行、真机、用户库覆盖升级、UI/Release/性能验收；androidTest包构建不等于运行设备测试，不能沿用第八批14项设备数字。平台没有未知旧闹钟枚举；全部来源/缓存/技术库存丢失时无法发现未知身份，E必须退役旧广播。安装状态2不是OS交付回执；系统调用与Room不跨系统原子，硬杀进程/入队失败等边界不保证交付或exactly-once，不建立全历史账本。即时请求会串行累积，Worker系统运行时间/权限和调度延迟仍受Android限制。D备份/原子维护、E页面及生产整体激活、F版本发布仍待完成。
+
+### 最终验证 · 2026-10-13
+
+JDK25 / Gradle9.4.1，以下完整命令退出0、BUILD SUCCESSFUL（3分14秒，101 tasks：22 executed/79 up-to-date）：
+
+```powershell
+$env:JAVA_HOME='D:\jdk'
+.\.tools\gradle-9.4.1\bin\gradle.bat -I .\.tools\phase5-test-network.gradle :app:testDebugUnitTest --rerun :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --console=plain
+```
+
+- 实际XML全部本轮更新（Asia/Shanghai 00:40:32）：1001项 /87 suites，0 failure/error/skipped，比基线新增53项 /4 suites。包含旧v5业务、备份、迁移、ViewModel及旧广播/后台任务回归；不是只跑119项定向集。
+- Debug及androidTest重新打包，设备测试源重新编译；正式/test JVM Kotlin编译为前次定向GREEN后的缓存检查，不把本轮所有任务都描述为重编译。
+- lint三类源重新分析与报告执行（00:42:26），实际报告0 error /55既有warning；新增/修改提醒目标路径无lint issue。AGP兼容选项、旧KAPT/Robolectric/test opt-in等已有编译提示保留，不等于无warning。
+- 只读复审确认原3项Important、后续订阅cancelAll旁路及计划实际id所有权问题关闭，当前范围Critical/Important/Minor均0；复审显式包含新Worker默认缺绑定retry/Java两参/严格reason-only队列和Runner取消/超时hook/Receiver绑定，只认可当前隔离，不授权生产激活。计划2 Important/1 Minor早先已关闭；前代理重启丢失后的新代理按同一三项闭环，不借复审替代运行结果。
+- README/CHANGELOG/schema README/实施计划/本记录同步。推送前远端功能分支仍为基线 `2cee697`，远端main和本地main均为 `b016bcbc0f146ea6d9fe257b734700689de5cb51`；仅提交推送当前 `feat/v1-unified-plans`，不创建PR/合并main/发布APK。
+
+五项C2c2任务局部验收已完成；技术迁移、统一校准、旧身份清理等隔离提醒底座具备后续连接基础。下一批D开始v2备份/旧v1校验转换/目标库快照及维护适配，生产默认codec和BackupMaintenanceWorkflow到E才切换；V1页面/整体升级与版本交付仍未完成。

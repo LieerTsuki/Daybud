@@ -11,7 +11,7 @@ class PlanReminderReceiver(private val dependencies: (Context) -> Dependencies? 
     interface Dependencies {
         val runner: ReminderBroadcastRunner
         val delivery: PlanReminderDelivery
-        /** Enqueue ONLY; never re-enter held permits or replay the old payload. */
+        /** Enqueue ONLY with resetSystem=true (future repair); never re-enter held permits or replay payload. */
         fun requestReconciliation()
     }
     override fun onReceive(context: Context, intent: Intent) {
@@ -25,7 +25,7 @@ class PlanReminderReceiver(private val dependencies: (Context) -> Dependencies? 
             runner = services.runner
         } catch (error: CancellationException) { finish(); throw error }
         catch (_: Exception) { Log.w("PlanReminder", "Unable to obtain reminder services"); finish(); return }
-        runner.launch(finish, services::requestReconciliation, token.generation) {
+        runner.launchWithCancellationRepair(finish, services::requestReconciliation, token.generation) {
             try {
                 if (services.delivery.deliverCurrent(token) == PlanDeliveryOutcome.NOT_SENT) services.requestReconciliation()
             } catch (error: CancellationException) { throw error }

@@ -15,8 +15,11 @@ class PlanReminderDelivery(private val plans: PlanRepository, private val genera
     private val clock: Clock) {
     suspend fun deliverCurrent(token: PlanReminderToken): PlanDeliveryOutcome = PlanOperationCoordinator.run {
         if (generations.current() != token.generation) throw StaleGenerationException()
-        if (store.get(token.planId) != PlanReminderState(token, false)) return@run PlanDeliveryOutcome.IGNORED
-        if (clock.instant() < token.triggerAt) return@run PlanDeliveryOutcome.IGNORED
+        if (store.get(token.planId) != PlanReminderState(token, false, true)) return@run PlanDeliveryOutcome.IGNORED
+        // A matching broadcast consumed the alarm, including after a clock rollback. Record
+        // arrival before fallible fact reads; failure/cancellation requests fresh future repair.
+        check(store.markArrived(token)) { "Reminder arrival did not match awaiting identity" }
+        if (clock.instant() < token.triggerAt) return@run PlanDeliveryOutcome.NOT_SENT
         val plan = plans.get(token.planId)
         val exceptions = plans.getExceptions(token.planId)
         fun qualified() = plan != null && PlanReminderEligibility.matches(plan, exceptions, token, clock.instant())

@@ -74,6 +74,15 @@
 - 新增 5 项 JVM、4 项设备用例；最终 948 项 / 83 suites JVM 强制重跑与专用 API35 AVD 指定迁移类 14 项测试全部通过，Debug/androidTest 重新打包、lint 0 error / 55 既有 warning。独立计划/代码复审意见关闭。
 - 本子批不激活生产 v6、不改变旧提醒/UI/备份、版本、main 或已发布 APK；旧身份清理及统一校准仍待 C2c2。无真机/生产用户库升级/UI/Release/性能验收，v1 缺少原始 schema 限制保留。完整结果见[分批验收](docs/v1-unified-plans-acceptance.md)和[schema 说明](app/schemas/README.md)。
 
+### 2026-10-13 · 第九批 C2c2：统一校准与旧身份清理（局部验收通过）
+
+- 实现严格目标库设置/双来源读取、旧闹钟完整URI/无data及技术缓存清理，普通/重置统一校准和捕获完整token的维护清理；读错/普通故障/取消明确区分，不导入或删除用户业务数据。
+- 五列技术DDL不变，兼容旧0/1并细化2为安装请求返回后等待到达；全token/预期状态CAS、失败重装/实际到达修复、已决定单次及有限重复边界防回拨，保留设备清理线索而非依靠已划掉的通知。不是全历史投递账本或OS交付保证。
+- 新版订阅和计划清理共享严格归属判断，避免组合旧频道sweep及cancelAll旁路误删陌生/坏元数据通知；订阅业务算法及生产默认构造/提醒路径不变。
+- 新Worker缺绑定安全retry、取消传播；严格reason-only输入、独立即时APPEND_OR_REPLACE和一天周期KEEP，实际验证运行期间排队并执行新鲜Room校准。Plan广播opt-in取消/8秒超时请求未来修复，旧Runner默认行为不变。
+- 新增53项测试；2026-10-13最终1001项 JVM /87 suites强制重跑通过、Debug/androidTest重新打包、lint三类源重新分析通过（0 error /55既有warning），独立复审3项Important及所有权旁路均关闭。
+- 不激活生产v6/Hilt/Manifest/Boot/旧Worker/页面/备份，不改0.1.1/code2/main或发布APK。本批无设备执行/真机/UI/Release/性能验收；下一批D为备份维护适配，E整体生产激活，F版本交付。数据兼容、测试证据及限制见[分批验收](docs/v1-unified-plans-acceptance.md)。
+
 ## 0.1.1 预览版 · 2026-10-09
 
 - 应用更名为「日子芽」，提供圆润卡通手账/新芽的原生矢量自适应、圆形及单色图标。

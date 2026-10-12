@@ -4,6 +4,7 @@ import android.database.Cursor
 import androidx.room.*
 import androidx.sqlite.db.SupportSQLiteQuery
 import com.example.lifemanager.data.local.Converters
+import com.example.lifemanager.data.local.dao.SubscriptionDao
 import com.example.lifemanager.data.local.entity.*
 import com.example.lifemanager.data.plan.*
 
@@ -18,6 +19,7 @@ abstract class PlanReminderTestDatabase : RoomDatabase() {
     abstract fun plans(): PlanDao
     abstract fun reminders(): PlanReminderStateDao
     abstract fun metadata(): PlanReminderFixtureDao
+    abstract fun subscriptions(): SubscriptionDao
 }
 
 @Dao interface PlanReminderFixtureDao { @RawQuery fun read(query: SupportSQLiteQuery): Cursor }
