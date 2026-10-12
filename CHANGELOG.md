@@ -67,6 +67,13 @@
 - 新增 56 项 JVM（协议/资格 8、真实 Room/系统服务集成 48）；最终 943 项 / 83 suites 强制重跑无 failure / error / skipped，Debug 缓存构建检查成功，lint 测试源重新分析通过（0 error / 55 既有 warning）。独立计划/代码审查意见关闭。
 - 本批不注册生产 Receiver/Hilt 或切换数据库、页面、备份、版本、main 和 APK；新增技术表的完整升级链及旧身份清理/统一校准仍需 C2c，统一生产接线归 E。未做设备/UI/Release/性能验收，不借用 B3 历史结果。通知提交不等于用户收到，Room 与系统通知非原子、崩溃窗口可能再次提示；完整证据见[分批验收](docs/v1-unified-plans-acceptance.md)。
 
+### 2026-10-12 · 第八批 C2c1：提醒技术表完整迁移（局部验收通过）
+
+- 将 C2b 提醒技术表纳入唯一 v6 迁移 SQL、完整 JVM/Android Room 装置和 KAPT 导出目标 schema；历史 1–5 链/新安装以空库存起步，不伪造已投递记录。生产 v5/历史 2–5 schema 不变。
+- 真实 Room 库存的 Long 极值、精确 CAS、文件重开和业务删除后保留清理身份通过；建表故障及世代推进/旧表删除后的库存 schema 校验故障回滚完整 v4/v5，保留原行/类型/关系/自增/版本。
+- 新增 5 项 JVM、4 项设备用例；最终 948 项 / 83 suites JVM 强制重跑与专用 API35 AVD 指定迁移类 14 项测试全部通过，Debug/androidTest 重新打包、lint 0 error / 55 既有 warning。独立计划/代码复审意见关闭。
+- 本子批不激活生产 v6、不改变旧提醒/UI/备份、版本、main 或已发布 APK；旧身份清理及统一校准仍待 C2c2。无真机/生产用户库升级/UI/Release/性能验收，v1 缺少原始 schema 限制保留。完整结果见[分批验收](docs/v1-unified-plans-acceptance.md)和[schema 说明](app/schemas/README.md)。
+
 ## 0.1.1 预览版 · 2026-10-09
 
 - 应用更名为「日子芽」，提供圆润卡通手账/新芽的原生矢量自适应、圆形及单色图标。

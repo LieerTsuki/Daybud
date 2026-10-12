@@ -8,7 +8,13 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.lifemanager.data.local.LifeManagerDatabase
 import com.example.lifemanager.data.local.migration.PlanMigration
 import com.example.lifemanager.data.local.migration.PlanV6Schema
+import com.example.lifemanager.domain.maintenance.DataGeneration
+import com.example.lifemanager.domain.plan.PlanReminderState
+import com.example.lifemanager.domain.plan.PlanReminderToken
+import kotlinx.coroutines.runBlocking
 import java.io.File
+import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import org.json.JSONObject
 import org.json.JSONArray
@@ -132,6 +138,102 @@ class PlanMigrationTest {
             assertEquals(listOf(listOf("1", "0")), rows(sqlite, "SELECT * FROM app_maintenance"))
             assertTrue(rows(sqlite, "SELECT * FROM plans").isEmpty())
         } finally { db.close() }
+    }
+
+    @Test fun `every historical upgrade creates empty cleanable reminder inventory`() {
+        for (version in 1..5) fixture(version) { name, _ ->
+            upgrade(name) { db -> assertReminderInventory(db) }
+        }
+    }
+
+    @Test fun `fresh target includes the same empty reminder inventory`() {
+        val db = Room.inMemoryDatabaseBuilder(RuntimeEnvironment.getApplication(), PlanMigrationTestDatabase::class.java)
+            .addCallback(PlanV6Schema.INITIALIZE).allowMainThreadQueries().build()
+        try { assertReminderInventory(db.openHelper.writableDatabase) } finally { db.close() }
+    }
+
+    @Test fun `inventory DDL failure restores historical source and leaves no target tables`() {
+        for (version in listOf(4, 5)) fixture(version) { name, before ->
+            var reached = false
+            rollback(name, before, object : Migration(5, 6) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    conversion.migrate(object : SupportSQLiteDatabase by db {
+                        override fun execSQL(sql: String) {
+                            if (sql.startsWith("CREATE TABLE plan_reminder_state ")) {
+                                assertEquals(listOf(listOf("0")), rows(db, "SELECT COUNT(*) FROM plans"))
+                                reached = true
+                                throw IllegalStateException("synthetic inventory DDL failure")
+                            }
+                            db.execSQL(sql)
+                        }
+                    })
+                }
+            }, originalVersion = version, expectedMessage = "synthetic inventory DDL failure")
+            assertTrue(reached, "inventory DDL fault reached after preceding target tables exist")
+        }
+    }
+
+    private fun assertReminderInventory(db: SupportSQLiteDatabase) {
+        assertEquals(listOf(listOf("plan_reminder_state")), rows(db,
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='plan_reminder_state'"))
+        assertTrue(rows(db, "SELECT * FROM plan_reminder_state").isEmpty())
+        assertEquals(listOf(
+            listOf("0", "planId", "INTEGER", "1", null, "1"),
+            listOf("1", "generation", "INTEGER", "1", null, "0"),
+            listOf("2", "occurrenceDate", "INTEGER", "1", null, "0"),
+            listOf("3", "triggerAt", "INTEGER", "1", null, "0"),
+            listOf("4", "delivered", "INTEGER", "1", null, "0")),
+            rows(db, "PRAGMA table_info(plan_reminder_state)"))
+        assertTrue(rows(db, "PRAGMA foreign_key_list(plan_reminder_state)").isEmpty(),
+            "cleanup identity must survive business deletion")
+    }
+
+    @Test fun `migrated Room inventory preserves full tokens across deletion and file reopen`() = fixture(5) { name, _ ->
+        val first = PlanReminderToken(1, DataGeneration(8), LocalDate.ofEpochDay(20454), Instant.ofEpochMilli(Long.MAX_VALUE))
+        val other = PlanReminderToken(Long.MAX_VALUE, DataGeneration(8), LocalDate.ofEpochDay(20454), Instant.ofEpochMilli(Long.MIN_VALUE))
+        val db = target(name)
+        try {
+            assertReminderInventory(db.openHelper.writableDatabase)
+            runBlocking {
+                val store = RoomPlanReminderStore(db.reminders())
+                store.remember(first)
+                store.remember(other)
+                assertFalse(store.markDelivered(first.copy(generation = DataGeneration(7))))
+                assertTrue(store.markDelivered(first))
+                assertFalse(store.markDelivered(first))
+                db.openHelper.writableDatabase.execSQL("DELETE FROM plans WHERE id=1")
+                assertEquals(PlanReminderState(first, true), store.get(1))
+                assertEquals(PlanReminderState(other, false), store.get(Long.MAX_VALUE))
+            }
+        } finally { db.close() }
+        val reopened = target(name)
+        try {
+            runBlocking {
+                val store = RoomPlanReminderStore(reopened.reminders())
+                assertEquals(listOf(PlanReminderState(first, true), PlanReminderState(other, false)), store.all())
+                assertTrue(rows(reopened.openHelper.writableDatabase, "SELECT id FROM plans WHERE id=1").isEmpty())
+                assertEquals(listOf(listOf("8")), rows(reopened.openHelper.writableDatabase, "SELECT generation FROM app_maintenance"))
+                store.forget(1)
+                assertNull(store.get(1))
+                assertEquals(PlanReminderState(other, false), store.get(Long.MAX_VALUE))
+            }
+        } finally { reopened.close() }
+    }
+
+    @Test fun `inventory schema failure after source drops restores complete v4 and v5`() {
+        for (version in listOf(4, 5)) fixture(version) { name, before ->
+            var reached = false
+            rollback(name, before, object : Migration(5, 6) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    conversion.migrate(db)
+                    assertLateState(db, if (version == 5) "8" else "1")
+                    assertReminderInventory(db)
+                    reached = true
+                    db.execSQL("ALTER TABLE plan_reminder_state ADD COLUMN unexpected INTEGER")
+                }
+            }, originalVersion = version, expectedMessage = "Migration didn't properly handle: plan_reminder_state")
+            assertTrue(reached, "inventory schema fault reached after generation and source removal")
+        }
     }
 
     @Test fun `bad settings fail closed and retain complete v5`() {
@@ -286,8 +388,7 @@ class PlanMigrationTest {
     }
 
     private fun upgrade(name: String, last: Migration = conversion, block: (SupportSQLiteDatabase) -> Unit) {
-        val db = Room.databaseBuilder(RuntimeEnvironment.getApplication(), PlanMigrationTestDatabase::class.java, name)
-            .addMigrations(*LifeManagerDatabase.MIGRATIONS, last).allowMainThreadQueries().build()
+        val db = target(name, last)
         try {
             val result = runCatching { db.openHelper.writableDatabase }
             assertTrue(result.isSuccess, "actual upgrade must succeed: ${result.exceptionOrNull()}")
@@ -296,8 +397,7 @@ class PlanMigrationTest {
     }
 
     private fun rollback(name: String, before: Map<String, List<List<String?>>>, last: Migration = conversion, originalVersion: Int = 5, expectedMessage: String? = null) {
-        val db = Room.databaseBuilder(RuntimeEnvironment.getApplication(), PlanMigrationTestDatabase::class.java, name)
-            .addMigrations(*LifeManagerDatabase.MIGRATIONS, last).allowMainThreadQueries().build()
+        val db = target(name, last)
         try {
             val failure = runCatching { db.openHelper.writableDatabase }.exceptionOrNull()
             assertNotNull(failure, "bad source must be rejected")
@@ -314,6 +414,9 @@ class PlanMigrationTest {
     private fun rows(db: SupportSQLiteDatabase, sql: String): List<List<String?>> = db.query(sql).use { cursor ->
         buildList { while (cursor.moveToNext()) add((0 until cursor.columnCount).map { if (cursor.isNull(it)) null else cursor.getString(it) }) }
     }
+    private fun target(name: String, last: Migration = conversion) =
+        Room.databaseBuilder(RuntimeEnvironment.getApplication(), PlanMigrationTestDatabase::class.java, name)
+            .addMigrations(*LifeManagerDatabase.MIGRATIONS, last).allowMainThreadQueries().build()
     private fun snapshot(db: SupportSQLiteDatabase): Map<String, List<List<String?>>> =
         rows(db, "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name!='room_master_table' ORDER BY name")
             .associate { row -> row.single()!! to db.query("SELECT * FROM ${row.single()} ORDER BY ${if (row.single() == "android_metadata") "1" else "1,2"}").use(::typedRows) }

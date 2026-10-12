@@ -13,20 +13,31 @@ Clear removes business rows but preserves settings. No schema v6 or migration is
 needed: the schema itself has not changed. Functional verification is recorded
 separately in docs/phase5-acceptance.md; a schema snapshot is not acceptance proof.
 
-## V1 unified plans: isolated B3 target
+## V1 unified plans: isolated B3 / C2c1 target
 
 Production `LifeManagerDatabase` remains version 5 and the historical snapshots
 2–5 are unchanged. `com.example.lifemanager.data.plan.PlanMigrationTestDatabase/6.json`
 is KAPT's exported **complete target fixture**, not an activated production schema.
-It includes the four plan tables, merged plan reminder settings, maintenance,
-unchanged tags, habits and subscriptions. The Android fixture uses the same entity
+The B3 acceptance covered 12 entities. C2c1 refines this unactivated v6 fixture to
+13 entities by adding `plan_reminder_state` to the existing four plan tables,
+merged plan reminder settings, maintenance, unchanged tags, habits and subscriptions.
+The Android fixture uses the same entity
 set and the same `PlanMigration(5,6)` implementation without exporting a second file.
 
 Real Room file-open tests validate this target, historical 1→6 through 5→6 chains,
 new-install defaults and failed-upgrade rollback. Version 1 has no exported asset;
 tests reconstruct its three unchanged todo/tag entities from v2, as existing
 historical tests do. This is not a recovered original v1 snapshot. Results and
-limits are recorded in `docs/v1-unified-plans-acceptance.md`.
+limits are recorded in `docs/v1-unified-plans-acceptance.md`; B3's historical results
+are not proof of the added table. C2c1's current validation is recorded separately.
+
+The reminder table stores only `planId`, `generation`, `occurrenceDate`, `triggerAt`
+and `delivered` (INTEGER), with primary key `planId` and no business foreign key.
+This allows a deleted plan's system identity to remain until cleanup succeeds.
+Upgrades start with empty technical inventory rather than inventing historical
+delivery decisions; fresh creation uses Room's generated entity schema. The same
+`PlanMigration(5,6)` / `PlanV6Schema` is used by JVM and Android fixtures. Operational
+inventory is not business backup content or proof that a user saw a notification.
 
 Only the later atomic activation batch E may register the production v6 entities,
 migration and initialization callback together with all consumers. No destructive

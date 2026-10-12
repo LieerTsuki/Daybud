@@ -3,7 +3,7 @@
 日期：2026-10-10。依据：已获用户全文确认的 [设计](../specs/2026-10-10-v1-unified-plans-design.md)。
 分支：`feat/v1-unified-plans`，用户选择在当前干净分支开发，不创建工作树。
 
-`writing-plans` 技能不可用，使用文件级任务、明确依赖与验收记录替代。Buddy 默认的新分支 / PR / 网页验收流程不直接套用原生 Android；不新增 Linear、网页依赖或流程文档。沿用现有 Gradle、TDD、独立审查及 Android 设备验收。总体路线不是一次可交付的单任务，每批在执行前细化并检查覆盖；A/B1/B2/B3/C1/C2a 已完成局部验收，下一批 C2b。
+`writing-plans` 技能不可用，使用文件级任务、明确依赖与验收记录替代。Buddy 默认的新分支 / PR / 网页验收流程不直接套用原生 Android；不新增 Linear、网页依赖或流程文档。沿用现有 Gradle、TDD、独立审查及 Android 设备验收。总体路线不是一次可交付的单任务，每批在执行前细化并检查覆盖；A/B1/B2/B3/C1/C2a/C2b/C2c1 已完成局部验收，下一批 C2c2。
 
 ## 目标与关键连接
 
@@ -143,11 +143,24 @@ B2 是可复用仓库底座，不负责 B3 的迁移/世代推进或 C/E 的提�
 
 平台语义澄清：[NotificationManager.notify](https://developer.android.com/reference/android/app/NotificationManager#notify(java.lang.String,%20int,%20android.app.Notification)) 无投递确认返回值。show 的 true / DELIVERED 只表示请求提交未抛错且提交前后没有可观察权限/频道阻止，不代表用户已看到通知；提交后发现阻止则撤本次完整 tag、返回 NOT_SENT，不 CAS/推进。系统异步拒绝、配额、勿扰/厂商策略或最后一次检查之后的撤权无法由此 API 完全确认，不用立即查询 activeNotifications 冒充用户收到的回执，也不对未确认请求无限重发。库存 delivered 表示这一尝试的持久决定，不是已读状态。此限制与 notify/Room 崩溃窗口分别记录；业务计划/配置不受影响。
 
-#### C2c · 后续旧身份清理与统一校准（尚未实施）
+#### C2c · 目标迁移、旧身份清理与统一校准（分批实施）
+
+##### C2c1 · 第八批：提醒技术表完整迁移（2026-10-12）
+
+C2c 分为迁移契约和校准/旧身份清理两个子批，先消除 C2b 技术表与 B3 目标库不一致。本批沿用已批准的隔离策略，紧耦合 SQL/Room fixture 由主代理顺序 TDD、只读独立审查；不更换生产 v5、旧提醒、Hilt/Manifest/UI/备份或版本。
+
+1. 先扩展 `test/.../data/plan/PlanMigrationTest.kt`：真实文件历史 1–5→6 与新安装都必须有空 `plan_reminder_state`，五个 INTEGER 字段/主键与无业务外键严格符合 C2b 实体；技术表建表故障的事务回滚需到达证明。观察实质 RED 后，修改唯一 `PlanV6Schema.createPlans` 增加技术 DDL，沿用 `PlanMigration(5,6)`，不新增第二套 Migration 或改变世代推进次数。
+2. 修改完整 JVM `PlanMigrationTestDatabase` 和 Android `PlanMigrationDeviceDatabase`，均纳入同一 `PlanReminderStateEntity` / Dao。KAPT 导出更新目标 fixture 的 6.json（未激活 v6 可细化；生产 2–5 历史文件不改）；使用真实 `RoomPlanReminderStore` 验证迁移后写入/匹配 CAS/文件重开、Long 极值、删除业务项不删可清理身份。补充库存建表中途失败及旧表删除/世代推进后库存最终 schema 故障恢复 v5/v4，核对原表/行/类型/自增及版本，无残留目标表。
+3. 扩展同一 `PlanMigrationDeviceTest`：五条历史链与新建显式核对空技术库存、真实 Dao 持久化重开，以及库存目标 schema 故障恢复 v5/v4；保留原有字段/打卡订阅/坏源回归。在确认为项目专用、无个人数据的 API35 AVD 上只运行指定类；未运行或失败不能写成本批完成。
+4. 全量 JVM --rerun、Debug/androidTest 构建、lint、独立代码复审及最终复验；README/CHANGELOG/本验收/schema README/计划同步，提交推送当前功能分支，不创建 PR/合并 main/发布 APK。不复用 B3 十项历史设备数字。C2c2 再完成隔离统一校准、旧身份清理及后续生产连接准备，本子批不是整个 C2c/C/V1 完成。
+
+依赖/一致性检查：任务1提供唯一 SQL，任务2完整 Room delegate 验证实体/schema与SQL一致，两者构成同一 GREEN 检查点（只增加迁移 SQL 不会改变 Room 新建实体集合）；任务3消费同一 Migration/实体，不复制迁移逻辑；任务4汇总本轮真实结果。技术库存默认空且不伪造历史已投递状态，不含标题，不纳入业务备份；无FK是删除后保留可清理系统身份的既定契约。新安装由 Room 生成表而非初始化回调手写第二份技术DDL。生产 v6/schema与消费者切换仍只在 E，校准/旧通知点击/拒绝旧 Receiver 仍未实现。
+
+##### C2c2 · 后续统一校准与旧身份清理（尚未实施）
 
 - 复用 C1 的 `PlanOccurrences` / `PlanRecurrence` / `PlanReminderRules` 和 C2a 用例/身份协议；发生集成测试验证共用算法，不重建第二套发生/重复计算。C2a port 的完整 Android 提醒实现和真实 UI 发布接线不得遗漏。
 - 复用 C2b 的 Scheduler/Receiver/严格 Intent/资格与技术库存实现，不新建第二套；不提前注册未接线 Receiver。
-- 扩展统一 PlanV6Schema / PlanMigration、新安装及完整 JVM/设备 fixture 的提醒技术表；导出目标 schema，验证历史升级链、技术默认空库存与失败回滚，不把此前 12 实体的历史结果当新增表验收。E 激活生产时使用同一实现。
+- 消费并保留 C2c1 技术表迁移/schema/完整 JVM 与设备契约的回归，不重复实现第二套迁移。E 激活生产时使用同一实现；C2c1 未通过的验证不能标成已完成。
 - 先新增隔离可测试的统一校准与旧身份清理实现，不更换当前 v5 的 Hilt / Worker / Receiver 调用路径。准备 ReminderReconciler / BootReceiver / Worker / Inventory / Notifications / AndroidMaintenanceReminderEffects 的接线变更；实际替换与旧 Receiver 协议拒绝只在 E 激活提交执行。C 结束时旧应用提醒仍正常运行，清理失败重试和不发双份的新版行为在独立装置验证。
 - 测试发生规则、DST / date-only 09:00 / 全天、custom / leap / 月末、未来 trigger 而非仅未来 occurrence、完成/撤销、延迟广播、权限撤销、旧 ID / URI / 世代、旧通知安全落首页与新通知一次消费。
 - reminder 数据失败明确区分“已保存但提醒失败”，不重插记录；全局开关不会重开单项关闭配置。
@@ -213,4 +226,5 @@ git diff --check
 - C1 四项任务已完成局部验收（2026-10-11）：共享发生/重复/窗口冲突/未来 trigger，新增 69 项 JVM；最终 844 项 / 78 suites 强制重跑通过，Debug 重新打包成功，lint 0 error / 55 warning，独立计划与代码审查问题已复审关闭。预算上限绕过有真实 RED/GREEN；本批不运行设备验收。
 - C2a 四项任务已完成局部验收（2026-10-11）：维护安全统一写入、已提交回执/只重试提醒与值身份协议；新增 43 项 JVM，最终 887 项 / 81 suites 强制重跑、Debug 重新打包和 lint 通过（0 error / 55 warning），计划 3 Important / 1 Minor、代码 1 Important 均独立复审关闭。真实 Room 提交交付桥和外层取消回执均有实质 RED/GREEN；无设备或 Android 闹钟验收。
 - C2b 四项任务已完成局部验收（2026-10-12）：Room 技术库存、严格 Intent/资格、隔离 Android 排程/通知及 Receiver；新增 56 项 JVM（协议/资格 8、真实 Room/系统服务集成 48）。最终 943 项 / 83 suites 强制重跑通过，Debug 缓存构建检查与 lint 测试源重新分析通过（0 error / 55 既有 warning）；计划 2 Important / 2 Minor、代码 2 Important / 1 Minor 均复审关闭。过去 trigger 与可观察通知阻止有实质 RED/GREEN，post 后精确撤回有 mutation RED；Receiver 私有权限修正限测试装置。本批无设备/UI/Release/性能或新增完整升级链验收。
-- 下一批 C2c：提醒技术表的统一 v6 SQL/schema/完整迁移装置、旧身份清理和统一校准，执行前细化子计划。C2c–F 未完成，生产应用仍为 V0.1.1 / schema v5，已发布 APK 未改；底座和完整目标 fixture 不等于生产接线、真机升级、新页面或整个 V1 已完成。
+- C2c1 四项任务已完成局部验收（2026-10-12）：唯一迁移 SQL/完整目标实体与导出 schema 纳入技术库存，历史1–5链/新建、真实库存重开/CAS/业务删除身份保留、早晚故障回滚完成；新增5项JVM/4项设备用例。最终948项 / 83 suites JVM强制重跑、专用API35 AVD指定类14项测试全部通过，Debug/androidTest重新打包、lint三类源分析通过（0 error / 55既有warning），计划2 Minor和代码复审全部关闭。生产v5/旧提醒/Hilt/UI/版本不变，无真机/生产用户库覆盖升级/UI/Release/性能验收。
+- 下一批 C2c2：隔离旧身份清理、统一校准与生产连接准备，执行前细化子计划，复用C2c1迁移和C2b系统实现。C2c2–F 未完成，生产应用仍为 V0.1.1 / schema v5，已发布 APK 未改；底座和完整目标 fixture 不等于生产接线、真机升级、新页面或整个 V1 已完成。

@@ -265,3 +265,34 @@ $env:JAVA_HOME='D:\jdk'
 - 新增技术库存使用全部 13 实体隔离 Room 装置；三项短名称文件重开测试为真实 SQLite/Room 持久化，不是完整历史升级链。C2c 必须扩展统一 v6 SQL、新建、schema、完整迁移/设备装置与回滚验收，不能复用 B3 的 12 实体历史数字。
 - 本批未运行设备、个人手机覆盖安装、UI、Release 或性能验收；Room/通知非原子窗口和无法确认用户收到的限制仍存在。正式生产仍为 0.1.1 / code 2 / schema v5，不修改 Manifest/Hilt/Gradle/生产数据库或旧业务入口，不新增空页面、不使用 destructive migration、不提交密钥或个人数据。
 - README、CHANGELOG、实施计划及本记录同步；交付仅当前 `feat/v1-unified-plans`，不合并 main / 创建 PR / 发布 APK。整个 C2、D–F 和 V1 未完成；下一批 C2c 旧身份清理、统一校准及提醒技术表完整迁移。
+
+## C2c1 · 第八批：提醒技术表完整迁移（局部验收通过）
+
+2026-10-12（Asia/Shanghai），基线 HEAD `d1effb3`、工作区干净，继续用户指定功能分支。C2c 分为本批目标库/完整迁移契约和后续 C2c2 校准/旧身份清理；未减少已批准需求。Buddy 本地状态脚本仍缺失，紧耦合 SQL/Room 装置主代理顺序 TDD、只读独立计划/代码审查。
+
+基线复验：JDK25 / Gradle9.4.1，JVM --rerun + Debug/lint，BUILD SUCCESSFUL（2 分 29 秒，66 tasks：2 executed / 64 up-to-date），退出0。实际 XML 943 项 / 83 suites，0 failure / error / skipped；Debug/lint 为缓存检查，不作为本批实现验收。当前 adb 无连接设备；设备验证仅使用已有项目专用 AVD，不操作个人手机。
+
+首组实质 RED：18 项 / 1 suite，3 assertion failure / 0 error / skipped（3 分 10 秒，40 tasks：5 executed / 35 up-to-date）。两个新增用例在真实历史升级/Room 新建后查 sqlite_master，预期技术表存在而实际空；建表故障用例未到达拦截点且升级成功，触发“bad source must be rejected”断言。旧 15 项通过，不把编译或宿主装置故障当业务 RED。计划独立审查无 Critical/Important，两项 Minor 已明确任务1–2共同 GREEN 检查点、C2c2只消费已验证迁移而不重复负责。
+
+定向 GREEN：20 项 / 1 suite，0 failure / error / skipped；BUILD SUCCESSFUL（4 分 41 秒，77 tasks：20 executed / 57 up-to-date），同一命令还实际重新构建 androidTest。新增五项 JVM 中三项是前述实质 RED/GREEN，两项是迁移后真实库存持久化/Long/CAS/业务删除不级联及晚期库存 schema 故障回滚的覆盖补强，不虚称已存在的 Room 机制也经历新功能 RED。KAPT 导出完整 13 实体 fixture 6.json，identityHash `f664a1eb646c605ac7e47de42a6fa4c2`；生产 2–5 快照不变。新建仍由 Room 实体生成，INITIALIZE 仅初始化既有设置/世代，不手写第二份技术 DDL。
+
+复审已关闭计划两项 Minor；本次代码/任务 spec 与 quality 均通过，Critical/Important/Minor 均0。只读复核确认五列/主键/无外键、同一迁移、JVM/设备装置、真实 store 和早/晚回滚的故障点/原库比对；不替代最终运行结果。初次专用模拟器进程退出、原计划审查代理不可恢复，日志未提供退出原因；重新启动同一 AVD（不 wipe/清库）并由新只读代理完成复审，不借用旧运行结果。
+
+最终全量复验（2026-10-12）：JDK25 / Gradle9.4.1，以下命令 BUILD SUCCESSFUL（2 分 53 秒，101 tasks：15 executed / 86 up-to-date），退出0。
+
+```powershell
+$env:JAVA_HOME='D:\jdk'
+.\.tools\gradle-9.4.1\bin\gradle.bat -I .\.tools\phase5-test-network.gradle :app:testDebugUnitTest --rerun :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --console=plain
+```
+
+- 实际 XML：948 项 JVM / 83 suites，0 failure / error / skipped；迁移 suite 20项，其中新增5项。JVM强制重跑，Debug/androidTest本轮重新打包，lint三类源重新分析和报告执行，0 error / 55既有warning，新增迁移/技术表路径无lint issue。正式/测试Kotlin编译为前次GREEN后缓存检查，不描述为本轮全部重新编译。
+- 设备身份再次核验 `emulator-5580` / 项目专用 `Rizhiya_Branding` / API35、boot completed=1；仅用 `adb install -r` 覆盖安装本轮两个测试APK，不卸载/清库。指定类原始 AndroidJUnitRunner 输出 `OK (14 tests)`、6.229秒，14个结束status均0；这是本轮实际重跑（原10项+新增4项），不借用B3十项历史数字，未重跑旧57项用例。
+
+```powershell
+.\.tools\android-sdk\platform-tools\adb.exe -s emulator-5580 install -r app/build/outputs/apk/debug/app-debug.apk
+.\.tools\android-sdk\platform-tools\adb.exe -s emulator-5580 install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+.\.tools\android-sdk\platform-tools\adb.exe -s emulator-5580 shell am instrument -w -r -e class com.example.lifemanager.data.plan.PlanMigrationDeviceTest com.example.lifemanager.test/androidx.test.runner.AndroidJUnitRunner
+```
+
+- 四项任务局部验收通过，计划2 Minor/代码意见已独立关闭；目标13实体schema、早晚故障完整回滚与库存持久化由真实Room/SQLite证明，不把生成JSON当验收本身。测试仅操作唯一命名合成数据库，并限定清理自身文件；生产数据库仍v5、旧提醒/Manifest/Hilt/UI/备份/版本和已发布APK不变，不使用destructive migration，不提交密钥/个人数据。
+- 同步 README/CHANGELOG/schema README/实施计划/本记录后，仅提交推送当前功能分支，不合并main/创建PR/发布APK。限制：v1缺少原始schema，仍从未变v2三实体合成重建；无真机、生产用户库覆盖升级、大库性能、UI/Release验收。下一批C2c2仍需旧身份清理/统一校准，D–F与整个V1未完成。

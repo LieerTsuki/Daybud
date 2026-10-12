@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 6,
-    "identityHash": "69d421d86d38020570784322041cbe38",
+    "identityHash": "f664a1eb646c605ac7e47de42a6fa4c2",
     "entities": [
       {
         "tableName": "plans",
@@ -880,11 +880,53 @@
             ]
           }
         ]
+      },
+      {
+        "tableName": "plan_reminder_state",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`planId` INTEGER NOT NULL, `generation` INTEGER NOT NULL, `occurrenceDate` INTEGER NOT NULL, `triggerAt` INTEGER NOT NULL, `delivered` INTEGER NOT NULL, PRIMARY KEY(`planId`))",
+        "fields": [
+          {
+            "fieldPath": "planId",
+            "columnName": "planId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "generation",
+            "columnName": "generation",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "occurrenceDate",
+            "columnName": "occurrenceDate",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "triggerAt",
+            "columnName": "triggerAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "delivered",
+            "columnName": "delivered",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "planId"
+          ]
+        }
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '69d421d86d38020570784322041cbe38')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f664a1eb646c605ac7e47de42a6fa4c2')"
     ]
   }
 }

@@ -16,6 +16,8 @@ object PlanV6Schema {
         db.execSQL("CREATE TABLE plan_exceptions (planId INTEGER NOT NULL, occurrenceDate INTEGER NOT NULL, isCancelled INTEGER NOT NULL, PRIMARY KEY(planId,occurrenceDate), FOREIGN KEY(planId) REFERENCES plans(id) ON DELETE CASCADE)")
         db.execSQL("CREATE TABLE plan_legacy_refs (source TEXT NOT NULL, legacyId INTEGER NOT NULL, planId INTEGER NOT NULL, PRIMARY KEY(source,legacyId), FOREIGN KEY(planId) REFERENCES plans(id) ON DELETE CASCADE)")
         db.execSQL("CREATE UNIQUE INDEX index_plan_legacy_refs_planId ON plan_legacy_refs (planId)")
+        // No business FK: a deleted plan's system identity must remain until cleanup succeeds.
+        db.execSQL("CREATE TABLE plan_reminder_state (planId INTEGER NOT NULL, generation INTEGER NOT NULL, occurrenceDate INTEGER NOT NULL, triggerAt INTEGER NOT NULL, delivered INTEGER NOT NULL, PRIMARY KEY(planId))")
     }
 
     val INITIALIZE = object : RoomDatabase.Callback() {

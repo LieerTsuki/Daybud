@@ -10,8 +10,10 @@ import com.example.lifemanager.data.local.entity.*
 @Database(entities = [PlanEntity::class, PlanTagCrossRef::class, PlanExceptionEntity::class,
     PlanLegacyRefEntity::class, PlanSettingsEntity::class, MaintenanceEntity::class, TagEntity::class,
     HabitEntity::class, HabitRecordEntity::class, SubscriptionEntity::class,
-    SubscriptionPaymentEntity::class, SubscriptionReminderEntity::class], version = 6, exportSchema = true)
+    SubscriptionPaymentEntity::class, SubscriptionReminderEntity::class,
+    PlanReminderStateEntity::class], version = 6, exportSchema = true)
 @TypeConverters(Converters::class, PlanConverters::class)
 abstract class PlanMigrationTestDatabase : RoomDatabase() {
     abstract fun plans(): PlanDao
+    abstract fun reminders(): PlanReminderStateDao
 }

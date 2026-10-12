@@ -9,6 +9,12 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.example.lifemanager.data.local.LifeManagerDatabase
 import com.example.lifemanager.data.local.migration.PlanMigration
 import com.example.lifemanager.data.local.migration.PlanV6Schema
+import com.example.lifemanager.domain.maintenance.DataGeneration
+import com.example.lifemanager.domain.plan.PlanReminderState
+import com.example.lifemanager.domain.plan.PlanReminderToken
+import kotlinx.coroutines.runBlocking
+import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import org.json.JSONArray
 import org.json.JSONObject
@@ -31,6 +37,7 @@ class PlanMigrationDeviceTest {
         try {
             val sqlite = db.openHelper.writableDatabase
             assertEquals(6, sqlite.version)
+            assertReminderInventory(sqlite)
             for (table in immutable) if (table in before) assertEquals(before[table], sqlite.query("SELECT * FROM $table ORDER BY 1,2").use(::typedRows), table)
             assertEquals(listOf(listOf("1", "2"), listOf("2", null)), rows(sqlite, "SELECT id,parentId FROM plans WHERE id<=2 ORDER BY id"))
             assertEquals(listOf(listOf(if (version == 5) "8" else "1")), rows(sqlite, "SELECT generation FROM app_maintenance"))
@@ -100,10 +107,105 @@ class PlanMigrationDeviceTest {
         try {
             val sqlite = db.openHelper.writableDatabase
             assertEquals(6, sqlite.version)
+            assertReminderInventory(sqlite)
             assertEquals(listOf(listOf("1", "SYSTEM", "YMD", "CNY", "1", "1", "0")), rows(sqlite, "SELECT * FROM app_settings"))
             assertEquals(listOf(listOf("1", "0")), rows(sqlite, "SELECT * FROM app_maintenance"))
             assertTrue(rows(sqlite, "SELECT * FROM plans").isEmpty())
         } finally { db.close() }
+    }
+
+    @Test fun migratedInventoryPersistsAcrossBusinessDeletionAndReopen() = fixture(5) { name, _ ->
+        val first = PlanReminderToken(1, DataGeneration(8), LocalDate.ofEpochDay(20454), Instant.ofEpochMilli(Long.MAX_VALUE))
+        val other = PlanReminderToken(Long.MAX_VALUE, DataGeneration(8), LocalDate.ofEpochDay(20454), Instant.ofEpochMilli(Long.MIN_VALUE))
+        val db = target(name)
+        try {
+            assertReminderInventory(db.openHelper.writableDatabase)
+            runBlocking {
+                val store = RoomPlanReminderStore(db.reminders())
+                store.remember(first); store.remember(other)
+                assertFalse(store.markDelivered(first.copy(generation = DataGeneration(7))))
+                assertTrue(store.markDelivered(first)); assertFalse(store.markDelivered(first))
+                db.openHelper.writableDatabase.execSQL("DELETE FROM plans WHERE id=1")
+                assertEquals(PlanReminderState(first, true), store.get(1))
+            }
+        } finally { db.close() }
+        val reopened = target(name)
+        try {
+            runBlocking {
+                val store = RoomPlanReminderStore(reopened.reminders())
+                assertEquals(listOf(PlanReminderState(first, true), PlanReminderState(other, false)), store.all())
+                assertTrue(rows(reopened.openHelper.writableDatabase, "SELECT id FROM plans WHERE id=1").isEmpty())
+                assertEquals(listOf(listOf("8")), rows(reopened.openHelper.writableDatabase, "SELECT generation FROM app_maintenance"))
+                store.forget(1)
+                assertNull(store.get(1)); assertEquals(PlanReminderState(other, false), store.get(Long.MAX_VALUE))
+            }
+        } finally { reopened.close() }
+    }
+
+    @Test fun inventoryFinalSchemaFailureRestoresV5() = inventorySchemaFailure(5)
+    @Test fun inventoryFinalSchemaFailureRestoresV4() = inventorySchemaFailure(4)
+    private fun inventorySchemaFailure(version: Int) = fixture(version) { name, before ->
+        var reached = false
+        val broken = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                migration.migrate(db)
+                assertReminderInventory(db)
+                assertEquals(listOf(listOf(if (version == 5) "8" else "1")), rows(db, "SELECT generation FROM app_maintenance"))
+                assertTrue(rows(db, "SELECT name FROM sqlite_master WHERE name IN ('todos','schedules','todo_tag_cross_ref','schedule_exceptions','app_settings_v5')").isEmpty())
+                reached = true
+                db.execSQL("ALTER TABLE plan_reminder_state ADD COLUMN unexpected INTEGER")
+            }
+        }
+        assertRollback(name, before, broken, version, "Migration didn't properly handle: plan_reminder_state")
+        assertTrue(reached, "inventory schema validation fault reached after source removal")
+    }
+
+    @Test fun inventoryDdlFailureRestoresHistoricalSource() {
+        for (version in listOf(4, 5)) fixture(version) { name, before ->
+            var reached = false
+            val broken = object : Migration(5, 6) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    migration.migrate(object : SupportSQLiteDatabase by db {
+                        override fun execSQL(sql: String) {
+                            if (sql.startsWith("CREATE TABLE plan_reminder_state ")) {
+                                assertEquals(listOf(listOf("0")), rows(db, "SELECT COUNT(*) FROM plans"))
+                                reached = true
+                                throw IllegalStateException("synthetic inventory DDL failure")
+                            }
+                            db.execSQL(sql)
+                        }
+                    })
+                }
+            }
+            assertRollback(name, before, broken, version, "synthetic inventory DDL failure")
+            assertTrue(reached, "inventory DDL fault reached")
+        }
+    }
+
+    private fun assertRollback(name: String, before: Map<String,List<List<String?>>>, broken: Migration, version: Int, message: String) {
+        val db = target(name, broken)
+        try {
+            val failure = runCatching { db.openHelper.writableDatabase }.exceptionOrNull()
+            assertNotNull(failure)
+            assertTrue(generateSequence(failure) { it.cause }.any { it.message?.contains(message) == true }, "unexpected failure: $failure")
+        } finally { db.close() }
+        SQLiteDatabase.openDatabase(context.getDatabasePath(name).path, null, SQLiteDatabase.OPEN_READONLY).use {
+            assertEquals(version, it.version); assertEquals(before, rawSnapshot(it))
+        }
+    }
+
+    private fun assertReminderInventory(db: SupportSQLiteDatabase) {
+        assertEquals(listOf(listOf("plan_reminder_state")), rows(db,
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='plan_reminder_state'"))
+        assertTrue(rows(db, "SELECT * FROM plan_reminder_state").isEmpty())
+        assertEquals(listOf(
+            listOf("0", "planId", "INTEGER", "1", null, "1"),
+            listOf("1", "generation", "INTEGER", "1", null, "0"),
+            listOf("2", "occurrenceDate", "INTEGER", "1", null, "0"),
+            listOf("3", "triggerAt", "INTEGER", "1", null, "0"),
+            listOf("4", "delivered", "INTEGER", "1", null, "0")),
+            rows(db, "PRAGMA table_info(plan_reminder_state)"))
+        assertTrue(rows(db, "PRAGMA foreign_key_list(plan_reminder_state)").isEmpty())
     }
 
     private fun target(name: String, last: Migration = migration) =
