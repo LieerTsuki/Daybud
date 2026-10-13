@@ -9,13 +9,19 @@ import com.example.lifemanager.domain.model.DateFormat
 import com.example.lifemanager.domain.model.ThemeMode
 import java.nio.ByteBuffer
 import java.security.MessageDigest
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 
 /** Fixed identifiers only; raw SQLite values never pass through editor normalization. */
-internal class V2BackupSql(private val dao: BackupSnapshotDao, private val limits: BackupLimits) {
-    suspend fun generation(): DataGeneration {
+internal class V2BackupSql(private val dao: BackupSnapshotDao, private val limits: BackupLimits,
+    private val owner: CoroutineContext? = null) {
+    private suspend fun checkActive() {
+        owner?.ensureActive()
         currentCoroutineContext().ensureActive()
+    }
+    suspend fun generation(): DataGeneration {
+        checkActive()
         val result = dao.read(SimpleSQLiteQuery("SELECT id,generation FROM app_maintenance")).use {
             checkBackup(it.moveToFirst() && it.getType(0) == Cursor.FIELD_TYPE_INTEGER && it.getLong(0) == 1L,
                 "本机世代记录缺失或损坏")
@@ -24,12 +30,12 @@ internal class V2BackupSql(private val dao: BackupSnapshotDao, private val limit
             checkBackup(value >= 0 && !it.moveToNext(), "本机世代单行记录无效")
             DataGeneration(value)
         }
-        currentCoroutineContext().ensureActive()
+        checkActive()
         return result
     }
 
     suspend fun settings(): V2BackupSettings {
-        currentCoroutineContext().ensureActive()
+        checkActive()
         dao.read(SimpleSQLiteQuery("SELECT COUNT(*) FROM app_settings")).use {
             checkBackup(it.moveToFirst() && it.getType(0) == Cursor.FIELD_TYPE_INTEGER && it.getLong(0) == 1L, "设置单行记录无效")
         }
@@ -52,7 +58,7 @@ internal class V2BackupSql(private val dao: BackupSnapshotDao, private val limit
         generation() // Health check only; local generation is never exported.
         var count = 0L
         for (table in V2BackupSchema.tables) {
-            currentCoroutineContext().ensureActive()
+            checkActive()
             val value = dao.read(SimpleSQLiteQuery("SELECT COUNT(*) FROM `${table.name}`")).use {
                 checkBackup(it.moveToFirst() && it.getType(0) == Cursor.FIELD_TYPE_INTEGER, "无法读取业务行数")
                 it.getLong(0)
@@ -70,7 +76,7 @@ internal class V2BackupSql(private val dao: BackupSnapshotDao, private val limit
     private suspend fun textPreflight(tables: List<Pair<String, List<BackupColumn>>>) {
         var total = 0L
         for ((name, columns) in tables) {
-            currentCoroutineContext().ensureActive()
+            checkActive()
             val text = columns.filter { it.kind in TEXT_KINDS }
             if (text.isEmpty()) continue
             val expression = text.joinToString("+") { "COALESCE(length(CAST(`${it.name}` AS BLOB)),0)" }
@@ -85,12 +91,12 @@ internal class V2BackupSql(private val dao: BackupSnapshotDao, private val limit
     }
 
     private suspend fun rows(name: String, columns: List<BackupColumn>, key: List<String>): List<BackupRow> {
-        currentCoroutineContext().ensureActive()
+        checkActive()
         val select = columns.joinToString(",") { "`${it.name}`" }
         val order = key.joinToString(",") { "`$it`" }
         return dao.read(SimpleSQLiteQuery("SELECT $select FROM `$name` ORDER BY $order")).use { cursor -> buildList {
             while (cursor.moveToNext()) {
-                currentCoroutineContext().ensureActive()
+                checkActive()
                 add(BackupRow(columns.mapIndexed { index, column -> column.name to readValue(cursor, index, column) }.toMap()))
             }
         } }
@@ -119,12 +125,12 @@ internal class V2BackupSql(private val dao: BackupSnapshotDao, private val limit
 
     /** Distinguishes no sequence from zero, and rejects corrupt/lowered/duplicate/exhausted state. */
     suspend fun sequences(): Map<String, Long?> {
-        currentCoroutineContext().ensureActive()
+        checkActive()
         val found = mutableMapOf<String, Long>()
         val placeholders = AUTO_TABLES.joinToString(",") { "?" }
         dao.read(SimpleSQLiteQuery("SELECT name,seq FROM sqlite_sequence WHERE name IN ($placeholders)", AUTO_TABLES.toTypedArray())).use {
             while (it.moveToNext()) {
-                currentCoroutineContext().ensureActive()
+                checkActive()
                 checkBackup(it.getType(0) == Cursor.FIELD_TYPE_STRING && it.getType(1) == Cursor.FIELD_TYPE_INTEGER, "自增序列类型无效")
                 val name = it.getString(0); val value = it.getLong(1)
                 checkBackup(name !in found && value >= 0 && value < Long.MAX_VALUE, "$name 自增序列损坏或已耗尽，不能安全更换数据")
@@ -132,7 +138,7 @@ internal class V2BackupSql(private val dao: BackupSnapshotDao, private val limit
             }
         }
         for (name in AUTO_TABLES) {
-            currentCoroutineContext().ensureActive()
+            checkActive()
             dao.read(SimpleSQLiteQuery("SELECT MAX(id) FROM `$name`")).use {
                 checkBackup(it.moveToFirst(), "无法读取主键高水位")
                 if (!it.isNull(0)) {
@@ -150,7 +156,7 @@ internal class V2BackupSql(private val dao: BackupSnapshotDao, private val limit
         val buffer = ByteBuffer.allocate(8)
         dao.read(SimpleSQLiteQuery("SELECT planId,generation,occurrenceDate,triggerAt,delivered FROM plan_reminder_state ORDER BY planId")).use {
             while (it.moveToNext()) {
-                currentCoroutineContext().ensureActive()
+                checkActive()
                 digest.update(0x1e.toByte())
                 for (index in 0..4) {
                     checkBackup(it.getType(index) == Cursor.FIELD_TYPE_INTEGER, "提醒技术库存类型无效")
@@ -158,7 +164,7 @@ internal class V2BackupSql(private val dao: BackupSnapshotDao, private val limit
                 }
             }
         }
-        currentCoroutineContext().ensureActive()
+        checkActive()
         return digest.digest()
     }
 

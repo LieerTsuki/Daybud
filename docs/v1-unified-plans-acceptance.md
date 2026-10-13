@@ -43,7 +43,7 @@ TDD：先编写测试与类型契约，以尚未实现行为的临时空规则�
 
 ## 后续及已知限制
 
-- 截至2026-10-13，A、B1–B3、C1–C2c2及D1–D3底座局部验收通过；完整D–F未完成：备份维护/文件适配、统一页面/导航/设置、生产v6原子接线、覆盖安装和版本交付。目标库快照/原子恢复、备份格式/旧v1转换/发生/提醒及完整隔离迁移结果另列，不等于生产激活。
+- 截至2026-10-13，A、B1–B3、C1–C2c2及D1–D4底座局部验收通过；完整V1未完成：统一页面/导航/设置、生产v6原子接线、真实文件/设备与覆盖安装和版本交付。目标库快照/原子恢复、备份格式/旧v1转换/文件维护/发生/提醒及完整隔离迁移结果另列，不等于生产激活。
 - 本批构件尚未接入生产业务，不能在已发布软件中使用新的转换 / 完成规则；不以单元测试代替设备迁移验收。
 - 重复展开/例外/冲突等领域规则已验证，独立统计页、今天真实日程和UI移除日期确认等页面接线仍在E实现；没有占位入口。
 - V1 目标为 1.0.0 / code 3 / schema v6，当前仍为 0.1.1 / code 2 / schema v5。main 及已发布 APK 本轮未更新；功能分支交付见下文，不等于发布 APK。
@@ -465,3 +465,29 @@ D2五项局部验收完成。限制：受限内存编解码/额外解析及纯JV
 - 提交前远端feature仍为基线`c5c29bd44b2667acc7113d213e1ac443379632a7`，main为`b016bcbc0f146ea6d9fe257b734700689de5cb51`。按授权仅提交推送当前feature并核对远端；不建PR/合并main/发布APK，不读写用户个人文件/真实数据库，不提交密钥或个人数据。
 
 D3五项任务局部验收完成。已实现完整13实体隔离目标库十表快照、原子恢复/业务清空、原值/关系/设置保留及世代/技术库存/自然自增序列核验；按用户方案1拒绝危险自增MAX和目标序列耗尽，不重编号或reset序列。真实Room证据只来自合成内存测试库，不是个人数据恢复、实际文件选择/保护文件写入/确认/系统提醒维护、设备覆盖升级或生产启用验收；无设备执行/UI/Release/真机/Android大库内存或性能验证。资源警告归属仍待定位，64MiB/100k受限内存表示不是流式或低内存保证。下一批D4实现文件与维护流程，E整体接线/激活v6，F版本与升级交付；当前生产0.1.1/code2/schema5、main及已发布APK未改，完整D–F/V1尚未完成。
+
+## D4 · 第十三批：文件与维护流程（局部验收通过）
+
+2026-10-13，用户确认五项范围，基线HEAD `d8183bfd968ef17a647ade63e29bc560538098b4`、工作区原先干净，沿用当前feature、不建工作树。本批只新增隔离文件用例/捕获/维护流程及合成集成测试，实际UI和Hilt/生产v6/默认codec/旧工作流/版本保持，完整E/F尚未开始。本计划和本记录替代缺失writing-plans/Buddy状态脚本；顺序TDD与独立只读复审，不提前称完成或发布。
+
+- 新基线JDK25/Gradle9.4.1/既有网络init，`:app:testDebugUnitTest --rerun --console=plain`退出0、BUILD SUCCESSFUL 1m27s，40 tasks：1 executed/39 up-to-date；实际XML1097项/93 suites、0 failure/error/skipped。这是上一批代码本轮重跑，不是D4新增结果。
+- 独立计划复审的一项事务边界及两项交接/所有权细化纳入D4计划，复审确认全部关闭，不是实现验收。
+- 文件测试首轮编译失败1m34s（35 tasks：3 executed/32 up-to-date），匿名对象由公开属性暴露时丢失特有字段类型，修正为具名Streams；未计功能RED。随后12项文件测试全部运行并以缺V2BackupFileUseCases的AssertionError失败，0 error/skipped，BUILD FAILED 2m16s（40 tasks：5 executed/35 up-to-date）。RED缺实现adapter仅在测试源，开始实现后改直接typed调用，不保留生产桩。
+- 文件实现后首次组合执行18项：12文件测试通过，6提醒捕获用例在Robolectric启动阶段因默认生产Application触发未初始化WorkManager而失败，未进入捕获断言，不计捕获RED。BUILD FAILED 4m17s（40 tasks：12 executed/28 up-to-date）。回溯LifeManagerApp.onCreate栈，与既有隔离Room装置比较，仅为新测试显式指定空Application；未修改生产启动或WorkManager配置。开始组合验证文件/捕获/维护测试。
+- 修正装置后的组合实质RED：36项/3 suites，文件12项通过，捕获6项与维护18项因缺实现断言失败（24 failure、0 error/skipped）；BUILD FAILED 3m39s（40 tasks：11 executed/29 up-to-date）。开始实现SQL捕获/独立通知枚举及冻结维护流程，测试adapter改直接typed真实构件，未保留假生产实现。
+- 初轮实现组合36项，34通过/2失败，BUILD FAILED 3m33s（40 tasks：11 executed/29 up-to-date）：保护文件断言误用fixture行数组顺序（SQL来源排序为SCHEDULE/TODO），改按既有独立sameRows逐值/关系比较，不改存储/编码；原caller在CAS后的读取点取消却观察到已提交标记，不能据此简单宣布提交前取消通过。先加入与D3相同精确事务operation Job取消装置，保留原caller场景另作强化回归。
+- 39项组合GREEN（文件12、捕获6、维护21）退出0、BUILD SUCCESSFUL 2m12s（40 tasks：5 executed/35 up-to-date），0 failure/error/skipped；新增完整私有暂存v1→真实转换→保护→Room恢复、8秒校准超时及真实PlanNotificationHelper/PlanBackupNotificationSource/UnifiedMaintenanceReminderEffects/PlanReminderScheduler精确清理集成，验证同ID新世代卡片保留与技术行取消后清理。原caller取消边界仍待下轮强化，不把该中间GREEN当最终验收。
+- 代码复审两项Important（一项原caller取消、一项行数组断言）及File取消进入屏障Minor进入修复；文件回归加entered-write后再真实Job取消，原caller取消SQL终点场景保留并要求完整回滚，另补“可读但既不是原世代也不是原+1”的普通/取消不确定结果回归，进入42项强化RED。
+- 强化RED实跑42项/3 suites、3 assertion failure、0 error/skipped，BUILD FAILED 2m29s（40 tasks：5 executed/35 up-to-date）。实际复现原caller已取消但标记仍报已提交（当时尚未核对最终持久化状态），以及可读异常世代被当作未推进；屏障和行序修正通过。先针对原caller修复隔离D3mutation/SQL helper：进入Room事务前捕获原CoroutineContext，每表/行/元数据读取和最后提交前同时检查原上下文与Room当前上下文。不改旧生产路径、迁移/schema/原值或自增规则；执行原caller与22项既有D3 mutation回归，异常世代分类修复待下一步验证。
+- 原上下文guard后的聚焦23项：22项既有D3 mutation通过，caller标记断言仍失败，BUILD FAILED 2m12s（40 tasks：11 executed/29 up-to-date）。不能把此失败单凭标记当作数据库已提交；按复审建议先记录最终持久化状态及证据读取时事务状态，核对测试世代reader（原为直接raw读取）与生产reader（Room事务读取）差异，调查C2a已有提交完成交接桥。当前取消修复尚未通过，不据局部D3回归宣布完成。
+- 原caller聚焦诊断1项失败（1m55s、40 tasks：5 executed/35 up-to-date），但在标记断言前完整unchanged断言通过：最终持久化generation=5/plans=2；原证据raw读取序列为(false,5)四次、(true,6)一次，证明曾在原事务仍活动时看到未提交CAS6，误报已提交，不能将早先标记误报写成真实数据已提交。增加与C2a同类的短提交完成交接桥：NonCancellable仅保护Room完成/回执，V2BackupWriteCancellation携带原writer供D3每行/最终guard，原writer仍可使SQL体回滚；等待实际endTransaction后才核对结果/释放冻结。测试世代reader改为与生产同样的Room事务读取；不确定取消装置保留真实Job取消并显式注入丢返回异常，避免已收到回执的取消被错误期待为“不确定”。进入25项提交前/后/外层交接及旧D3回归验证。
+- 提交交接GREEN：25项/2 suites全部通过，0 failure/error/skipped，BUILD SUCCESSFUL 3m51s（40 tasks：11 executed/29 up-to-date）；原caller最终完整状态回滚且不报已提交，真正已提交的Job取消/外层dispatcher返回仍有已提交标记，22项既有D3 mutation全部通过。独立桥/marker/body guard源审查无新增问题。再单独修复异常世代分类为原值/精确且防溢出原+1/未知三分支，最后一支通过不确定异常返回，不声称回滚、不重放；开始77项D4+D3组合GREEN。
+- 最终组合GREEN：77项/5 suites全部通过（D4文件12、捕获6、维护24；D3 snapshot13/mutation22），0 failure/error/skipped；BUILD SUCCESSFUL 2m25s（40 tasks：8 executed/32 up-to-date）。异常可读世代的普通/取消不确定结果通过；原值/精确原+1、真实caller/事务operation/外层返回取消与提交后身份清理回归通过。生产Hilt/Manifest/schema/Gradle/版本/旧文件工作流无改动，开始最终全量JVM/Debug/androidTest/lint复验。
+- 最终代码首次全量四任务命令（JDK25/Gradle9.4.1/既有网络init，与D3命令相同）退出0、BUILD SUCCESSFUL 7m24s，101 tasks：17 executed/84 up-to-date；实际XML1139项/96 suites、0 failure/error/skipped（本批新增42项/3 suites）。JVM强制执行；Debug dex/重新打包，androidTest源重新编译而包内容未变为缓存构建检查；lint三类源及报告重新分析（0 error/55既有warning），本批新构件无lint issue。独立代码最后的异常世代分类复审无遗留Critical/Important/Minor；审查不是执行结果的替代。
+- 首次全量仍观察到Robolectric异步SQLite CloseGuard警告，日志落在UnifiedLegacyCleanupTest/LauncherBrandingTest，资源归属未定位，不能仅凭日志落点归咎旧代码或宣称D4没有关系；作为已知验证限制保留。第二次全量强制复验结果待记录，当前不提交/推送。
+- 第二次相同四任务全量强制复验退出0、BUILD SUCCESSFUL 3m47s，101 tasks：2 executed/99 up-to-date；17:35（Asia/Shanghai）核对更新XML1139项/96 suites、0 failure/error/skipped。JVM实际重跑，编译/Debug/androidTest/lint分析与报告均为未变缓存构建检查，lint0 error/55既有warning。两次连续全量成功，不当作全部取消时序或设备交付保证。
+- 最后一轮仍有同类SQLite资源警告，日志落在TodoReminderDeliveryTest/LauncherBrandingTest/UnifiedPlanCalibrationTest；归属仍未定位，不能据日志落点断言资源属于哪个批次，不通过关闭检查/吞异常抹除提示。计划与最后完整代码/提交桥/异常世代复审无遗留Critical/Important/Minor，审查没有代替真实执行。
+- README/CHANGELOG/格式v2/文件安全/本计划/本验收同步，保留失败诊断、缓存范围与限制；生产Hilt/Manifest/数据库schema/Gradle版本/旧backup codec与workflow/UI/0.1.1/code2/签名不变。本轮未读写任何个人库/用户文件，不提交密钥或个人数据。
+- 提交前远端feature=`d8183bfd968ef17a647ade63e29bc560538098b4`，main=`b016bcbc0f146ea6d9fe257b734700689de5cb51`；仅提交推送当前feature并核对远端，不建PR/合并main/发布APK。
+
+D4五项局部验收完成：v2导出/严格关闭重读、v1/v2受限私有暂存预览、原库保护备份/独立确认、同一冻结下的原子恢复/清空及现有C2c2精确清理/新鲜校准。原writer控制SQL体取消，短Room完成/回执桥避免读未完成CAS或提前释放冻结；实际回滚、已提交取消及异常/不可读世代不确定状态均区分，不重放写入。新增42项测试，1139项全量连续两次通过。真实文件证据限合成测试私有副本/字节流、完整13实体Room与Robolectric系统服务；无本轮设备执行/真实SAF/Downloads或云提供方、个人库恢复/覆盖安装/UI/Release/真机/磁盘耗尽/真实强杀/大库内存性能验收。提供方别名/协作取消/跨系统非原子/64MiB多份内存/资源警告限制保留。E统一页面与生产消费者/UUID/隐私/进程重建接线、F正式版本和升级交付仍待完成；当前生产0.1.1/schema5、main及已发布APK不变，不等于V1正式发布。
