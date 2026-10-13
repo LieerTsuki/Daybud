@@ -83,6 +83,14 @@
 - 新增53项测试；2026-10-13最终1001项 JVM /87 suites强制重跑通过、Debug/androidTest重新打包、lint三类源重新分析通过（0 error /55既有warning），独立复审3项Important及所有权旁路均关闭。
 - 不激活生产v6/Hilt/Manifest/Boot/旧Worker/页面/备份，不改0.1.1/code2/main或发布APK。本批无设备执行/真机/UI/Release/性能验收；下一批D为备份维护适配，E整体生产激活，F版本交付。数据兼容、测试证据及限制见[分批验收](docs/v1-unified-plans-acceptance.md)。
 
+### 2026-10-13 · 第十批 D1：v2备份格式底座（局部验收通过）
+
+- 实现独立format2/schema6 raw文档、十业务表/计划27列/六字段设置白名单、有效时间和完整关系校验；保留历史标题/偏移、原始星期字符串、非活动字段及完成组合，不归一化数据。
+- canonical UTF8与原payload SHA256、新旧版本互拒、Long精度、重复键/未知字段/非法UTF8/版本/hash/关系错误及64MiB/100k上限通过；来源行计入总数，100k父链使用迭代检查，技术库存/世代不在备份内。
+- 共享通用校验与JSON语法，原v1codec/schema/默认20字段预算保持；仅显式v2使用27列预算。原v1黄金值/全量旧回归通过。
+- TDD新增29项测试，复审补独立原文预期和明确[]/null边界；2026-10-13最终1030项 JVM /89 suites强制重跑通过，Debug/androidTest构建检查、lint0 error/55既有warning，计划和代码复审问题关闭。
+- 不改变默认生产v1备份/Hilt/UI/schema/0.1.1/code2/main/已发布APK；无用户文件或数据库操作、实际文件导入/Room恢复/设备执行/Release/性能验收。下一批D2旧v1转换和版本分派，后续目标库/维护及E整体激活仍待完成。见[v2格式说明](docs/backup-format-v2.md)与[分批验收](docs/v1-unified-plans-acceptance.md)。
+
 ## 0.1.1 预览版 · 2026-10-09
 
 - 应用更名为「日子芽」，提供圆润卡通手账/新芽的原生矢量自适应、圆形及单色图标。

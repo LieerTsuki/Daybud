@@ -34,6 +34,8 @@
 
 第九批 C2c2 局部验收通过（2026-10-13）：完整隔离 v6 目标库中的旧身份清理、计划/订阅统一校准、精确维护清理及独立后台 Worker 已实现。严格通知归属、安装/到达/决定状态、时钟回拨与有限重复边界、失败后未来修复、并发创建及维护排空通过；后台运行期间的新请求实际排队执行，并重新读取当前 Room。新增53项测试，最终1001项 JVM /87 suites 强制重跑通过，Debug/androidTest重新打包，lint三类源重新分析通过（0 error /55既有 warning），独立复审问题关闭。生产 Hilt/Manifest/Boot/旧 Worker/页面尚未切换，当前手机APK仍为0.1.1、不包含统一计划；本批没有设备执行、真机/UI/Release/性能验收，不复用第八批设备数字。下一批D完成新版备份与维护适配，E才启用页面及生产v6，F交付版本；不是整个V1完成。详情见[分批验收](https://github.com/lieer-12/app/blob/feat/v1-unified-plans/docs/v1-unified-plans-acceptance.md)。
 
+第十批 D1 局部验收通过（2026-10-13）：实现隔离formatVersion2/schemaVersion6备份raw契约、十业务表白名单及新六字段设置、严格校验与canonical UTF8/SHA256编解码。原文/Long/固定偏移/非活动字段/历史完成组合保留，主键/来源唯一/引用/父树/类型/版本/重复键/hash/64MiB和100k总行数检查通过；技术库存和本机世代不进入文件。新增29项测试，最终1030项 JVM /89 suites强制重跑通过，Debug及设备测试包构建检查、lint通过（0 error /55既有warning），复审意见关闭。当前生产仍导出v1，旧v1codec默认和历史格式文档不变；本批无实际文件导入/Room恢复/设备/UI/Release/性能验收。下一批D2为旧v1严格校验转换与版本分派，完整D及V1仍未完成。见[v2格式说明](docs/backup-format-v2.md)及[分批验收](docs/v1-unified-plans-acceptance.md)。
+
 ## 名称与图标 · 0.1.1 预览版
 
 新名称「日子芽」寓意把生活中的小事整理好，让每一天慢慢长出新芽。图标是圆润的笑脸手账、两片新芽与珊瑚色书签，使用与 UI 一致的奶油白、薄荷绿和暖墨绿。

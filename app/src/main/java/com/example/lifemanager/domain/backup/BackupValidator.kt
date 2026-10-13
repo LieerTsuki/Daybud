@@ -8,18 +8,27 @@ import java.util.Currency
 
 object BackupValidator {
     fun validate(document: BackupDocument, limits: BackupLimits = BackupLimits()) {
-        checkBackup(document.appVersion.isNotBlank(), "应用版本缺失")
-        checkBackupUnicode(document.appVersion)
-        checked("导出时间无效") { Instant.parse(document.exportedAt) }
+        validateMetadata(document.appVersion, document.exportedAt)
         validate(document.payload, limits)
+    }
+
+    internal fun validateMetadata(appVersion: String, exportedAt: String) {
+        checkBackup(appVersion.isNotBlank(), "应用版本缺失")
+        checkBackupUnicode(appVersion)
+        checked("导出时间无效") { Instant.parse(exportedAt) }
     }
 
     fun validate(payload: BackupPayload, limits: BackupLimits = BackupLimits()) {
         checkBackup(payload.tables.keys == BackupSchema.tables.map { it.name }.toSet(), "备份业务表缺失或包含未知表")
         checkBackup(payload.tables.values.sumOf { it.size.toLong() } <= limits.maxRows, "备份超过 ${limits.maxRows} 行限制")
         checkBackup(SettingsRules.validate(payload.settings) == null, "备份设置无效")
-        for (table in BackupSchema.tables) {
-            val rows = payload.tables.getValue(table.name)
+        validateTables(payload.tables, BackupSchema.tables, "todos")
+    }
+
+    /** Version-neutral type/relationship checks; version entry points own keys, limits and settings. */
+    internal fun validateTables(tables: Map<String, List<BackupRow>>, schema: List<BackupTable>, parentTable: String) {
+        for (table in schema) {
+            val rows = tables.getValue(table.name)
             val fields = table.columns.map { it.name }.toSet()
             for (row in rows) {
                 checkBackup(row.fields.keys == fields, "${table.name} 字段缺失或包含未知字段")
@@ -30,17 +39,17 @@ object BackupValidator {
                 rows.forEach { checkBackup(found.add(key.map(it.fields::getValue)), "${table.name} 存在重复主键或唯一键") }
             }
         }
-        val ids = BackupSchema.tables.associate { table -> table.name to payload.tables.getValue(table.name).mapNotNull { it.fields["id"] }.toHashSet() }
-        for (table in BackupSchema.tables) for (reference in table.references) {
-            for (row in payload.tables.getValue(table.name)) {
+        val ids = schema.associate { table -> table.name to tables.getValue(table.name).mapNotNull { it.fields["id"] }.toHashSet() }
+        for (table in schema) for (reference in table.references) {
+            for (row in tables.getValue(table.name)) {
                 val value = row.fields.getValue(reference.column)
                 checkBackup(value == BackupValue.Null || value in ids.getValue(reference.table), "${table.name}.${reference.column} 引用不存在的记录")
             }
         }
-        payload.tables.getValue("subscription_reminders").forEach {
+        tables.getValue("subscription_reminders").forEach {
             checkBackup((it.fields.getValue("daysBefore") as BackupValue.Integer).value in setOf(1L, 3L, 7L), "订阅提醒天数无效")
         }
-        validateParents(payload.tables.getValue("todos"))
+        validateParents(tables.getValue(parentTable), if (parentTable == "todos") "待办" else "计划")
     }
 
     private fun validateValue(value: BackupValue, column: BackupColumn, location: String) {
@@ -76,14 +85,14 @@ object BackupValidator {
     }
 
     // Iterative linear walk: a 100,000-row parent chain must not overflow the stack.
-    private fun validateParents(rows: List<BackupRow>) {
+    private fun validateParents(rows: List<BackupRow>, label: String) {
         val parents = rows.associate { row -> (row.fields.getValue("id") as BackupValue.Integer).value to (row.fields.getValue("parentId") as? BackupValue.Integer)?.value }
         val done = HashSet<Long>()
         for (id in parents.keys) {
             val path = HashSet<Long>()
             var current: Long? = id
             while (current != null && current !in done) {
-                checkBackup(path.add(current), "待办父子关系存在循环")
+                checkBackup(path.add(current), "${label}父子关系存在循环")
                 current = parents[current]
             }
             done.addAll(path)

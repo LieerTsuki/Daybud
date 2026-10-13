@@ -43,7 +43,7 @@ TDD：先编写测试与类型契约，以尚未实现行为的临时空规则�
 
 ## 后续及已知限制
 
-- 截至2026-10-13，A、B1–B3、C1–C2c2底座局部验收通过；D–F未完成：v2/v1备份兼容、统一页面/导航/设置、生产v6原子接线、覆盖安装和版本交付。发生/提醒及完整隔离迁移结果另列，不等于生产激活。
+- 截至2026-10-13，A、B1–B3、C1–C2c2及D1底座局部验收通过；完整D–F未完成：旧v1转换/目标库备份维护、统一页面/导航/设置、生产v6原子接线、覆盖安装和版本交付。备份格式/发生/提醒及完整隔离迁移结果另列，不等于生产激活。
 - 本批构件尚未接入生产业务，不能在已发布软件中使用新的转换 / 完成规则；不以单元测试代替设备迁移验收。
 - 重复展开/例外/冲突等领域规则已验证，独立统计页、今天真实日程和UI移除日期确认等页面接线仍在E实现；没有占位入口。
 - V1 目标为 1.0.0 / code 3 / schema v6，当前仍为 0.1.1 / code 2 / schema v5。main 及已发布 APK 本轮未更新；功能分支交付见下文，不等于发布 APK。
@@ -361,3 +361,36 @@ $env:JAVA_HOME='D:\jdk'
 - README/CHANGELOG/schema README/实施计划/本记录同步。推送前远端功能分支仍为基线 `2cee697`，远端main和本地main均为 `b016bcbc0f146ea6d9fe257b734700689de5cb51`；仅提交推送当前 `feat/v1-unified-plans`，不创建PR/合并main/发布APK。
 
 五项C2c2任务局部验收已完成；技术迁移、统一校准、旧身份清理等隔离提醒底座具备后续连接基础。下一批D开始v2备份/旧v1校验转换/目标库快照及维护适配，生产默认codec和BackupMaintenanceWorkflow到E才切换；V1页面/整体升级与版本交付仍未完成。
+
+## D1 · 第十批：v2备份格式底座（局部验收通过）
+
+2026-10-13，用户确认范围，基线HEAD `1e667d5`、当前分支干净。D1仅新增隔离raw契约/严格校验/v2codec，D2才做v1转换，后续处理Room恢复与维护文件；默认v1生产格式和Hilt/UI/schema/0.1.1保持。当前正在复验基线及细化测试，不引用上一批结果当本批验收。
+
+本轮基线：JDK25/Gradle9.4.1，全量JVM --rerun及Debug/lint，BUILD SUCCESSFUL（3分1秒，66 tasks：2 executed/64 up-to-date）；实际1001项/87 suites、0 failure/error/skipped。构建/lint为未变源码缓存检查，基线测试编译完成后准备了新测试文件，未把它们计入基线。计划独立只读复审Critical/Important/Minor均0，数据格式→校验→codec依赖及v1隔离边界明确。
+
+首组实质RED：13项/1 suite、12 assertion failure/0 error/skipped（2分55秒，40 tasks：12 executed/28 up-to-date）。失败来自尚未实现的坏字段、有效模式、关系、环、来源重复、设置和总行数拒绝；100k完整父链装置正常建立，不因递归或装置异常失败。历史合法值用例可由临时空检查通过，不声称它证明实现；临时声明将在GREEN前替换，不可提交占位。
+
+实现raw契约/静态白名单/共享通用检查及v2有效模式后，第二组实际46项/3 suites、15 assertion failure/0 error/skipped（2分10秒，40 tasks：11 executed/29 up-to-date）。V2Validator13及原v1Codec17已GREEN；V2Codec16中15项因缺少编码/校验失败，是编解码实质RED。默认64MiB坏输入用例由临时拒绝通过，不单独声称限流实现；随后替换codec空声明，保留旧v1默认parser预算20，仅显式V2使用白名单27列预算。
+
+定向GREEN：46项/3 suites（29新增、17原v1），0 failure/error/skipped，BUILD SUCCESSFUL（2分整，40 tasks：11 executed/29 up-to-date）。真实100k完整父链和环/超限、来源增行计数、raw历史/Long极值/27字段、exact UTF8字节边界、独立literal canonical SHA256黄金值、新旧codec版本隔离均通过。全量构建/lint及独立代码/文档复审进行中；无实际文件读取、Room恢复、设备执行或生产格式切换。
+
+核心及codec/parser/格式文档只读复审无Critical/Important，2项Minor：原文保留用例原expected仅浅copy，改用独立raw行/集合装置；文档明确defaultReminderDays可为[]而不可为null，并在现有坏设置测试补null拒绝。既有正确拒绝行为的覆盖补强，不伪称另一次功能修复RED。原v1公开入口、schema/codec默认、golden不改；继续最终复验。
+
+首次全量验收命令（补强前已编译的测试快照）退出0、BUILD SUCCESSFUL（3分21秒，101 tasks：16 executed/85 up-to-date），1030项/89 suites、0 failure/error/skipped；Debug重新打包，AndroidTest源重新编译且测试包为缓存检查，lint三类源重新分析通过。随后复审确认两项Minor已关闭，当前静态范围Critical/Important/Minor均0；补强后的同一完整命令再次强制重跑中，不把前次数字替代最后复验。
+
+### 最终验证 · 2026-10-13
+
+```powershell
+$env:JAVA_HOME='D:\jdk'
+.\.tools\gradle-9.4.1\bin\gradle.bat -I .\.tools\phase5-test-network.gradle :app:testDebugUnitTest --rerun :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --console=plain
+```
+
+完整复验退出0、BUILD SUCCESSFUL（2分40秒，101 tasks：7 executed/94 up-to-date）；实际XML本轮08:44:32（Asia/Shanghai）更新，1030项/89 suites、0 failure/error/skipped。比基线新增29项/2 suites（V2Validator13、V2Codec16），包括补强后的独立原文预期及null拒绝。保留v1原黄金值与全部旧业务/备份/维护/提醒/迁移/ViewModel回归，不把17项旧codec算新增。
+
+- JVM强制重跑，UnitTest Kotlin因补强重新编译；正式源码及Debug/androidTest为首次全量后的缓存构建检查，首次Debug已重打包、AndroidTest源编译通过，未执行设备安装或测试。
+- 本次lint重新分析UnitTest，正式/AndroidTest分析和报告复用前次未变内容；实际0 error/55既有warning，新/修改备份路径无lint issue。既有AGP/KAPT/Robolectric/opt-in等编译提示保留。
+- 独立计划复审均0问题；完整代码/codec/parser/格式文档复审2 Minor按真实行为补齐并关闭，最终Critical/Important/Minor均0，只认可D1隔离范围，不替代实际运行。
+- README/CHANGELOG/本记录/实施计划/v2格式说明同步，保留v1历史格式与BackupSchema/BackupJsonCodec默认。无占位实现、生产Hilt/UI/schema/版本或旧表删除，不读写用户文件/真实数据库；当前0.1.1/code2/schema5及已发布APK不变。
+- 推送前远端feature与本地基线均为 `1e667d5`，main仍 `b016bcbc0f146ea6d9fe257b734700689de5cb51`。仅提交推送当前feature，不创建PR/合并main/发布APK。
+
+本批五项任务局部验收完成。限制：codec是受限内存编解码而非流式文件/数据库恢复；64MiB/100k与纯JVM父链测试不是Android大库内存/性能证明。没有实际文件选择/重读、保护备份、原子Room恢复、设备/UI/Release/性能或用户库升级验收。D2旧v1先校验原hash/字段/关系再共享转换及版本分派，后续目标库/维护文件仍待完成，E才更换默认codec和生产消费者；D1不是整个D或V1发布。

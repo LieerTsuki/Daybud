@@ -5,13 +5,18 @@ import com.example.lifemanager.domain.backup.BackupValidationException
 import com.example.lifemanager.domain.backup.checkBackup
 import com.example.lifemanager.domain.backup.checkBackupUnicode
 import kotlinx.serialization.json.*
+import com.example.lifemanager.domain.backup.V2BackupSchema
+
+internal enum class BackupJsonContract { V1, V2 }
 
 /**
- * Strict format-v1 reader. Unlike a last-key-wins JSON tree parser, duplicate
+ * Strict reader with version-specific, non-input-controlled member budgets. Unlike a last-key-wins JSON tree parser, duplicate
  * decoded member names are rejected before they can disappear. No floating
  * point conversion, lenient syntax or arbitrary recursion is accepted.
  */
-internal class StrictBackupJson(private val source: String, private val limits: BackupLimits) {
+internal class StrictBackupJson(private val source: String, private val limits: BackupLimits,
+    contract: BackupJsonContract = BackupJsonContract.V1) {
+    private val rowMembers = if (contract == BackupJsonContract.V1) 20 else V2BackupSchema.maxRowMembers
     private var position = 0
     private var arrayItems = 0
     private var members = 0
@@ -47,9 +52,9 @@ internal class StrictBackupJson(private val source: String, private val limits: 
             whitespace()
             val key = string()
             checkBackup(key !in values, "JSON 存在重复字段")
-            // Every legitimate row has at most 19 members; also bound malicious
+            // Keep v1's original budget; v2 has 27-column plans. Also bound malicious
             // object-only documents before constructing their complete trees.
-            checkBackup(++members <= limits.maxRows.toLong() * 20 + 50, "JSON 字段数量超限")
+            checkBackup(++members <= limits.maxRows.toLong() * rowMembers + 50, "JSON 字段数量超限")
             whitespace(); expect(':')
             values[key] = value(depth)
             whitespace()
