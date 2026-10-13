@@ -1,5 +1,43 @@
 # V1 统一计划分批验收
 
+## E1 · 第十四批：统一列表准备（2026-10-13，局部验收通过）
+
+用户确认范围后在 `feat/v1-unified-plans` 实施；既有完整 V1 设计不变。本批不接生产 Hilt/Room/nav，不开放新建/编辑/日历/统计空入口，0.1.1/code2/schema5、main、发布 APK 及个人数据不变。
+
+实现范围：真实统一仓库 Flow、列表分类（全部/待办/日程）、默认未完成和三状态、标题/备注搜索、优先级/标签身份筛选、今天/明天/周一至周日/全部日期、创建时间降序/优先级降序/截止发生升序并 ID 升序兜底。NONE 分类日期不适用且保持筛选；无日期在日期排序末尾，重复按共享规则和例外寻当前/下一发生，结束系列不虚构未来。完成/撤销保留筛选，系列整体完成；维护拒绝不重放，旧世代/失效行回调拒绝，读取失败禁写而非伪造空成功。提交回执先于提醒，失败/取消只重试提醒；原生手账主题、滚动筛选、长文本与可访问文字复用既有 UI。
+
+### 已执行证据（中间结果，不作为最终验收）
+
+- 本批新基线：JDK25、Gradle9.4.1、既有网络 init，`:app:testDebugUnitTest --rerun --console=plain`，退出0，BUILD SUCCESSFUL 2m36s；40 tasks：1 executed/39 up-to-date。XML 1139项/96 suites，0 failure/error/skipped。
+- 首轮缺契约 RED：测试源反射检查缺失组件，3项全部 assertion failure，BUILD FAILED 1m44s；40 tasks：5 executed/35 up-to-date。建立最小类型/临时空行为后改为直接 typed 行为测试；反射检查随后移除，不保留生产桩或源码文本断言。
+- 行为首轮编译失败1m31s：测试夹具外部访问 `lateinit` 初始化状态，未计行为 RED。把测试清理移入夹具后重跑，43项执行/42 failure（查询20、UI8、VM15；一个拒绝旧行断言在临时 no-op 下通过），BUILD FAILED 2m29s；40 tasks：6 executed/34 up-to-date。缺行为的 VM 等待屏障用例发生测试超时，不将超时当完成正确性证明；实质查询/状态/UI 断言确实失败。
+- 首轮实现组合46项/4 suites（增加3真实Room），41通过/5 Compose失败，BUILD FAILED 2m22s；40 tasks：12 executed/28 up-to-date。XML栈均为未组成的离屏 LazyColumn 项调用 `performScrollTo`；对比旧页面测试，改为父列表 `performScrollToNode` 先定位，不改变生产 UI 来迎合测试。
+- 新增3项 VM 回归后18项执行/2 failure，BUILD FAILED 56s；40 tasks：5 executed/35 up-to-date。真实复现世代观察失败后重试不重订阅、提交后发布世代核对失败误称未保存；展示时区刷新通过。修复重试外层观察边界和跨返回/发布边界保留的提交回执，组合复验中。
+- 修复后49项组合48通过/1失败，BUILD FAILED 2m13s；40 tasks：11 executed/29 up-to-date。剩余失败是维护提示在滚动到下方记录后已离开懒列表组成区域，先检查提示再滚动验证禁用；不修改真实维护行为。随后UI8项全部通过，另1项加强的时区状态断言实质RED（共9项/1 failure，2m12s；40 tasks：11 executed/29 up-to-date）。明确定位为查询结果相同可能不触发重组且展示时区未被状态发布；新增状态字段，由许可内有限查询发布展示时区、页面读取同一状态值。再跑完整E1组合中。
+
+### 验收边界
+
+本批只有合成数据的 JVM/Robolectric/Room/Compose 验证。真实设备、生产导航/Hilt/备份提醒统一切换、旋转/进程重建、系统通知草稿、Release、覆盖升级及大库性能仍留后续 E/F；编译 androidTest 不等于设备测试。既有 AGP/KAPT/旧测试弃用警告和归属待定位的 SQLite 资源警告不隐藏，待最终日志检查。
+
+### 定向 GREEN
+
+最终定向命令为 `:app:testDebugUnitTest --tests '*PlanListQueryTest' --tests '*PlanViewModelTest' --tests '*PlanScreenTest' --tests '*PlanListRoomTest' --rerun --console=plain`。实际XML49项/4 suites（查询20、VM18、UI8、完整Room3）、0 failure/error/skipped；BUILD SUCCESSFUL 1m3s，40 tasks：8 executed/32 up-to-date。临时空行为全部替换，缺契约反射测试已移除。保持行为不变将观察重试拆为私有 `observeList` 后，执行全量 JVM/Debug/androidTest/lint 复验中；独立审查与最终交付结果未确认前不宣布本批完成。
+
+首轮全量复验（审查修复前）：实际XML1188项/100 suites、0 failure/error/skipped；`:app:testDebugUnitTest --rerun :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --console=plain` BUILD SUCCESSFUL 4m1s，101 tasks：27 executed/74 up-to-date。Debug重新打包，androidTest重新编译/构建检查、lint重新分析报告0 error/55既有warning，新列表源无issue。仍观察归属待定位的Robolectric SQLite CloseGuard资源未关闭警告，记录于UnifiedPlanCalibration/HabitScreenRegression等日志不等于已确定这些类是泄漏源。此数字是修复前中间结果，不是最终交付验收。
+
+独立源审查：1 Important（Compose delegated state使旧回调调用时取得新世代）、2 Minor（错误空态测试文案不匹配、真实Room装置未覆盖世代替换/系列往返）。逐项核对后补强：真实PlanScreen适配层保留旧checkbox语义action，停住重组，维护替换同ID，再调用旧action。首轮1项5秒等待超时（BUILD FAILED 1m27s）尚未进入断言，不计实质RED；沿用既有Compose测试显式pump idle后重跑，1项实际 assertion failure（57s，40 tasks：4 executed/36 up-to-date），新记录确实被旧action完成。页面在组合时捕获不可变renderedGeneration，三个数据/筛选/提醒回调均使用原令牌。错误空态断言改为实际文案并定位列表尾部；Room观察真实metadata失效且事务推进世代，补同ID替换与在途结果隔离、系列完成/撤销保留例外及锚点两项；修复组合复验中。
+
+修复定向复验：`:app:testDebugUnitTest --tests '*PlanScreenTest' --tests '*PlanListRoomTest' --rerun --console=plain`，XML14项/2 suites（UI9、Room5）、0 failure/error/skipped，BUILD SUCCESSFUL 2m37s，40 tasks：10 executed/30 up-to-date。补强测试现已运行通过；同ID维护场景仅更换合成内存库，未接触个人库。独立定向复审及最终全量复验中。
+
+### 最终验收与交付边界
+
+- 本批新增52项/4 suites（查询20、VM18、Compose9、完整Room5）。最终全量命令同前，退出0、BUILD SUCCESSFUL 3m10s，101 tasks：13 executed/88 up-to-date；实际XML1191项/100 suites、0 failure/error/skipped，JVM强制重跑。
+- Debug重新打包成功；androidTest经过构建检查（最终KAPT执行，Kotlin编译/包为up-to-date），没有执行connectedAndroidTest。lint三类源重新分析，报告内容未变故lintReportDebug up-to-date，实际XML0 error/55既有warning，新列表源无issue。不将缓存报告描述成重新生成的不同报告。
+- 独立源审查及定向复审确认1 Important/2 Minor全部ADDRESSED，修复范围无新增Critical/Important；审查者未运行测试，运行证据由主代理独立读取。不是整个E/V1的生产验收。SQLite CloseGuard资源关闭警告仍在全量日志出现，归属未定位；日志记录测试类不构成归属证明，不宣称已消除。
+- README、CHANGELOG、实施计划及本验收文档同步。本批只提交/推送现有功能分支，不合并main、改origin、升级版本/schema、发布APK或操作个人数据。下一批E2为详情/编辑与同身份日期转换；剩余E页面及生产接线、F版本和设备交付仍待完成。
+
+## 历史批次记录
+
 开始日期：2026-10-10；B2 最终复验日期：2026-10-11。分支 `feat/v1-unified-plans`。全文设计与当前分支开发方式已获用户确认。
 
 ## 本轮基线
