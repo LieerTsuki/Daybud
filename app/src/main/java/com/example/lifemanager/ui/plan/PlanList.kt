@@ -2,6 +2,7 @@ package com.example.lifemanager.ui.plan
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -19,7 +20,8 @@ import com.example.lifemanager.ui.settings.displayDateTime
 import java.time.ZoneId
 
 @Composable
-internal fun PlanListItem(row: PlanListRow, enabled: Boolean, displayZone: ZoneId, onCompleted: (Long, Boolean) -> Unit) {
+internal fun PlanListItem(row: PlanListRow, enabled: Boolean, displayZone: ZoneId, onCompleted: (Long, Boolean) -> Unit,
+    onOpen: ((Long) -> Unit)? = null) {
     val plan = row.plan
     val title = plan.title.ifBlank { "（历史空标题）" }
     val paper by animateColorAsState(if (plan.isCompleted) MaterialTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.surface, label = "plan-paper")
@@ -28,7 +30,8 @@ internal fun PlanListItem(row: PlanListRow, enabled: Boolean, displayZone: ZoneI
         Row(Modifier.padding(12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Checkbox(checked = plan.isCompleted, enabled = enabled, onCheckedChange = { onCompleted(plan.id, it) },
                 modifier = Modifier.semantics { contentDescription = "${if (plan.isCompleted) "撤销完成" else "完成"}：$title" })
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Column(Modifier.weight(1f).then(if (onOpen != null) Modifier.clickable(enabled = enabled,
+                onClickLabel = "打开计划详情") { onOpen(plan.id) } else Modifier), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(title, style = MaterialTheme.typography.titleMedium,
                     textDecoration = if (plan.isCompleted) TextDecoration.LineThrough else null)
                 if (!plan.description.isNullOrEmpty()) Text(plan.description, style = MaterialTheme.typography.bodyMedium)

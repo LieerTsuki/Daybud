@@ -1,0 +1,149 @@
+package com.example.lifemanager.ui.plan
+
+import android.app.Application
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.*
+import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewModelScope
+import com.example.lifemanager.domain.plan.*
+import com.example.lifemanager.ui.theme.LifeManagerTheme
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import org.junit.After
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import org.robolectric.annotation.LooperMode
+import kotlin.test.*
+
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk=[28],application=Application::class)
+@LooperMode(LooperMode.Mode.PAUSED)
+class PlanEditorComposeTest {
+    @get:Rule val compose=createComposeRule()
+    private val f=EditorTestWorld(Dispatchers.IO)
+    @After fun cleanup() { f.model.viewModelScope.cancel() }
+    private fun waitFor(predicate:(PlanEditorState)->Boolean) { compose.waitUntil(5_000) { compose.waitForIdle();predicate(f.model.uiState.value) } }
+    private fun scroll(matcher:SemanticsMatcher) { compose.onNode(SemanticsMatcher.keyIsDefined(SemanticsActions.ScrollToIndex)).performScrollToNode(matcher) }
+    private fun show(editor:Boolean=true,dark:Boolean=false,large:Boolean=false) {
+        compose.setContent { LifeManagerTheme(darkTheme=dark) {
+            CompositionLocalProvider(LocalDensity provides Density(LocalDensity.current.density,if(large)2f else 1f)) {
+                val state by f.model.uiState.collectAsState()
+                Box(Modifier.size(320.dp,640.dp)) { if(editor)PlanEditor(state,f.model)else PlanDetail(state,f.model) }
+            }
+        } }
+        waitFor { it.isAvailable }
+        compose.runOnIdle { if(editor)f.model.openNew(f.token) else f.model.open(7,f.token) }
+        waitFor { it.isAvailable && it.pane==if(editor)PlanPane.EDIT else PlanPane.DETAIL }
+    }
+    @Test fun `blank editor exposes real title entry and save writes once`() {
+        show();compose.onNodeWithContentDescription("计划标题").performTextReplacement("手机测试目标")
+        scroll(hasText("保存计划"));compose.onNodeWithText("保存计划").performClick()
+        waitFor { it.pane==PlanPane.DETAIL && !it.isBusy && it.detail!=null }
+        assertEquals(listOf("手机测试目标"),f.repo.rows.value.map { it.title })
+    }
+    @Test fun `deadline field appears only when selected and keeps date semantics`() {
+        show();scroll(hasText("截止日期"));compose.onNodeWithText("截止日期").performClick()
+        scroll(hasContentDescription("仅日期截止"));compose.onNodeWithContentDescription("仅日期截止").performClick()
+        scroll(hasContentDescription("截止日期输入"));compose.onNodeWithContentDescription("截止日期输入").performTextReplacement("2026-10-20")
+        compose.runOnIdle { f.model.change(PlanField.TITLE,"日期计划",f.model.uiState.value.stamp) }
+        scroll(hasText("保存计划"));compose.onNodeWithText("保存计划").performClick()
+        waitFor { it.detail!=null && !it.isBusy }
+        assertEquals(PlanTimeMode.DEADLINE,f.repo.rows.value.single().timeMode);assertNull(f.repo.rows.value.single().dueAt)
+    }
+    @Test fun `interval and all day selections expose their working fields`() {
+        show();scroll(hasText("时间区间"));compose.onNodeWithText("时间区间").performClick()
+        scroll(hasContentDescription("开始时间输入"));compose.onNodeWithContentDescription("开始时间输入").assertExists()
+        scroll(hasText("全天日期"));compose.onNodeWithText("全天日期").performClick()
+        compose.onNodeWithText("确认切换").performClick()
+        scroll(hasContentDescription("全天开始日期输入"));compose.onNodeWithContentDescription("全天开始日期输入").assertExists()
+    }
+    @Test fun `invalid save keeps input and shows actionable error`() {
+        show();scroll(hasText("保存计划"));compose.onNodeWithText("保存计划").performClick()
+        waitFor { it.error!=null }
+        assertEquals(0,f.repo.writes);assertNotNull(f.model.uiState.value.draft)
+        scroll(hasText("表单无效",substring=true));compose.onNodeWithText("表单无效",substring=true).assertExists()
+    }
+    @Test fun `closing dirty editor offers explicit retain or discard`() {
+        show();compose.onNodeWithContentDescription("计划标题").performTextReplacement("不要丢弃")
+        scroll(hasText("返回计划"));compose.onNodeWithText("返回计划").performClick()
+        compose.onNodeWithText("继续编辑").performClick()
+        assertEquals("不要丢弃",f.model.uiState.value.draft!!.title)
+        compose.onNodeWithText("返回计划").performClick();compose.onNodeWithText("放弃草稿").performClick()
+        waitFor { it.pane==PlanPane.LIST }
+    }
+    @Test fun `disabled global reminder message does not invent a settings toggle`() {
+        f.enabled=false;show()
+        scroll(hasText("计划提醒总开关已关闭，单项配置仍会保存但不会投递"))
+        compose.onNodeWithText("计划提醒总开关已关闭，单项配置仍会保存但不会投递").assertExists()
+        compose.onNodeWithText("打开系统提醒").assertDoesNotExist()
+    }
+    @Test fun `detail shows real long text and edits the same identity`() {
+        val plan=Plan(id=7,title="原始标题",description="长备注".repeat(30),timeZone="Asia/Shanghai",createdAt=f.now,updatedAt=f.now)
+        f.repo.rows.value=listOf(plan);show(editor=false,dark=true,large=true)
+        scroll(hasText("编辑计划"));compose.onNodeWithText("编辑计划").performClick()
+        waitFor { it.pane==PlanPane.EDIT }
+        assertEquals(7,f.model.uiState.value.draft!!.base.id);assertEquals(plan.description,f.model.uiState.value.draft!!.description)
+    }
+    @Test fun `detail deletion dialog does not delete until confirmed`() {
+        f.repo.rows.value=listOf(Plan(id=7,title="删除目标",timeZone="Asia/Shanghai",createdAt=f.now,updatedAt=f.now))
+        show(editor=false);scroll(hasText("删除计划"));compose.onNodeWithText("删除计划").performClick()
+        assertEquals(1,f.repo.rows.value.size)
+        compose.onNodeWithText("取消删除").performClick();assertEquals(1,f.repo.rows.value.size)
+    }
+    @Test fun `conflict dialog can return to editing without discarding the draft`() {
+        f.repo.rows.value=listOf(Plan(id=7,title="已有区间",timeZone="Asia/Shanghai",timeMode=PlanTimeMode.TIMED,
+            startAt=java.time.Instant.parse("2026-10-20T04:00:00Z"),endAt=java.time.Instant.parse("2026-10-20T05:00:00Z"),createdAt=f.now,updatedAt=f.now))
+        show();compose.runOnIdle {
+            f.model.change(PlanField.TITLE,"冲突草稿",f.model.uiState.value.stamp)
+            f.model.setMode(PlanTimeMode.TIMED,f.model.uiState.value.stamp)
+            f.model.change(PlanField.START_AT,"2026-10-20T12:00+08:00",f.model.uiState.value.stamp)
+            f.model.change(PlanField.END_AT,"2026-10-20T13:00+08:00",f.model.uiState.value.stamp)
+        }
+        scroll(hasText("保存计划"));compose.onNodeWithText("保存计划").performClick()
+        waitFor { it.conflicts!=null && !it.isBusy }
+        compose.onNodeWithText("继续修改").performClick()
+        waitFor { it.conflicts==null && !it.confirmClose }
+        scroll(hasContentDescription("计划标题"));compose.onNodeWithContentDescription("计划标题").performTextReplacement("保留后修改")
+        assertEquals("保留后修改",f.model.uiState.value.draft!!.title);assertEquals(1,f.repo.rows.value.size)
+    }
+    @Test fun `mode confirmation displays the actual retained repeat and reminder configuration`() {
+        show();compose.runOnIdle {
+            f.model.setRepeat(com.example.lifemanager.domain.model.ScheduleRepeatRule.CUSTOM,f.model.uiState.value.stamp)
+            f.model.change(PlanField.REPEAT_INTERVAL,"3",f.model.uiState.value.stamp)
+            f.model.toggleDay(java.time.DayOfWeek.MONDAY,f.model.uiState.value.stamp)
+            f.model.change(PlanField.REPEAT_END,"2026-10-30",f.model.uiState.value.stamp)
+            f.model.change(PlanField.REMINDER_MINUTES,"5",f.model.uiState.value.stamp)
+        }
+        scroll(hasText("时间区间"));compose.onNodeWithText("时间区间").performClick()
+        compose.onNodeWithText("自定义",substring=true).assertExists()
+        compose.onNodeWithText("间隔：3",substring=true).assertExists()
+        compose.onNodeWithText("MONDAY",substring=true).assertExists()
+        compose.onNodeWithText("2026-10-30",substring=true).assertExists()
+        compose.onNodeWithText("提前：5",substring=true).assertExists()
+        compose.onNodeWithText("保留原类型").performClick()
+        assertEquals(PlanTimeMode.NONE,f.model.uiState.value.draft!!.mode)
+    }
+    @Test fun `mode confirmation distinguishes active instant deadline from retained date`() {
+        show();compose.runOnIdle {
+            f.model.setMode(PlanTimeMode.DEADLINE,f.model.uiState.value.stamp)
+            f.model.setDateOnly(true,f.model.uiState.value.stamp)
+            f.model.change(PlanField.DUE_DATE,"2026-10-20",f.model.uiState.value.stamp)
+            f.model.setDateOnly(false,f.model.uiState.value.stamp)
+            f.model.change(PlanField.DUE_AT,"2026-10-21T16:00+08:00",f.model.uiState.value.stamp)
+        }
+        scroll(hasText("无日期待办"));compose.onNodeWithText("无日期待办").performClick()
+        compose.onNodeWithText("当前截止表示：时刻",substring=true).assertExists()
+        compose.onNodeWithText("截止时刻：2026-10-21T16:00+08:00",substring=true).assertExists()
+        compose.onNodeWithText("截止日期：2026-10-20",substring=true).assertExists()
+    }
+}

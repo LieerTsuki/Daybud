@@ -1,5 +1,42 @@
 # V1 统一计划分批验收
 
+## E2 · 第十五批：详情与编辑准备（2026-10-14，局部验收通过）
+
+用户恢复“继续”，按已说明的 E2 范围在当前 `feat/v1-unified-plans` 开发。生产仍 0.1.1/code2/schema5；不切 Hilt/根导航/备份/系统提醒、不发布 APK、不合并 main、不处理个人数据。页面通过独立准备工作区连接真实领域用例；不是手机已开放的新版入口。
+
+实现：共用新建/编辑、四时间模式、仅日期截止、显式模式切换确认、地点/参与人/颜色/标签/优先级/重复/单项提醒配置；同身份日期转换保留完成、创建、父关系、排序和非活动参数，原始标签与 nullable/空串不自动归一化。历史固定偏移和空白标题继续可读，新编辑要求注册 IANA 与非空标题。带偏移输入保留毫秒与 DST 歧义选择，越界毫秒拒绝，不把 LocalDate 变成午夜 Instant。
+
+保存核查在全局准入→共享 Plan 锁内完成：当前记录、并发完成状态、真实冲突与取消例外重新读取；内容改变拒绝旧草稿覆盖，完成变化保留最新事实。确认证明绑定候选/窗口/冲突内容/相关例外，变化后重确认。核查含首区间及从首日本地日期起至少30天，仅证明有限窗口，不宣称无限重复无冲突。取消例外含无日期旧记录被重新激活的候选。
+
+PlanEditorViewModel 独立 StateFlow，回调绑定世代、编辑会话和必要的草稿修订；维护取消保留草稿，世代替换使旧草稿失效，读取/设置失败禁写，关闭提醒总开关不阻塞离线 CRUD。提交回执先消费新建草稿，再执行提醒；失败/取消仅按明确记录 ID 重试效果，跨返回/再次新建保留待处理回执。详情完成/撤销、确认删除（子计划仅解绑）及列表→详情→编辑→返回接线；分类变化提示且保留列表筛选，不增加日历/统计空入口。
+
+### TDD 与中间验证记录（不作为最终交付）
+
+- 新基线：JDK25/Gradle9.4.1/既有 network init，`:app:testDebugUnitTest --rerun --console=plain` 退出0，BUILD SUCCESSFUL 3m11s，40 tasks：1 executed/39 up-to-date；实际 XML1191项/100 suites、0 failure/error/skipped。
+- 缺契约反射 RED4项全部 assertion failure，1m17s，40 tasks：5 executed/35 up-to-date；建立最小临时类型后用 typed 真实行为测试替代，最终删除反射检查与空行为，不把测试桩留作功能。
+- 草稿23项与领域契约1项组合：24项/23 failure，2m48s，40 tasks：12 executed/28 up-to-date；一项未编辑草稿特征断言通过。最小草稿实现后，核心50项/21 failure，3m35s，40 tasks：11 executed/29 up-to-date，其中草稿23全部通过、领域5失败、VM16失败（缺行为等待超时不代替具体正确性断言）。
+- 核心首轮 GREEN83项/5 suites：草稿23、保存核查9、编辑VM18、既有用例13、真实用例Room20，0 failure/error/skipped；3m56s，40 tasks：12 executed/28 up-to-date。
+- UI首轮测试编译因双 `Test` import 失败19s，未计行为RED。修正测试 import 后界面9项全为缺节点/工作区 assertion failure；组合34项/9 failure、草稿25全部通过，1m13s，40 tasks：5 executed/35 up-to-date。另两项草稿测试覆盖精确 Long 毫秒上下界及越界1ms拒绝。
+- 界面与完整13实体v6合成Room装置：14项/2 suites（8实际交互+1临时契约、Room5）0 failure/error/skipped，2m40s，40 tasks：12 executed/28 up-to-date。临时UI契约随后移除，工作区由 typed 交互覆盖；不是设备执行。
+- 独立核心审查3 Important：再次编辑同ID的旧回调、当前草稿保留区间重新启用漏确认、NONE候选保留例外漏查。新增4项回归与工作区3项得到34项/7 failure，1m19s，40 tasks：5 executed/35 up-to-date，均真实复现。修复为每次编辑新会话、核对当前四区间字段、例外读取含持久候选ID。修复组合56项/6 suites（保存11、编辑VM20、界面8、工作区3、Room5、旧列表界面9）全部通过，2m45s，40 tasks：11 executed/29 up-to-date。
+- 另补两项回归：冲突弹窗返回修改必须保留草稿而不陷入关闭/冲突循环，详情已更新后旧删除确认必须失效；30项/2 failure，1m4s，40 tasks：5 executed/35 up-to-date。明确冲突取消动作仅清证明，详情刷新更新修订并关闭旧删除确认；弹窗正文支持长内容滚动。修复后界面9/编辑VM21共30项/2 suites、0 failure/error/skipped，2m27s，40 tasks：11 executed/29 up-to-date。
+- 审查第二轮修复前全量：`:app:testDebugUnitTest --rerun :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --console=plain` 退出0，2m59s，101 tasks：21 executed/80 up-to-date；XML1267项/106 suites、0 failure/error/skipped。Debug重新打包，androidTest重新编译/构建检查（包为up-to-date），lint三类源重新分析并生成报告0 error/55既有warning。工作区5项含双向日期转换与旧新建/详情语义回调在世代替换后拒绝；此为中间结果，后续确认令牌/删除锁内复核修正后必须全量重跑。
+- 独立整合复审3 Important/2 Minor：冲突证明替换未推进修订、取消关闭后旧确认可套用新待跳转目标、删除等待锁期间记录改变仍删除；切换确认未展示实际参数、Long合法边界缺直接解析路径。新增3条VM与1条UI实质RED：60项/4 failure，1m33s，40 tasks：5 executed/35 up-to-date；另1条纯草稿测试用两个独立字面日期字符串及null旧值证明精确毫秒解析，先通过且不冒充RED。修正每次确认请求/证明发布/取消的修订，删除在全局准入→Plan锁内重新比较已确认的完整记录快照，切换弹窗展示草稿具体日期、重复、自定义星期/结束、单项提醒与时区，复验中。
+- 第二轮修复定向 GREEN90项/6 suites：VM24、界面10、草稿26、Room5、工作区5及旧用例Room20，0 failure/error/skipped，2m42s，40 tasks：11 executed/29 up-to-date。此后再补完整Room“确认后内容改变不删除”和VM“两次新建失败提醒按各自ID重试不重复写入”的集成覆盖；不是把既有正确行为冒充首次RED。
+- 再次全量1274项/106 suites、0 failure/error/skipped，完整命令同前，3m14s，101 tasks：19 executed/82 up-to-date；Debug重新打包、androidTest重新编译/包构建检查、lint三类源重新分析（报告内容未变，lintReportDebug为up-to-date，实际仍0 error/55既有warning）。源复审已无Critical/Important，剩余1 Minor：模式确认不能以保留的dueDate替代当前选中的dueAt显示；补最后界面回归中，此数字仍不是最终状态。
+- 最后一项提示回归 RED：界面11项/1 failure，1m19s，40 tasks：5 executed/35 up-to-date。切换弹窗分别展示截止日期/时刻并标识所选表示，表单与弹窗明确截止模式保存的互斥规则；不误称两个有效截止字段同时保留。最终复验中。
+
+### 验收限制
+
+本批仅合成数据 JVM/Robolectric/Compose/Room；设备/旋转/进程重建、真实通知草稿、系统文件提供方、生产切换、覆盖升级、Release/签名/大库性能留后续 E/F。时间/日期使用有格式提示的文本输入，不声称已实现系统日期选择器；未做小时拖拽或单次重复完成。AGP/KAPT与旧测试弃用警告、既有归属待定位的 SQLite CloseGuard 警告不隐藏。E2局部验收不等于完整E或V1生产交付。
+
+### 最终验收与交付边界
+
+- 新增84项/6 suites：PlanDraft26、PlanCheckedSave11、PlanEditorViewModel25、PlanEditorCompose11、PlanWorkspaceCompose5、PlanEditorRoom6。最终执行 `:app:testDebugUnitTest --rerun :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --console=plain`，退出0，BUILD SUCCESSFUL 2m52s，101 tasks：18 executed/83 up-to-date；实际XML1275项/106 suites、0 failure/error/skipped，JVM强制重跑，最后提示回归GREEN。
+- Debug重新编译/打包成功；androidTest经过构建检查（KAPT执行，编译和包为up-to-date），没有connectedAndroidTest或个人设备操作。lint三类源重新分析，报告内容未变因此lintReportDebug为up-to-date；实际报告0 error/55既有warning，本批新增/修改计划UI及编辑源无lint issue，不把缓存检查虚称重新生成的报告。
+- 独立源审查/定向复审：核心3 Important、整合3 Important/2 Minor、补充1 Minor及初次边界测试补强均已逐项验证、修正、复审关闭；最终无遗留Critical/Important/Minor。审查者未运行测试，以上命令/XML由主代理独立核对。最终日志仍出现Robolectric SQLite CloseGuard警告，记录在TodoReminderAdmissionTest/LauncherBrandingTest日志不代表确定泄漏来源，不宣称已消除。
+- README、CHANGELOG未发布区、实施计划与本验收同步。交付仅提交/推送 `feat/v1-unified-plans`；不合并main、改origin、变更0.1.1/code2/schema5、发布/覆盖APK或提交密钥/个人数据。下一批E3日历/全库统计；最终E生产统一激活与F设备/版本升级交付尚未完成。
+
 ## E1 · 第十四批：统一列表准备（2026-10-13，局部验收通过）
 
 用户确认范围后在 `feat/v1-unified-plans` 实施；既有完整 V1 设计不变。本批不接生产 Hilt/Room/nav，不开放新建/编辑/日历/统计空入口，0.1.1/code2/schema5、main、发布 APK 及个人数据不变。

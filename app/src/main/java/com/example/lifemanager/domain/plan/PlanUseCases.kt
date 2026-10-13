@@ -27,6 +27,18 @@ class PlanCommittedCancellationException(val receipt: PlanWriteReceipt, cause: C
  * an unsaved draft before reminder work can fail/cancel. E still owns actual UI wiring.
  */
 class PlanUseCases(private val repository: PlanRepository, private val maintenance: MaintenanceCoordinator, private val reminders: PlanReminderEffects) {
+    suspend fun saveChecked(plan:Plan,tagNames:List<String>,expected:DataGeneration,policy:PlanEditPolicy,
+        onCommitted:suspend (PlanWriteReceipt)->Unit):PlanWriteResult {
+        // Own caller collections before suspension; confirmations cannot change behind a dialog.
+        val names=tagNames.toList()
+        val draft=plan.ownedEditSnapshot().copy(tagNames=names)
+        val owned=policy.copy(original=policy.original?.ownedEditSnapshot(),confirmed=policy.confirmed?.ownedEditSnapshot())
+        return write(expected,onCommitted) {
+            val checked=cancellablePlanWriteBody { verifyPlanEdit(repository,draft,owned) }
+            repository.save(checked,names,expected)
+        }
+    }
+
     suspend fun save(plan: Plan, tagNames: List<String>, expected: DataGeneration, onCommitted: suspend (PlanWriteReceipt) -> Unit): PlanWriteResult =
         write(expected, onCommitted) { repository.save(plan, tagNames, expected) }
 
@@ -35,6 +47,19 @@ class PlanUseCases(private val repository: PlanRepository, private val maintenan
 
     suspend fun delete(id: Long, expected: DataGeneration, onCommitted: suspend (PlanWriteReceipt) -> Unit): PlanWriteResult =
         write(expected, onCommitted) { repository.delete(id, expected); id }
+
+    /** Destructive UI confirmations own the shown snapshot, not just a reusable identity. */
+    suspend fun deleteChecked(confirmed: Plan, expected: DataGeneration, onCommitted: suspend (PlanWriteReceipt) -> Unit): PlanWriteResult {
+        val snapshot=confirmed.ownedEditSnapshot()
+        require(snapshot.id>0)
+        return write(expected,onCommitted) {
+            cancellablePlanWriteBody {
+                if(repository.get(snapshot.id)!=snapshot)throw PlanEditChangedException()
+            }
+            repository.delete(snapshot.id,expected)
+            snapshot.id
+        }
+    }
 
     suspend fun saveException(value: PlanException, expected: DataGeneration, onCommitted: suspend (PlanWriteReceipt) -> Unit): PlanWriteResult =
         write(expected, onCommitted) { repository.saveException(value, expected); value.planId }

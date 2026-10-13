@@ -4,6 +4,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
@@ -17,6 +18,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.lifemanager.domain.model.TodoPriority
+import com.example.lifemanager.domain.maintenance.DataGeneration
 import com.example.lifemanager.domain.plan.*
 import com.example.lifemanager.ui.common.PlannerIllustration
 import java.time.ZoneId
@@ -25,7 +27,9 @@ import kotlinx.coroutines.isActive
 
 /** E preparation adapter. Root navigation/Hilt activation is deliberately deferred. */
 @Composable
-fun PlanScreen(viewModel: PlanViewModel) {
+fun PlanScreen(viewModel: PlanViewModel, onNew: ((DataGeneration?) -> Unit)? = null,
+    onOpen: ((Long, DataGeneration?) -> Unit)? = null, canNavigate: Boolean = true,
+    extraContent: LazyListScope.() -> Unit = {}) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     // Delegated state getters are live. Old UI actions must not borrow a replacement's token.
     val renderedGeneration = state.generation
@@ -37,14 +41,16 @@ fun PlanScreen(viewModel: PlanViewModel) {
     }
     PlanScreen(state, { viewModel.onFilterChanged(it, renderedGeneration) },
         { id, completed -> viewModel.setCompleted(id, completed, renderedGeneration) },
-        viewModel::retryRead, { viewModel.retryReminders(it, renderedGeneration) }, viewModel::dismissMessage, state.displayZone)
+        viewModel::retryRead, { viewModel.retryReminders(it, renderedGeneration) }, viewModel::dismissMessage, state.displayZone,
+        onNew?.let { action -> { action(renderedGeneration) } }, onOpen?.let { action -> { id -> action(id, renderedGeneration) } }, canNavigate, extraContent)
 }
 
 @Composable
 fun PlanScreen(state: PlanUiState, onFilterChanged: (PlanFilter) -> Unit,
     onCompleted: (Long, Boolean) -> Unit, onRetryRead: () -> Unit,
     onRetryReminders: (Long) -> Unit, onDismissMessage: () -> Unit,
-    displayZone: ZoneId = state.displayZone) {
+    displayZone: ZoneId = state.displayZone, onNew: (() -> Unit)? = null, onOpen: ((Long) -> Unit)? = null,
+    canNavigate: Boolean = true, extraContent: LazyListScope.() -> Unit = {}) {
     val enabled = state.isAvailable && !state.isMaintaining
     val filter = state.filter
     Surface(color = MaterialTheme.colorScheme.background) {
@@ -58,6 +64,10 @@ fun PlanScreen(state: PlanUiState, onFilterChanged: (PlanFilter) -> Unit,
                     }
                     PlannerIllustration(Modifier.size(72.dp))
                 }
+            }
+            extraContent()
+            if (onNew != null) item(key = "new-plan") {
+                Button(onNew, enabled = enabled && canNavigate && !state.isLoading, modifier = Modifier.fillMaxWidth()) { Text("新建计划") }
             }
             if (state.isMaintaining) item(key = "maintenance") { Text("正在维护数据，暂不能修改") }
             if (state.readError != null) item(key = "read-error") {
@@ -131,7 +141,8 @@ fun PlanScreen(state: PlanUiState, onFilterChanged: (PlanFilter) -> Unit,
             if (state.isAvailable && !state.isLoading) item(key = "count") { Text("当前筛选：${state.rows.size} 项（非全库统计）") }
             if (state.rows.isEmpty() && state.isAvailable && !state.isLoading) item(key = "empty") { Text("当前筛选下暂无计划") }
             items(state.rows, key = { "plan-${it.plan.id}" }) { row ->
-                PlanListItem(row, enabled && !state.isLoading && row.plan.id !in state.pendingIds, displayZone, onCompleted)
+                PlanListItem(row, enabled && !state.isLoading && row.plan.id !in state.pendingIds, displayZone, onCompleted,
+                    if (canNavigate) onOpen else null)
             }
         }
     }
