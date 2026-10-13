@@ -14,7 +14,7 @@
 
 已确认以统一计划模型和表替代独立待办 / 日程：无日期归待办，有日期归日程；添加截止日期更新同一条记录，两类均可完成 / 撤销，重复日程完成表示整个系列结束。目标导航为「计划 / 打卡 / 订阅 / 设置」，目标版本 1.0.0 / versionCode 3。
 
-当前在 `feat/v1-unified-plans` 分批开发，A至D2的领域、存储/迁移、提醒及备份编解码/旧文件转换底座已完成局部验收，逐批结果见下文。这些底座尚未接入生产数据库、页面、备份或提醒；实际应用仍是 0.1.1 / code 2 / schema v5，顶部下载包和 main 不包含 V1，不能从设计批准或测试库升级推断新版发布已完成。统一接线验收前不切换生产数据库版本、不开放空入口，不使用 destructive migration。详见仓库内 [完整设计](docs/superpowers/specs/2026-10-10-v1-unified-plans-design.md)、[实施计划](docs/superpowers/plans/2026-10-10-v1-unified-plans.md)及[分批验收](docs/v1-unified-plans-acceptance.md)。
+当前在 `feat/v1-unified-plans` 分批开发，A至D3的领域、存储/迁移、提醒及备份编解码/旧文件转换/目标库原子恢复底座已完成局部验收，逐批结果见下文。这些底座尚未接入生产数据库、页面、备份或提醒；实际应用仍是 0.1.1 / code 2 / schema v5，顶部下载包和 main 不包含 V1，不能从设计批准或测试库升级推断新版发布已完成。统一接线验收前不切换生产数据库版本、不开放空入口，不使用 destructive migration。详见仓库内 [完整设计](docs/superpowers/specs/2026-10-10-v1-unified-plans-design.md)、[实施计划](docs/superpowers/plans/2026-10-10-v1-unified-plans.md)及[分批验收](docs/v1-unified-plans-acceptance.md)。
 
 第一批领域底座局部验收通过：按 TDD 实现分类、完成 / 撤销、日期转换及全库统计规则，新增 34 项测试；该批 703 项 JVM / 70 suites 使用 `--rerun` 全量重跑通过，Debug 构建检查成功，lint 0 error / 55 warning。独立审查问题已关闭；未运行新迁移 / 新 UI 的设备验收，不把领域测试当作整个 V1 已完成。
 
@@ -37,6 +37,8 @@
 第十批 D1 局部验收通过（2026-10-13）：实现隔离formatVersion2/schemaVersion6备份raw契约、十业务表白名单及新六字段设置、严格校验与canonical UTF8/SHA256编解码。原文/Long/固定偏移/非活动字段/历史完成组合保留，主键/来源唯一/引用/父树/类型/版本/重复键/hash/64MiB和100k总行数检查通过；技术库存和本机世代不进入文件。新增29项测试，最终1030项 JVM /89 suites强制重跑通过，Debug及设备测试包构建检查、lint通过（0 error /55既有warning），复审意见关闭。当前生产仍导出v1，旧v1codec默认和历史格式文档不变；本批无实际文件导入/Room恢复/设备/UI/Release/性能验收。下一批D2为旧v1严格校验转换与版本分派，完整D及V1仍未完成。见[v2格式说明](docs/backup-format-v2.md)及[分批验收](docs/v1-unified-plans-acceptance.md)。
 
 第十一批 D2 局部验收通过（2026-10-13）：实现隔离的v1/v2版本分派和旧备份无损转换；先验证旧文件原hash/字段/关联，再复用数据库迁移的字段和关系规则，校验目标v2。双来源同号/Long极值/父子标签例外、自定义重复/非活动字段、历史空标题/固定偏移、原元数据和设置保留；转换后的来源映射计入100k行及完整64MiB字节上限，超限拒绝不截断。返回真实十表数量及旧待办缺失时区的来源说明，v2直读不伪造说明，导出只产生v2；默认生产v1路径未变。新增31项测试，最终1061项 JVM /91 suites强制重跑通过，Debug/设备测试包构建检查通过，lint0 error/55既有warning，独立复审无遗留问题。本批无真实文件/保护备份/Room恢复/设备/UI/Release/性能验收，仍是受限内存编解码。下一批D3为目标库快照及原子恢复，E生产启用和F版本交付仍待完成，不等于V1发布。见[v2兼容说明](docs/backup-format-v2.md)与[分批验收](docs/v1-unified-plans-acceptance.md)。
+
+第十二批 D3 局部验收通过（2026-10-13）：完整隔离v6 Room目标库的十表原值快照、设置读取和原子恢复/业务清空已实现；恢复保留历史字段及前向父引用，清空保留设置，技术提醒库存和自增高水位不重置。恢复前拒绝六张自增表MAX主键及目标序列耗尽，其他Long极值不受影响，极端库仍可只读救援导出。世代只推进一次，故障、悄改及提交前取消完整回滚。新增35项真实Room测试，并用实质RED/GREEN修复旧日程真实线程测试过早resetMain的清理竞态，新增1项清理回归；1097项 JVM /93 suites强制重跑通过，Debug/androidTest构建检查及lint通过（0 error/55既有warning），独立复审问题关闭。运行中仍观察到归属待定位的Robolectric SQLite资源警告，未宣称消除；重复复验及全部过程见[验收记录](docs/v1-unified-plans-acceptance.md)。本批无实际文件/保护备份/设备/UI/Release/性能或用户库操作；生产仍0.1.1/schema5，main和发布APK不变。下一批D4处理文件与维护流程，E整体启用、F版本交付，完整D和V1尚未完成。见[v2持久化边界](docs/backup-format-v2.md)。
 
 ## 名称与图标 · 0.1.1 预览版
 

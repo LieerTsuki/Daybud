@@ -3,7 +3,7 @@
 日期：2026-10-10。依据：已获用户全文确认的 [设计](../specs/2026-10-10-v1-unified-plans-design.md)。
 分支：`feat/v1-unified-plans`，用户选择在当前干净分支开发，不创建工作树。
 
-`writing-plans` 技能不可用，使用文件级任务、明确依赖与验收记录替代。Buddy 默认的新分支 / PR / 网页验收流程不直接套用原生 Android；不新增 Linear、网页依赖或流程文档。沿用现有 Gradle、TDD、独立审查及 Android 设备验收。总体路线不是一次可交付的单任务，每批在执行前细化并检查覆盖；A/B1/B2/B3/C1/C2a/C2b/C2c1/C2c2/D1/D2 已完成局部验收，下一批 D3 目标库快照及原子恢复。
+`writing-plans` 技能不可用，使用文件级任务、明确依赖与验收记录替代。Buddy 默认的新分支 / PR / 网页验收流程不直接套用原生 Android；不新增 Linear、网页依赖或流程文档。沿用现有 Gradle、TDD、独立审查及 Android 设备验收。总体路线不是一次可交付的单任务，每批在执行前细化并检查覆盖；A/B1/B2/B3/C1/C2a/C2b/C2c1/C2c2/D1/D2/D3 已完成局部验收，下一批 D4 文件与维护流程。
 
 ## 目标与关键连接
 
@@ -215,6 +215,22 @@ C2c2五项任务于2026-10-13局部验收通过：53项新增测试，119项定�
 
 连接：受限版本识别→版本专用严格原codec→旧原hash/字段/关系验证→共享纯字段/来源映射→v2验证及编码字节预算→带来源/真实数量的导入结果；转换器直接调用也校验目标v2和canonical字节限制，不返回未经验证的中间文档。v2直读不制造旧时区说明，导出只产生2/6。无SQL或文件副作用。严格识别会额外解析一次受限输入，不声称流式大文件或性能验收。计划复审两项Minor：明确直接转换保证；补源v1合法但目标有效时间/重复/分钟无效的拒绝，以及元数据/未变设置/逐表（含空表）计数验证，已纳入测试并独立关闭。五项局部验收完成：31项新增，最终1061项/91 suites JVM强制重跑全部通过，Debug/androidTest构建检查及lint通过（0 error/55既有warning），完整代码及补强复审均无遗留问题；真实证据见分批验收，不包含真实文件/Room恢复/设备或生产激活。
 
+### D3 · 第十二批：目标库快照与原子恢复（2026-10-13，局部验收通过）
+
+用户确认隔离v6持久化子批，沿用当前分支、不建工作树，不替换生产v5/旧备份/Hilt/文件/UI或版本。writing-plans与Buddy脚本仍不可用，使用本文件跟踪五项；顺序TDD实现共享SQL边界，独立只读复审。D4再准备保护文件/最终确认/维护效果，E整体激活。
+
+1. 新增domain/backup/V2BackupRepository.kt，明确snapshot与replace/clear领域接口，使用V2BackupPayload和DataGeneration；新增data/backup/V2BackupSql.kt共享固定十表白名单、严格SQLite原值/设置/本机世代读取。继续复用BackupSnapshotDao通用只读接口，测试完整13实体PlanMigrationTestDatabase添加getter，实体/schema/生产绑定不变。
+2. 新增V2BackupRepositoryImpl(RoomDatabase, BackupSnapshotDao, BackupLimits)：同一Room事务预检全表行数（含refs）及SQLite UTF8文本字节（含设置）后才加载原始字段；逐字段SQLite类型严格检查，再V2BackupValidator验证并检查canonical payload字节限额。无本机世代/技术库存输出。snapshot只有payload、不含appVersion/exportedAt；完整信封限额由已有v2codec在导出时再检查，不宣称低内存或流式。
+3. 新增V2BackupMutationRepositoryImpl：replace在任何删除前验证目标payload/限制；事务内严格核对当前单行设置与本机世代、拒绝旧世代/Long上限。按静态FK依赖顺序删除/插入（不能沿V2Schema展示顺序；tags先于links），plans先以parentId=null插入，再第二遍恢复前向父ID；不关闭外键、不REPLACE清库、不覆盖文件、不修改sqlite_sequence。清空业务保留设置；plan_reminder_state完全保留，不导入或改写技术状态。
+4. 同一事务推进本机世代一次，最终读取/核对当前世代及恢复后的原始十表/设置，发现SQL错误/触发器悄然改值/故障或提交前取消全部回滚；仅清空时检查业务为空与设置不变。每表/每行及最终提交前ensureActive；维护准入、保护文件、提交后回执与精确提醒效果属于D4/E，不把纯repository当完整维护授权。
+5. 新增真实Room/Robolectric快照与mutation测试：全字段/Long/历史标题偏移/完成/自定义原文、双来源/父标签例外、设置mask/四时间模式、空库/空恢复/清空、FK与自增后续写入、v1经D2转换及v2往返恢复，超行/文本预检、坏库类型/设置/世代、坏输入、旧世代/耗尽、早晚SQL故障与悄改/真实取消回滚、同expected并发只一提交/一致快照、库存完整保留。RED仅测试adapter让缺实现成断言；GREEN后typed真实接口。全量JVM --rerun/Debug/androidTest/lint、独立复审及README/CHANGELOG/验收/格式说明同步，提交推送feature并核对远端；不执行设备或用户库操作/Release/性能，不合并main/PR/发布APK。
+
+连接：同库rawDAO+Room事务→SQL预检及原值→v2验证/canonical payload预算→snapshot；经D2验证/转换的payload→输入验证→本机状态/世代核对→依赖有序完整替换→CAS推进世代→完整复核→commit。外部键只作为绑定值，标识符来自静态白名单。顺序/typed读取和后置验证复用同一数据helper，完整预期从独立fixture/SQL核对，不只让写/读同时丢字段也通过。计划复审Minor已核对：新增V2BackupValidator的payload重载，document入口继续先校验真实元数据，不制造storage元数据；显式测文本合法但JSON转义/结构超限、精确payload字节及payload合法而完整信封超限。五项局部验收通过：35项新增Room测试，输入所有权/设置COUNT预检两项Important经RED/GREEN关闭；另1项清理回归经RED/GREEN修复旧日程测试Main生命周期，1097项/93 suites全量强制重跑、Debug/androidTest构建检查和lint通过（0 error/55既有warning），代码独立复审全部关闭。完整重复复验、缓存范围、SQLite资源警告及失败历史见分批验收，不作为设备/文件/生产升级验收。
+
+已由用户选择解决的Important平台边界：现有v2允许plans正Long.MAX_VALUE，其他五张自增表也保留signed Long极值；实际Room schema均为INTEGER PRIMARY KEY AUTOINCREMENT。SQLite在提交过MAX主键后，后续自动新建报SQLITE_FULL，删除该行也不清除sqlite_sequence上限。2026-10-13的纯内存SQLite合成探针及[SQLite官方说明](https://www.sqlite.org/autoinc.html)验证，不是Android设备测试。因此“逐值恢复所有合法主键”与“保证随后自动新建”不能对极端文件同时承诺。
+
+2026-10-13用户选择方案1：恢复边界在任何删除前拒绝plans/tags/habits/habit_records/subscriptions/subscription_payments六张自增表的MAX主键；恢复和清空均核对目标库已有序列，耗尽时报错保留当前库。原codec/raw契约不变，legacyId/金额/毫秒等非自增主键Long极值不受影响，不重编号或重置sqlite_sequence。将正常SQL插入带来的自增高水位变化与禁止手工重置分清；后置核对序列等于原高水位和本次导入最大正ID之max（清空保持），流式指纹核对五列提醒技术库存未被触发器改动。补六表拒绝/既有耗尽/坏序列、可导出但不可恢复极端payload、正常高ID后续自增、取消和晚期触发器完整回滚测试。
+
 ## E · 页面实现及统一生产切换（依赖 B/C/D）
 
 准备子批分别完成列表、编辑/详情、日历/统计和导航集成，每子批 ≤5 个任务，生产切换最后一次完成。
@@ -272,4 +288,5 @@ git diff --check
 - C2c2五项任务已完成局部验收（2026-10-13）：隔离旧身份清理、统一校准、精确维护及独立Worker完成；53项新增，1001项/87 suites JVM强制重跑、Debug/androidTest重新打包、lint0 error/55既有warning，计划及核心/Worker/Runner复审问题关闭。本批没有设备执行/UI/Release/性能验收。
 - D1五项任务已完成局部验收（2026-10-13）：隔离v2raw契约、严格验证/编解码、格式说明，29项新增、最终1030项/89 suites JVM强制重跑及Debug/androidTest构建检查通过，lint0 error/55既有warning，复审问题关闭；当前生产v1默认未变，无实际文件/Room恢复或设备执行验收。
 - D2五项任务于2026-10-13局部验收完成：旧v1原hash严格验证后共享转换及版本分派，31项新增，最终1061项/91 suites JVM强制重跑、Debug/androidTest构建检查和lint通过（0 error/55既有warning），独立复审无遗留问题；默认生产v1仍未变，无实际文件或Room恢复/设备验收。
-- 下一批D3：隔离目标库快照及原子恢复，执行前细化子计划；维护/文件完整验证和E生产消费者接线仍未完成。完整D–F未完成，生产仍为0.1.1/schema5、已发布APK未改，不等于整个V1已完成。
+- D3五项任务于2026-10-13局部验收完成：35项Room测试和1项旧日程清理回归新增，1097项/93 suites全量强制重跑、Debug/androidTest构建检查、lint0 error/55既有warning，独立复审问题关闭。快照/原子恢复/清空只在隔离目标库实现；源码读取/恢复的MAX边界按用户方案1，文件codec/raw契约不变。重复复验、运行资源警告与失败过程见验收记录。
+- 下一批D4：文件/保护备份与维护流程，执行前细化子计划；E生产消费者接线和F交付仍未完成。完整D–F未完成，生产仍为0.1.1/schema5、已发布APK未改，不等于整个V1已完成。

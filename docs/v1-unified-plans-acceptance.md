@@ -43,7 +43,7 @@ TDD：先编写测试与类型契约，以尚未实现行为的临时空规则�
 
 ## 后续及已知限制
 
-- 截至2026-10-13，A、B1–B3、C1–C2c2及D1/D2底座局部验收通过；完整D–F未完成：目标库备份维护/文件适配、统一页面/导航/设置、生产v6原子接线、覆盖安装和版本交付。备份格式/旧v1转换/发生/提醒及完整隔离迁移结果另列，不等于生产激活。
+- 截至2026-10-13，A、B1–B3、C1–C2c2及D1–D3底座局部验收通过；完整D–F未完成：备份维护/文件适配、统一页面/导航/设置、生产v6原子接线、覆盖安装和版本交付。目标库快照/原子恢复、备份格式/旧v1转换/发生/提醒及完整隔离迁移结果另列，不等于生产激活。
 - 本批构件尚未接入生产业务，不能在已发布软件中使用新的转换 / 完成规则；不以单元测试代替设备迁移验收。
 - 重复展开/例外/冲突等领域规则已验证，独立统计页、今天真实日程和UI移除日期确认等页面接线仍在E实现；没有占位入口。
 - V1 目标为 1.0.0 / code 3 / schema v6，当前仍为 0.1.1 / code 2 / schema v5。main 及已发布 APK 本轮未更新；功能分支交付见下文，不等于发布 APK。
@@ -431,3 +431,37 @@ $env:JAVA_HOME='D:\jdk'
 - 提交前远端feature等于基线 `3d1c2a450741d38ca419ac48ef19c5c9d4534b1d`，main为 `b016bcbc0f146ea6d9fe257b734700689de5cb51`。按授权仅提交推送当前feature并核对远端，不创建PR/合并main/发布APK。
 
 D2五项局部验收完成。限制：受限内存编解码/额外解析及纯JVM合成上限测试不是Android大库性能或低内存保证；没有真实文件选择/重读、保护备份、原子Room恢复、设备/UI/Release/性能或生产用户库升级验收。下一批D3实现隔离目标库快照/原子恢复，维护文件适配及E整体生产启用、F交付仍待完成，非完整D或V1发布。
+
+## D3 · 第十二批：目标库快照与原子恢复（局部验收通过）
+
+2026-10-13，用户确认隔离范围，基线HEAD `c5c29bd44b2667acc7113d213e1ac443379632a7`，原工作区干净。首次推进仅细化五项计划并进行基线/平台检查，未写实现；随后因下述主键策略确认关口暂停，无D3提交或推送。
+
+- 基线JDK25/Gradle9.4.1/网络init，`:app:testDebugUnitTest --rerun --console=plain`退出0、BUILD SUCCESSFUL 1m24s，40 tasks：1 executed/39 up-to-date；实际XML1061项/91 suites、0 failure/error/skipped。这是D2代码的本轮复验，不是D3验收，无新增测试。
+- 独立计划复审提出payload-only验证重载、精确payload/完整信封字节区分的Minor，已补计划；Important为自增主键极值策略，不擅自改变已批准Long原值兼容。
+- 实际完整Room目标schema中plans/tags/habits/habit_records/subscriptions/subscription_payments均AUTOINCREMENT；提交Long.MAX_VALUE后后续自动插入失败，删除记录也不会解除序列耗尽。纯内存SQLite合成探针保存MAX主键成功，后续INSERT返回OperationalError `database or disk is full`，原记录仍1条；[官方SQLite说明](https://www.sqlite.org/autoinc.html)确认算法。该探针不是Room或Android设备验收，不触及用户库。
+- 按安全约束与brainstorming确认关口暂停实现，等待用户选择：恢复前拒绝危险自增MAX（含已有目标序列耗尽检查，原库/原文件不变），或原样接受并明确随后新建受限。非自增字段的Long极值和旧codec/raw格式不因此改写，不私自重编号、修改sqlite_sequence或采用destructive migration。
+
+用户于2026-10-13选择方案1，继续开发：六张自增表MAX主键在任何删除前拒绝；目标序列耗尽拒绝恢复/清空，不重编号或重置序列。其余Long精度/原codec与golden不变，readonly救援导出不因MAX主键或世代耗尽而禁止。计划Important及payload/字节Minor已复审关闭，剩余一项状态措辞Minor修正。
+
+- 恢复开发后的新基线命令同上：退出0、BUILD SUCCESSFUL 1m23s，40 tasks：1 executed/39 up-to-date，实际1061项/91 suites、0 failure/error/skipped。
+- 首轮测试源编译失败29s（35 tasks：3 executed/32 up-to-date），原因RuntimeEnvironment无泛型参数与混合arrayOf的reified交叉类型；根据现有API与显式Any数组修正，不计为RED。
+- 实质RED：真实Room装置与测试编译通过，28项/2 suites（snapshot11、mutation17）全部断言失败，0 error/skipped，明确捕获缺实现而非编译错误；BUILD FAILED 1m22s，40 tasks：6 executed/34 up-to-date。缺实现adapter只在测试源，GREEN全部替换为直接typed调用。
+- 初轮GREEN：snapshot11、mutation17、原v1codec17、v2codec16、V2Validator13合计74项/5 suites，0 failure/error/skipped；BUILD SUCCESSFUL 2m12s，40 tasks：11 executed/29 up-to-date。随后增加一致快照、caller可变源所有权和设置行数预检覆盖，继续RED/GREEN验证，不以首轮GREEN宣称最终完成。
+- 强化RED：31项/2 suites运行，2 assertion failures、0 error/skipped，BUILD FAILED 1m12s，40 tasks：5 executed/35 up-to-date；实际发现restore跟随调用方在事务挂起后改过的源Map、非法设置多行在拒绝前已加载字段，一致快照测试通过。改为先验证有界源、深拷贝行/字段Map和提醒Set，再验证自有快照；设置先COUNT单行预检。无文本/数值归一化。
+- 修复GREEN：34项/2 suites全部通过，BUILD SUCCESSFUL 2m4s，40 tasks：10 executed/30 up-to-date；包含额外四时间模式、八mask写入、signed负主键/零序列覆盖。独立复审2 Important关闭，1 Minor补独立SQL验证clear保持不存在与零序列，新增一项覆盖（未另称功能修复RED），进入全量复验。
+
+- 首次全量命令为D2所列四任务（JVM --rerun、Debug、androidTest构建、lint）：退出0、BUILD SUCCESSFUL 3m40s，101 tasks：22 executed/79 up-to-date；实际XML1096项/93 suites、0 failure/error/skipped，其中D3新增35项（snapshot13、mutation22）。Debug重新打包，androidTest源重新编译/包内容未变为缓存构建检查，lint三类源及报告重新分析成功（0 error/55既有warning）。独立D3复审无遗留Critical/Important/Minor。
+- 首次全量观察到Robolectric异步SQLiteConnection的CloseGuard未关闭警告，记录在旧LauncherBrandingTest的system-err；日志落点不证明资源归属，D3两个测试XML未出现该警告，不宣称运行输出完全无warning，也不据此认定一定是旧代码的问题。
+- 相同命令再次强制执行：退出1、BUILD FAILED 1m25s，40 tasks：1 executed/39 up-to-date；XML1096项/93 suites、1 failure、0 error/skipped。D3新增35项通过，旧ScheduleMaintenanceTest.saveDrainsPendingNotificationWithoutNestedGlobalAdmission在runTest开始前捕获UncaughtExceptionsBeforeTest。该失败中断后续构建/lint，不把首次成功当作最终验收。
+- 按systematic-debugging回溯suppressed栈：后台ScheduleViewModel.saveSchedule的finally进入finishEditorOperation时Main已reset。旧ScheduleEditorRegressionTest唯一真实线程schedule-save-io的finally仅cancel作用域/close执行器/resetMain，没有等待scope完成；生产收尾使用NonCancellable+Main是正常需求，不删除该业务保护或吞掉异常。补确定性真实线程清理回归，再修正测试生命周期，后续结果单独记录。
+- 清理回归RED：抽取原cancel/reset测试helper，新回归使用真实单线程执行器和暂停的测试Main，finally捕获测试dispatcher避免旧行为向后续测试泄漏异常；断言返回时scope与Main收尾已完成。单项执行退出1、BUILD FAILED 3m58s，40 tasks：5 executed/35 up-to-date，XML1项/1 suite、1 assertion failure、0 error/skipped，错误明确为“Cleanup must join the cancelled scope”。随后仅改测试helper为NonCancellable内cancelAndJoin，结束后才resetMain/关闭执行器；真实线程与原标准dispatcher helper均复用，未改生产ScheduleViewModel。
+- 定向GREEN：Editor与Maintenance两类51项/2 suites全部通过（21/30），0 failure/error/skipped；退出0、BUILD SUCCESSFUL 1m43s，40 tasks：4 executed/36 up-to-date。独立复审确认生命周期修复及原D3批准；Minor为新回归自身的超时fallback仍可取消，已改为复用同一NonCancellable join/reset helper、外层finally关闭执行器，进入最终全量/重复复验。
+- 最终代码的首次全量复验：上述四任务命令退出0、BUILD SUCCESSFUL 4m17s，101 tasks：7 executed/94 up-to-date；14:53（Asia/Shanghai）实际XML1097项/93 suites、0 failure/error/skipped（D3业务35项、测试清理回归1项新增）。正式源码/Debug/androidTest为缓存构建检查，UnitTest重新编译并强制执行，lint本轮测试源重新分析、正式/AndroidTest/报告为未变缓存（0 error/55既有warning）。清理Minor独立复审关闭，代码无遗留审查问题。
+- 该轮仍有异步SQLiteConnection CloseGuard警告，日志落在UnifiedPlanCalibrationTest/HabitScreenRegressionTest；D3两类XML没有此警告。归属尚未定位，不把测试通过描述成所有运行警告已消除；不把本次Main清理修复说成也修复了SQLite资源警告。第二次全量强制重跑结果待下文记录。
+
+- 相同最终代码第二次全量强制复验：退出0、BUILD SUCCESSFUL 2m29s，101 tasks：2 executed/99 up-to-date；14:55（Asia/Shanghai）XML更新，1097项/93 suites、0 failure/error/skipped，包含35项D3 Room和1项清理回归。JVM实际重跑，Debug/androidTest/正式和测试编译/lint分析与报告均为未变缓存构建检查，lint0 error/55既有warning。两次连续成功不等于所有时序或设备路径已证明。
+- 最后一轮仍观察到同类SQLite CloseGuard警告，记录落在LauncherBrandingTest/TodoScreenRegressionTest；归属未定位，作为已知验证限制保留，不通过关闭检查或吞异常消除提示。D3两个测试XML无此提示不证明其他日志中的资源一定不来自D3。
+- 独立D3代码及测试清理复审无遗留Critical/Important/Minor；修复仅涉及测试helper，没有修改生产旧Schedule行为。README/CHANGELOG/格式v2/计划/本验收同步，保留所有RED、失败和缓存范围，不把不完整的中间全量成功当最终证据。
+- 提交前远端feature仍为基线`c5c29bd44b2667acc7113d213e1ac443379632a7`，main为`b016bcbc0f146ea6d9fe257b734700689de5cb51`。按授权仅提交推送当前feature并核对远端；不建PR/合并main/发布APK，不读写用户个人文件/真实数据库，不提交密钥或个人数据。
+
+D3五项任务局部验收完成。已实现完整13实体隔离目标库十表快照、原子恢复/业务清空、原值/关系/设置保留及世代/技术库存/自然自增序列核验；按用户方案1拒绝危险自增MAX和目标序列耗尽，不重编号或reset序列。真实Room证据只来自合成内存测试库，不是个人数据恢复、实际文件选择/保护文件写入/确认/系统提醒维护、设备覆盖升级或生产启用验收；无设备执行/UI/Release/真机/Android大库内存或性能验证。资源警告归属仍待定位，64MiB/100k受限内存表示不是流式或低内存保证。下一批D4实现文件与维护流程，E整体接线/激活v6，F版本与升级交付；当前生产0.1.1/code2/schema5、main及已发布APK未改，完整D–F/V1尚未完成。

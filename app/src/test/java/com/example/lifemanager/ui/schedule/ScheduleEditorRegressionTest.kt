@@ -298,17 +298,46 @@ class ScheduleEditorRegressionTest {
             assertEquals(2, persisted.rows.value.size)
         } finally {
             returnFromSave.countDown()
-            model.viewModelScope.cancel()
-            io.close()
-            Dispatchers.resetMain()
+            try { closeModel(model.viewModelScope) }
+            finally { io.close() }
         }
+    }
+    @Test fun `real thread cleanup completes Main finalizers before resetting dispatcher`() = runTest {
+        val main = StandardTestDispatcher(testScheduler)
+        val io = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+        val scope = CoroutineScope(SupervisorJob() + io)
+        val finalized = AtomicBoolean()
+        Dispatchers.setMain(main)
+        scope.launch(start = CoroutineStart.UNDISPATCHED) {
+            try { awaitCancellation() }
+            finally {
+                // Capture the test Main so the failing cleanup cannot leak an exception
+                // into the next test after resetMain. It must still await this work.
+                withContext(NonCancellable + main) { finalized.set(true) }
+            }
+        }
+        try {
+            closeModel(scope)
+            assertTrue(scope.coroutineContext.job.isCompleted, "Cleanup must join the cancelled scope")
+            assertTrue(finalized.get(), "Main finalization must finish before resetMain")
+        } finally {
+            Dispatchers.setMain(main)
+            try { closeModel(scope) }
+            finally { io.close() }
+        }
+    }
+    private suspend fun closeModel(scope: CoroutineScope) {
+        try {
+            // IO children may still need Main in NonCancellable finally blocks.
+            withContext(NonCancellable) { scope.coroutineContext.job.cancelAndJoin() }
+        } finally { Dispatchers.resetMain() }
     }
     private suspend fun TestScope.withModel(repository: Records, alarms: ScheduleReminderSchedulerContract = NoAlarms, action: suspend (ScheduleViewModel) -> Unit) {
         val dispatcher = StandardTestDispatcher(testScheduler)
         Dispatchers.setMain(dispatcher)
         val model = ScheduleViewModel(repository, alarms, dispatcher, testGenerationAccess())
         try { advanceUntilIdle(); action(model) }
-        finally { model.viewModelScope.cancel(); Dispatchers.resetMain() }
+        finally { closeModel(model.viewModelScope) }
     }
     private object NoAlarms : ScheduleReminderSchedulerContract {
         override fun schedule(schedule: Schedule) = Unit

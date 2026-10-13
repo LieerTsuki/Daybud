@@ -4,6 +4,7 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.lifemanager.data.local.Converters
+import com.example.lifemanager.data.local.dao.BackupSnapshotDao
 import com.example.lifemanager.data.local.entity.*
 
 /** Complete target schema fixture; never registered in the production database factory. */
@@ -16,4 +17,5 @@ import com.example.lifemanager.data.local.entity.*
 abstract class PlanMigrationTestDatabase : RoomDatabase() {
     abstract fun plans(): PlanDao
     abstract fun reminders(): PlanReminderStateDao
+    abstract fun backup(): BackupSnapshotDao
 }
