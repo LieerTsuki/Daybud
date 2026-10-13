@@ -3,7 +3,7 @@
 日期：2026-10-10。依据：已获用户全文确认的 [设计](../specs/2026-10-10-v1-unified-plans-design.md)。
 分支：`feat/v1-unified-plans`，用户选择在当前干净分支开发，不创建工作树。
 
-`writing-plans` 技能不可用，使用文件级任务、明确依赖与验收记录替代。Buddy 默认的新分支 / PR / 网页验收流程不直接套用原生 Android；不新增 Linear、网页依赖或流程文档。沿用现有 Gradle、TDD、独立审查及 Android 设备验收。总体路线不是一次可交付的单任务，每批在执行前细化并检查覆盖；A/B1/B2/B3/C1/C2a/C2b/C2c1/C2c2/D1 已完成局部验收，下一批 D2 旧v1备份转换与版本分派。
+`writing-plans` 技能不可用，使用文件级任务、明确依赖与验收记录替代。Buddy 默认的新分支 / PR / 网页验收流程不直接套用原生 Android；不新增 Linear、网页依赖或流程文档。沿用现有 Gradle、TDD、独立审查及 Android 设备验收。总体路线不是一次可交付的单任务，每批在执行前细化并检查覆盖；A/B1/B2/B3/C1/C2a/C2b/C2c1/C2c2/D1/D2 已完成局部验收，下一批 D3 目标库快照及原子恢复。
 
 ## 目标与关键连接
 
@@ -203,6 +203,18 @@ C2c2五项任务于2026-10-13局部验收通过：53项新增测试，119项定�
 
 连接：独立raw文档→静态白名单契约→共享通用检查+v2有效模式→mapping/strict/canonical codec；codec输出和输入均校验，相同完整原字段往返。字段预算是解析防护而非允许未知业务键；保持v1的既有读取/行数/字节/hash行为，无暂存API或空实现提交。五项于2026-10-13局部验收通过：29新增、最终1030项/89 suites JVM强制重跑均0失败，Debug/androidTest构建检查、lint0 error/55既有warning；计划复审和完整代码/parser/codec/文档2 Minor关闭。无设备/文件/Room恢复/生产激活验收，实际证据见分批记录，D2再做v1转换。
 
+### D2 · 第十一批：旧备份转换与版本分派（2026-10-13，局部验收通过）
+
+用户确认隔离实现，继续当前feature分支、不建工作树；生产v1 codec/Hilt/文件/Room/UI/schema/版本均不变。writing-plans不可用、Buddy脚本缺失，沿用本计划、TDD和独立只读复审。紧耦合的转换与分派顺序实施，不委派重叠代码写入。
+
+1. 新增domain/backup/VersionedBackupCodec.kt：v2-only导出、v1/v2导入契约，返回v2原始文档、来源版本、仅旧待办实际存在时的注入时区说明及转换后逐表数量；来源元信息不进入备份payload，本机世代不进入文件。旧接口不替换。
+2. 新增data/backup/LegacyBackupConverter.kt：直接调用也先BackupValidator校验；原表总行数加todos/schedules数的映射增行预检，超限即拒绝。TODO旧signed ID升序再SCHEDULE升序分配正Long，复用LegacyPlanConverter/References/Relations，父关系第二遍解析。原未变六表与文本/Long/非活动字段逐值保留，不引用领域编辑归一化；设置按OR及单项/全天契约转换。调用方显式注入ZoneId，只给旧TODO使用；源元数据保留。
+3. 新增data/backup/VersionedBackupJsonCodec.kt：输入字节限额/严格UTF8、以代码固定V2预算完整strict解析识别版本，随后对应原codec独立再校验（v1原20成员预算保留）。只支持1/5、2/6，任何校验失败不fallback；v1原hash完整通过后才共享转换，目标V2Validator再检查及canonical信封字节限额预检，不为计数分配输出。encode只委托v2，不改变生产默认。
+4. 新增真实converter/dispatcher测试，反射测试入口仅在RED阶段让缺实现成为断言失败，GREEN改用类型安全直接调用：原字段/双来源同号/极值/无父ID顺序假设、关系/设置四组合/全天空分钟、时区说明、未变表独立预期、输入不修改、旧原hash/完整验证优先、未知版本/字段/重复键/UTF8/数字/限制、转换增行精确及真实100k边界、转换后字节边界、版本路由与v2往返。保留两个golden及全量回归。
+5. JVM --rerun、Debug/androidTest构建、lint和独立代码复审；同步README/CHANGELOG/格式v2/验收/本计划真实结果，再提交推送feature并核对远端。无实际文件操作/Room恢复/设备执行/生产激活/Release/性能验收，D3及E/F仍未完成。
+
+连接：受限版本识别→版本专用严格原codec→旧原hash/字段/关系验证→共享纯字段/来源映射→v2验证及编码字节预算→带来源/真实数量的导入结果；转换器直接调用也校验目标v2和canonical字节限制，不返回未经验证的中间文档。v2直读不制造旧时区说明，导出只产生2/6。无SQL或文件副作用。严格识别会额外解析一次受限输入，不声称流式大文件或性能验收。计划复审两项Minor：明确直接转换保证；补源v1合法但目标有效时间/重复/分钟无效的拒绝，以及元数据/未变设置/逐表（含空表）计数验证，已纳入测试并独立关闭。五项局部验收完成：31项新增，最终1061项/91 suites JVM强制重跑全部通过，Debug/androidTest构建检查及lint通过（0 error/55既有warning），完整代码及补强复审均无遗留问题；真实证据见分批验收，不包含真实文件/Room恢复/设备或生产激活。
+
 ## E · 页面实现及统一生产切换（依赖 B/C/D）
 
 准备子批分别完成列表、编辑/详情、日历/统计和导航集成，每子批 ≤5 个任务，生产切换最后一次完成。
@@ -259,4 +271,5 @@ git diff --check
 - C2c1 四项任务已完成局部验收（2026-10-12）：唯一迁移 SQL/完整目标实体与导出 schema 纳入技术库存，历史1–5链/新建、真实库存重开/CAS/业务删除身份保留、早晚故障回滚完成；新增5项JVM/4项设备用例。最终948项 / 83 suites JVM强制重跑、专用API35 AVD指定类14项测试全部通过，Debug/androidTest重新打包、lint三类源分析通过（0 error / 55既有warning），计划2 Minor和代码复审全部关闭。生产v5/旧提醒/Hilt/UI/版本不变，无真机/生产用户库覆盖升级/UI/Release/性能验收。
 - C2c2五项任务已完成局部验收（2026-10-13）：隔离旧身份清理、统一校准、精确维护及独立Worker完成；53项新增，1001项/87 suites JVM强制重跑、Debug/androidTest重新打包、lint0 error/55既有warning，计划及核心/Worker/Runner复审问题关闭。本批没有设备执行/UI/Release/性能验收。
 - D1五项任务已完成局部验收（2026-10-13）：隔离v2raw契约、严格验证/编解码、格式说明，29项新增、最终1030项/89 suites JVM强制重跑及Debug/androidTest构建检查通过，lint0 error/55既有warning，复审问题关闭；当前生产v1默认未变，无实际文件/Room恢复或设备执行验收。
-- 下一批D2：旧v1先严格校验原hash/字段/关系再共享转换与版本分派，执行前细化子计划；后续目标库快照/原子维护/文件验证仍未完成。完整D–F未完成，生产仍为0.1.1/schema5、已发布APK未改，不等于整个V1已完成。
+- D2五项任务于2026-10-13局部验收完成：旧v1原hash严格验证后共享转换及版本分派，31项新增，最终1061项/91 suites JVM强制重跑、Debug/androidTest构建检查和lint通过（0 error/55既有warning），独立复审无遗留问题；默认生产v1仍未变，无实际文件或Room恢复/设备验收。
+- 下一批D3：隔离目标库快照及原子恢复，执行前细化子计划；维护/文件完整验证和E生产消费者接线仍未完成。完整D–F未完成，生产仍为0.1.1/schema5、已发布APK未改，不等于整个V1已完成。

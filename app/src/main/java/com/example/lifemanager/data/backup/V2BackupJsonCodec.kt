@@ -11,12 +11,8 @@ import kotlinx.serialization.json.*
 class V2BackupJsonCodec(private val limits: BackupLimits = BackupLimits()) : V2BackupCodec {
     override fun encode(document: V2BackupDocument): ByteArray {
         V2BackupValidator.validate(document, limits)
-        val payload = V2BackupJsonMapping.toJson(document.payload)
-        val root = buildJsonObject {
-            put("format", "life-manager-backup"); put("formatVersion", 2); put("schemaVersion", 6)
-            put("appVersion", document.appVersion); put("exportedAt", document.exportedAt)
-            put("payload", payload); put("payloadSha256", "0".repeat(64))
-        }
+        val root = V2BackupJsonMapping.envelope(document)
+        val payload = root.getValue("payload")
         val size = CanonicalBackupJson.byteCount(root, limits.maxBytes)
         val checked = JsonObject(root + ("payloadSha256" to JsonPrimitive(CanonicalBackupJson.sha256(payload))))
         return CanonicalBackupJson.encode(checked, size)

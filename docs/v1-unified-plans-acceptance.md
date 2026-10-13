@@ -43,7 +43,7 @@ TDD：先编写测试与类型契约，以尚未实现行为的临时空规则�
 
 ## 后续及已知限制
 
-- 截至2026-10-13，A、B1–B3、C1–C2c2及D1底座局部验收通过；完整D–F未完成：旧v1转换/目标库备份维护、统一页面/导航/设置、生产v6原子接线、覆盖安装和版本交付。备份格式/发生/提醒及完整隔离迁移结果另列，不等于生产激活。
+- 截至2026-10-13，A、B1–B3、C1–C2c2及D1/D2底座局部验收通过；完整D–F未完成：目标库备份维护/文件适配、统一页面/导航/设置、生产v6原子接线、覆盖安装和版本交付。备份格式/旧v1转换/发生/提醒及完整隔离迁移结果另列，不等于生产激活。
 - 本批构件尚未接入生产业务，不能在已发布软件中使用新的转换 / 完成规则；不以单元测试代替设备迁移验收。
 - 重复展开/例外/冲突等领域规则已验证，独立统计页、今天真实日程和UI移除日期确认等页面接线仍在E实现；没有占位入口。
 - V1 目标为 1.0.0 / code 3 / schema v6，当前仍为 0.1.1 / code 2 / schema v5。main 及已发布 APK 本轮未更新；功能分支交付见下文，不等于发布 APK。
@@ -394,3 +394,40 @@ $env:JAVA_HOME='D:\jdk'
 - 推送前远端feature与本地基线均为 `1e667d5`，main仍 `b016bcbc0f146ea6d9fe257b734700689de5cb51`。仅提交推送当前feature，不创建PR/合并main/发布APK。
 
 本批五项任务局部验收完成。限制：codec是受限内存编解码而非流式文件/数据库恢复；64MiB/100k与纯JVM父链测试不是Android大库内存/性能证明。没有实际文件选择/重读、保护备份、原子Room恢复、设备/UI/Release/性能或用户库升级验收。D2旧v1先校验原hash/字段/关系再共享转换及版本分派，后续目标库/维护文件仍待完成，E才更换默认codec和生产消费者；D1不是整个D或V1发布。
+
+## D2 · 第十一批：旧备份转换与版本分派（局部验收通过）
+
+2026-10-13，用户确认范围，基线HEAD `3d1c2a4`，当前功能分支干净；继续原分支，不建工作树、不改生产v1/Hilt/文件/Room/schema/版本。源原hash/字段/关联严格通过才共享转换，目标v2验证及含来源映射的行/字节上限也必须通过；来源说明及十表数量为后续UI准备，不接真实文件恢复。
+
+采用已批准V1设计/D2五项计划，TDD顺序实现紧耦合契约；独立只读计划复审2 Minor明确直接转换的目标验证保证及源合法/目标非法/元数据与计数覆盖，复审关闭。Buddy脚本缺失、writing-plans不可用，以本计划与验收记录跟踪；不引入额外流程/Linear/PR。
+
+真实证据：
+
+- 基线`:app:testDebugUnitTest --rerun --console=plain`，BUILD SUCCESSFUL 1m28s，40 tasks：1 executed/39 up-to-date；实际XML 1030项/89 suites，0 failure/error/skipped。
+- converter RED：先测试，经仅测试源反射adapter让缺实现产生断言（无生产stub）；15项/1 suite，15 assertion failures、0 error/skipped，BUILD FAILED 1m20s、40 tasks：5 executed/35 up-to-date。缺类是功能缺失，不把编译错误当RED。
+- converter GREEN与dispatcher RED联合运行：63项/4 suites，converter15、原v1 codec17、v2 codec16均通过；dispatcher15 assertion failures，0 error/skipped，BUILD FAILED 2m2s，40 tasks：11 executed/29 up-to-date。原两格式golden不变。实现dispatcher后测试全部改用类型安全直接调用，无反射adapter提交。
+- dispatcher GREEN：相同四类63项全部通过，0 failure/error/skipped，BUILD SUCCESSFUL 1m52s，40 tasks：11 executed/29 up-to-date。之后补一项现有正确行为的CUSTOM原始重复/非活动日期/Long毫秒极值覆盖（非新增功能修复，不另称实质RED），进入全量复验。
+
+### 实现与验证范围
+
+- 领域VersionedBackupCodec/BackupImportResult分离来源信息与业务payload，输出十表数量含空表；仅存在旧TODO时返回注入时区。数据层LegacyBackupConverter严格校验源及目标，适配原DTO后复用唯一LegacyPlanConverter/References/Relations，不使用编辑器归一化。
+- 顺序新ID独立于完整signed旧ID；TODO后SCHEDULE、父关系第二遍、标签和例外按来源解析。逐值保留27列、新字段明确缺省；原六表、设置、元数据不变。全局OR/单项继承/旧全天关闭/空分钟保留；历史空标题、固定偏移、完成组合和自定义星期原文保留。
+- 原v1 hash先验证，源合法而目标时间/间隔/分钟无效明确拒绝，不修复、不fallback。转换增行预检与目标canonical信封字节预检，50000条旧TODO→100000行业务表通过、50001拒绝；缩小限额精确字节/行边界及64MiB+1输入解析前拒绝。技术库存与世代不在文件内；原两格式golden及预算保持。
+- 静态完整版本识别在固定v2预算内，选中codec按各自契约重新解析；v1仍20成员/行，v2为27。没有生产Hilt绑定或实际文件/Room消费者替换。缺实现RED的反射adapter全部删除，提交的测试直接调用真实组件。
+
+首次完整命令（JDK25/Gradle9.4.1/既有网络init）：
+
+```powershell
+$env:JAVA_HOME='D:\jdk'
+.\.tools\gradle-9.4.1\bin\gradle.bat -I .\.tools\phase5-test-network.gradle :app:testDebugUnitTest --rerun :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --console=plain
+```
+
+首次退出0、BUILD SUCCESSFUL 2m30s，101 tasks：20 executed/81 up-to-date；实际XML 1061项/91 suites、0 failure/error/skipped，新增31项/2 suites（转换16、分派15）。Debug重新打包，AndroidTest源重新编译、测试包无内容变化为缓存构建检查；lint三类源重新分析及报告成功，0 error/55既有warning，新增/修改备份路径无issue。
+
+完整复审无Critical/Important/Minor；补强超大零填充输入必须返回字节超限而不是泛JSON语法错误的断言，独立复审认可其验证解析前guard（覆盖补强，未改实现）。最终相同命令退出0、BUILD SUCCESSFUL 2m29s，101 tasks：7 executed/94 up-to-date；实际XML10:21:10（Asia/Shanghai）更新，1061项/91 suites、0 failure/error/skipped。JVM强制重跑/UnitTest重新编译；Debug/androidTest/正式源码为缓存构建检查，lint本次UnitTest重新分析、正式/AndroidTest/报告缓存未变结果，仍0 error/55既有warning。保留AGP/KAPT/Robolectric/opt-in既有提示，不虚称无warning。
+
+- 计划2 Minor及转换器/分派/完整格式文档复审全部关闭，独立审查不代替真实执行。
+- README/CHANGELOG/本记录/计划/格式v2同步；原v1历史格式、BackupSchema/BackupJsonCodec默认、生产Hilt/Manifest/UI/schema/0.1.1/code2和已发布APK不变。无密钥/个人数据、占位生产实现或假入口，不读写用户文件/真实数据库。
+- 提交前远端feature等于基线 `3d1c2a450741d38ca419ac48ef19c5c9d4534b1d`，main为 `b016bcbc0f146ea6d9fe257b734700689de5cb51`。按授权仅提交推送当前feature并核对远端，不创建PR/合并main/发布APK。
+
+D2五项局部验收完成。限制：受限内存编解码/额外解析及纯JVM合成上限测试不是Android大库性能或低内存保证；没有真实文件选择/重读、保护备份、原子Room恢复、设备/UI/Release/性能或生产用户库升级验收。下一批D3实现隔离目标库快照/原子恢复，维护文件适配及E整体生产启用、F交付仍待完成，非完整D或V1发布。

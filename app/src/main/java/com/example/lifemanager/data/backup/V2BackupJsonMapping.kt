@@ -6,6 +6,12 @@ import com.example.lifemanager.domain.model.ThemeMode
 import kotlinx.serialization.json.*
 
 internal object V2BackupJsonMapping {
+    /** Placeholder hash has the exact size of the eventual SHA-256, for bounded preflight. */
+    fun envelope(document: V2BackupDocument) = buildJsonObject {
+        put("format", "life-manager-backup"); put("formatVersion", 2); put("schemaVersion", 6)
+        put("appVersion", document.appVersion); put("exportedAt", document.exportedAt)
+        put("payload", toJson(document.payload)); put("payloadSha256", "0".repeat(64))
+    }
     private val settingsKeys = setOf("theme", "dateFormat", "defaultCurrency", "planReminders", "subscriptionReminders", "defaultReminderDays")
     fun toJson(payload: V2BackupPayload) = buildJsonObject {
         for (table in V2BackupSchema.tables) put(table.name, JsonArray(payload.tables.getValue(table.name).map { row ->

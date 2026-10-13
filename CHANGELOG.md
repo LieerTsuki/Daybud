@@ -91,6 +91,14 @@
 - TDD新增29项测试，复审补独立原文预期和明确[]/null边界；2026-10-13最终1030项 JVM /89 suites强制重跑通过，Debug/androidTest构建检查、lint0 error/55既有warning，计划和代码复审问题关闭。
 - 不改变默认生产v1备份/Hilt/UI/schema/0.1.1/code2/main/已发布APK；无用户文件或数据库操作、实际文件导入/Room恢复/设备执行/Release/性能验收。下一批D2旧v1转换和版本分派，后续目标库/维护及E整体激活仍待完成。见[v2格式说明](docs/backup-format-v2.md)与[分批验收](docs/v1-unified-plans-acceptance.md)。
 
+### 2026-10-13 · 第十一批 D2：旧备份转换与版本分派（局部验收通过）
+
+- 隔离VersionedBackupCodec仅导出format2/schema6，严格接受v1/schema5或v2/schema6；受限版本识别后对应codec完整再校验，保持v1原20成员预算，失败无fallback。
+- 旧原payload SHA256/字段/类型/关系先通过，再复用迁移转换器按TODO/SCHEDULE旧signed ID分别升序映射；保留同号不同来源、父/标签/例外、原文本/Long/重复及非活动字段、历史完成组合、固定偏移和空标题、六张未变表/设置与源元数据。
+- 转换器直接调用也校验目标v2；来源映射增行计入100k上限，完整canonical信封计入64MiB，超限拒绝不截断。返回来源版本、真实逐表数量、仅旧TODO存在时的注入时区说明；元信息不进入导出，不导入本机世代/技术库存。
+- 新增31项测试（转换16、分派15），最终1061项 JVM /91 suites强制重跑全部通过，Debug/设备测试包构建检查通过，lint0 error/55既有warning；计划2 Minor及代码复审全部关闭。TDD过程、覆盖补强和缓存范围见[验收记录](docs/v1-unified-plans-acceptance.md)。
+- 当前仍0.1.1/code2/schema5，生产v1/Hilt/UI/文件/Room路径、main和已发布APK不变；无真实文件/保护备份/Room恢复/设备/UI/Release/性能验收，受限内存额外解析不是流式或低内存保证。D3目标库/维护适配及E/F仍待完成，非V1正式交付。见[v2格式与兼容](docs/backup-format-v2.md)。
+
 ## 0.1.1 预览版 · 2026-10-09
 
 - 应用更名为「日子芽」，提供圆润卡通手账/新芽的原生矢量自适应、圆形及单色图标。
