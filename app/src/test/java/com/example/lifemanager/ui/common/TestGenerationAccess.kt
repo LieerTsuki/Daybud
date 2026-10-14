@@ -13,9 +13,11 @@ class TestGenerations(initial: Long = 0) : DataGenerationRepository {
     private val value = MutableStateFlow(DataGeneration(initial))
     private val lock = Mutex()
     var currentFailure: Exception? = null
+    var beforeCurrent:suspend ()->Unit={}
     val nextCurrentFailures = ArrayDeque<Exception>()
     override fun observe() = value
     override suspend fun current(): DataGeneration {
+        beforeCurrent()
         if (nextCurrentFailures.isNotEmpty()) throw nextCurrentFailures.removeFirst()
         currentFailure?.let { throw it }
         return value.value

@@ -1,5 +1,59 @@
 # V1 统一计划分批验收
 
+## E4 · 第十七批：统一导航与新版设置准备（2026-10-14，局部验收通过）
+
+用户确认范围；基线2ad6096、当前feat/v1-unified-plans初始干净。按E4局部准备，不切生产Room5/Hilt/MainActivity/默认v1备份/旧提醒绑定/版本0.1.1-code2，不发布或安装APK，不合并main，不接触个人数据。完整生产激活及F仍后续。
+
+### 执行过程（中间结果；进行中/待补描述当轮状态，最终结果在节末）
+
+基线导航/设置定向JVM：102项/9 suites、0 failure，BUILD SUCCESSFUL 2m9s，40 tasks（1 executed/39 up-to-date），测试强制重跑。首轮建测试接口期间继续新增文件，导致该次编译的生产源集合不含新接口、后续测试编译引用失败（4m22s），没有行为测试，不计RED；后续固定文件集合后运行。有效行为RED27项/4 suites、22失败（4m8s，40 tasks：11 executed/29 up-to-date），涵盖实际字段、事务拒绝/回滚、通知协议与草稿导航；5项无效/维护拒绝特征先通过，不冒充RED。首实现编译失败34s：SQL参数混合String/Int的arrayOf推断交叉类型，改显式arrayOf<Any>，不是行为RED。当前核心复验和新UI RED实施中，最终证据另补。
+
+只读计划审查指出草稿确认与提交后取消、导航Busy重放、SQL严格原始值和UI旧标签等风险。实现采用独立导航确认，不提前设置编辑器confirmClose；原许可内最终ticket/精确编辑stamp核对，维护拒绝不排队，旧通知不读取旧ID。设置使用独立领域模型和事务接口、原writer控制SQL体与NonCancellable短提交交付桥，提醒效果在准入释放后执行。该记录不是完成验收。
+
+第二轮31项/5 suites，核心27项全部通过，UI4项缺节点的实质RED（2m50s，40 tasks：12 executed/28 up-to-date），0 error/skipped。替换UI桩为真实四入口准备导航与新版设置；真实PlanWorkspace/HabitScreen/SubscriptionScreen/V1SettingsScreen接线，模块所有者显式传入并保留，不用空目的页或示例数据；设置共用控件提取成纯展示模型，不将旧AppSettings当新版领域模型。另补提交后取消、提醒重试时坏世代，以及完整Room中原writer取消的回归，复验中。
+
+第三轮44项/6 suites（34新+10旧设置界面），43通过/1失败，4m9s、40 tasks（11 executed/29 up-to-date）。四入口真实页面和草稿交互、独立提醒保存、读取错误重试、原设置界面、提交后取消与真实SQL取消回滚均通过；剩余“提醒重试遇坏世代”实际assertion failure，XML同时有未捕获metadata异常作为suppressed。定位为retryReminders准入无catch，补异常分支并禁写，不增加超时或重复保存。后补同Tab点击、日历跨Tab保留、旧根导航回调、320dp/200%字体深色验证；首次测试编译因缺PlanCalendarMode import失败2m9s，不计行为RED，修正明确import后复验中。
+
+第四轮48项/6 suites，47通过/1失败（2m48s，40 tasks：5 executed/35 up-to-date），坏世代提醒重试回归、日历跨Tab保留、旧根回调、深色320dp/200%字体均通过。新同Tab实质RED：点击已经选中的计划Tab仍弹放弃当前草稿确认；改为已选目的地无操作，不改变通知打开详情的独立路径。补强真实打卡/订阅控件断言，以及旧设置回调和同源总开关更新后的计划提示验证。
+
+独立UI源审查1 Important（根BackHandler早于目的地子BackHandler，维护中会被详情/编辑返回抢先处理）、1 Minor（目的地测试缺真实内容断言，已补控件）。将补系统Back冻结详情/编辑及旧确认的实质回归，再修正目的地后的维护Guard和实际关闭时的实时维护拒绝。生产路径仍不切换。
+
+第五轮50项/6 suites，49通过/1失败（4m5s，40 tasks：10 executed/30 up-to-date）：同Tab、旧提醒控件及真实其他模块控件通过；同源总开关更改后留存计划草稿提示仍旧值，实际assertion RED。Root在偏好变化/返回计划时重新准入读取编辑状态，不清草稿；修复后该回归通过。第六轮55项/6 suites，5实质RED（4m8s，40 tasks：11 executed/29 up-to-date）：两项真实系统Back、一项维护中旧关闭确认、两项缓冲旧世代/实时metadata读取。添加目的地后BackGuard和PlanEditor实时维护检查；导航Flow改为失效通知、许可内严格重新读取并支持重读，不把观察到的旧值直接作为导航令牌。
+
+核心复审另3 Important：新请求到达但尚未发布期间旧确认仍有效、错误详情阻挡安全恢复导航、提醒重试准入失败仍安排后台；将补延迟metadata读取/实际错误详情/后台请求边界回归。另补Main交付暂停与效果在途取消覆盖；Room失效测试加首次真实发射屏障，避免“更新后才订阅”伪通过。修正和最终复验未完成前不交付。
+
+第七轮57项/6 suites，3实际assertion failure（4m14s，40 tasks：11 executed/29 up-to-date），前三项核心复审问题均复现；第五/六轮问题已通过。修复最后效果同时核对到达序号与待处理ticket；身份打开才要求计划可读，安全恢复导航保留草稿决策但不因错误详情禁用；提醒仅在实际准入之后安排后台。补充暂停Main交付时取消仍发布已提交事实、效果在途取消仅重试效果，不新增生产测试钩子。结合旧E2编辑/工作区与旧设置回归验证中。
+
+覆盖修复GREEN89项/8 suites（49新+40旧），0 failure/error/skipped，4m8s、40 tasks（10 executed/30 up-to-date）。首次全量复验1366项/116 suites、0 failure/error/skipped，完整JVM/Debug/androidTest/lint命令BUILD SUCCESSFUL 4m56s、101 tasks（20 executed/81 up-to-date）：JVM强制重跑，Debug重新打包，androidTest KAPT/Kotlin重新编译、包为缓存检查，lint三类源重新分析/报告重新生成，实际0 error/55既有warning、本批受影响路径无新增issue。既有SQLite CloseGuard警告日志位于SubscriptionReminderAdmissionTest与LauncherBrandingTest的XML，不证明归属这些类；未宣称消除。
+
+最终源复审已有问题全部已验证关闭，但另发现1 Important：新输入提前推进到达序号、随后被拒时旧确认仍留在UI，确认/取消因序号过期均无效。补“旧世代通知被拒”和“目的地排队准入失败”两项回归，必须清过期弹窗所有权但不清草稿，修复及最终复验后才提交。首次全量是该修复前的中间证据，不等于最终交付。
+
+两项最后回归实质RED：导航17项/2 failure，2m26s，40 tasks（5 executed/35 up-to-date）。nextTicket在新到达时立即结束旧弹窗/等待/待处理所有权，原编辑草稿不变；保留许可内到达序号检查。导航17项GREEN（0 failure/error/skipped），4m7s，40 tasks（11 executed/29 up-to-date）。独立定向源复审关闭该问题，无遗留Critical/Important/Minor；审查者没有执行测试，结果由主代理核对。最终全量复验中。
+
+### 实现与验收边界
+
+新版设置使用V1AppSettings/领域仓库及独立V1SettingsViewModel/StateFlow，不借用备份DTO或伪造旧领域值。完整v6 Room装置严格核查settings/metadata单行、SQLite类型、Boolean/枚举/币种/提醒mask；原世代检查贯穿事务，缺行不补默认、无REPLACE/破坏性迁移。更新只改设置，订阅/计划单项偏好与记录不被改写。原writer控制SQL体，提交返回与短Main交付免于取消；提交之后才校准，错误/取消仅重试效果，未获准重试不安排后台。旧设置UI通过纯展示模型共享控件，旧标签/回调/模块说明/返回文案不变；新设置只有计划/订阅提醒，保留主题/日期/币种/订阅默认日/系统权限控件，没有打卡假开关或未接通的备份按钮。
+
+V1准备导航要求显式传入实际Plan列表/编辑/日历/统计、Habit、Subscription和新版Settings所有者，四个真实页面无占位；持有VM与saveable目的地状态，返回保留日历模式/日期、计划草稿及筛选。导航Flow仅失效，许可内严格读取元数据并发布；到达序号/原世代/编辑精确stamp共同防旧回调与旧确认，维护拒绝不重放，系统Back及关闭实时检查冻结。错误详情不阻挡设置等安全恢复导航，身份打开仍要求可读；计划提醒总开关变化/返回重新查询提示，保留当前草稿。
+
+新的计划点击适配器严格验证action/Activity组件/规范URI/Long元数据，在未来Main接线时使用；消费Intent避免重组/旋转重放。新通知等待草稿保存或明确放弃，只在编辑器确实接受新的详情会话后消费；被拒新到达不留下不可关闭的旧对话框。旧Todo/Schedule通知仅产生HOME与失效说明，根本不读取或映射旧数字ID，订阅Intent不被适配器吞掉。
+
+本批全部为合成数据JVM/Robolectric/Compose/完整v6内存Room。未运行设备测试、实际旋转/进程重建、系统通知点击、生产覆盖升级、Release/签名或性能验收。ViewModel/saveable保留测试不是这些设备证明。生产数据库5/Hilt/MainActivity/备份/提醒仍旧路径；新版备份设置界面、完整生产统一激活与F仍未完成。不是手机已启用四入口、v6迁移已发生或V1已发布；继续功能分支，不合并main、不改版本、不发布APK。
+
+### 最终验证与交付
+
+新增51项/5 suites：V1SettingsRoom7、PlanNavigationViewModel17、PlanNotificationClick4、V1NavigationCompose11、V1SettingsViewModel12。另保留旧设置10、E2编辑25/工作区5的89项组合GREEN（最后两项新增前）；最后导航17项单独GREEN不替代全量。最终源复审针对所有Important/Minor及最后弹窗修正关闭，无遗留意见；审查未执行命令，以下实际输出/XML由主代理读取。
+
+```powershell
+$env:JAVA_HOME='D:\jdk'
+.\.tools\gradle-9.4.1\bin\gradle.bat -I .\.tools\phase5-test-network.gradle :app:testDebugUnitTest --rerun :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --console=plain
+git diff --check
+```
+
+最后修复后完整命令退出0，BUILD SUCCESSFUL 5m12s，101 tasks（16 executed/85 up-to-date）。实际XML1368项/116 suites、0 failure/error/skipped，JVM测试强制执行；Debug重新打包，androidTest Kotlin/KAPT重新编译，包为up-to-date构建检查，未运行connectedAndroidTest。lint三类源重新分析/报告重新生成，实际0 error/55既有warning，本批受影响路径无新增issue。仅文档更新发生在此后，代码与测试未改。
+
+既有AGP/KAPT/旧测试弃用提示仍在；最终Robolectric SQLite CloseGuard警告出现在TodoReminderRegressionTest与LauncherBrandingTest的XML，不能凭日志类名确定资源泄漏归属，不宣称消除。README、CHANGELOG未发布区、实施计划同步结果与上述边界。交付按既有授权提交/推送feat/v1-unified-plans并核对远端，实际SHA由回复确认；main与已发布APK不变。
+
 ## E3 · 第十六批：日历与独立全库统计准备（2026-10-14，局部验收通过）
 
 用户已确认范围，继续 `feat/v1-unified-plans`，基线 `aa6da6789141acabcbe5082560d02fca62681ab6`，工作区初始干净。本批仅准备页面/状态/查询及测试，不切生产 schema5/Hilt/根导航/设置/备份/提醒，不改 0.1.1/code2、不合并 main、不发布 APK 或操作个人数据。

@@ -37,6 +37,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import com.example.lifemanager.domain.model.ThemeMode
 import com.example.lifemanager.domain.model.DateFormat
+import com.example.lifemanager.domain.maintenance.DataGeneration
+
+internal data class PreferenceValues(val theme:ThemeMode,val dateFormat:DateFormat,val defaultCurrency:String,
+    val defaultReminderDays:Set<Int>,val reminders:List<PreferenceReminder>)
+internal data class PreferenceReminder(val module:String,val label:String,val checked:Boolean)
+internal data class PreferenceState(val settings:PreferenceValues?,val generation:DataGeneration?,
+    val isAvailable:Boolean,val isLoading:Boolean,val isSaving:Boolean,val isMaintaining:Boolean,val errorMessage:String?)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,6 +73,20 @@ fun SettingsContent(state: SettingsUiState, onThemeChanged: (ThemeMode) -> Unit,
     onReminderEnabledChanged: (String, Boolean) -> Unit = { _, _ -> },
     operationBusy: Boolean = false,
     backupSection: @Composable () -> Unit = {}) {
+    val saved=state.settings
+    PreferenceContent(PreferenceState(saved?.let { PreferenceValues(it.theme,it.dateFormat,it.defaultCurrency,it.defaultReminderDays,
+        listOf(PreferenceReminder("todo","待办提醒",it.todoReminders),PreferenceReminder("schedule","日程提醒",it.scheduleReminders),
+            PreferenceReminder("subscription","订阅提醒",it.subscriptionReminders))) },state.generation,state.isAvailable,
+        state.isLoading,state.isSaving,state.isMaintaining,state.errorMessage),onThemeChanged,onRetry,onBack,onDateFormatChanged,
+        onCurrencyChanged,onReminderDayChanged,onReminderEnabledChanged,operationBusy,backupSection)
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@Composable
+internal fun PreferenceContent(state:PreferenceState,onThemeChanged:(ThemeMode)->Unit,onRetry:()->Unit,onBack:()->Unit,
+    onDateFormatChanged:(DateFormat)->Unit,onCurrencyChanged:(String)->Unit,onReminderDayChanged:(Int,Boolean)->Unit,
+    onReminderEnabledChanged:(String,Boolean)->Unit,operationBusy:Boolean=false,backupSection:@Composable ()->Unit={},
+    modulesDescription:String="当前已启用待办、日程、打卡和订阅费用管理。打卡提醒、暂停和归档尚未实现。",backLabel:String="返回待办") {
 
     Scaffold(
         topBar = { TopAppBar(title = { Text("设置") }) },
@@ -118,8 +139,7 @@ fun SettingsContent(state: SettingsUiState, onThemeChanged: (ThemeMode) -> Unit,
                 Text(if (saved.defaultReminderDays.isEmpty()) "当前默认不安排提醒" else "提醒使用本地 09:00；实际投递仍需系统权限。")
                 Text("只用于之后新建的订阅；不会换算现有金额或覆盖现有提醒，统计仍仅汇总 CNY。", style = MaterialTheme.typography.bodySmall)
                 Text("模块提醒", style = MaterialTheme.typography.titleLarge)
-                listOf(Triple("todo", "待办提醒", saved.todoReminders), Triple("schedule", "日程提醒", saved.scheduleReminders),
-                    Triple("subscription", "订阅提醒", saved.subscriptionReminders)).forEach { (module, label, checked) ->
+                saved.reminders.forEach { (module, label, checked) ->
                     Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
                         Text(label, modifier = Modifier.weight(1f))
                         androidx.compose.material3.Switch(checked = checked, enabled = editable,
@@ -131,9 +151,9 @@ fun SettingsContent(state: SettingsUiState, onThemeChanged: (ThemeMode) -> Unit,
             }
             backupSection()
             Text("已完成模块", style = MaterialTheme.typography.titleLarge)
-            Text("当前已启用待办、日程、打卡和订阅费用管理。打卡提醒、暂停和归档尚未实现。")
+            Text(modulesDescription)
             SettingsPlatformSection()
-            Button(onClick = onBack, enabled = !operationBusy && !state.isMaintaining) { Text("返回待办") }
+            Button(onClick = onBack, enabled = !operationBusy && !state.isMaintaining) { Text(backLabel) }
         }
     }
 }

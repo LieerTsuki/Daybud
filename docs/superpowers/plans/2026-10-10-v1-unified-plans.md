@@ -3,7 +3,7 @@
 日期：2026-10-10。依据：已获用户全文确认的 [设计](../specs/2026-10-10-v1-unified-plans-design.md)。
 分支：`feat/v1-unified-plans`，用户选择在当前干净分支开发，不创建工作树。
 
-`writing-plans` 技能不可用，使用文件级任务、明确依赖与验收记录替代。Buddy 默认的新分支 / PR / 网页验收流程不直接套用原生 Android；不新增 Linear、网页依赖或流程文档。沿用现有 Gradle、TDD、独立审查及 Android 设备验收。总体路线不是一次可交付的单任务，每批在执行前细化并检查覆盖；A/B1/B2/B3/C1/C2a/C2b/C2c1/C2c2/D1/D2/D3/D4/E1/E2/E3 已完成局部验收，后续统一导航/设置及生产接线仍在最终 E 激活关口。
+`writing-plans` 技能不可用，使用文件级任务、明确依赖与验收记录替代。Buddy 默认的新分支 / PR / 网页验收流程不直接套用原生 Android；不新增 Linear、网页依赖或流程文档。沿用现有 Gradle、TDD、独立审查及 Android 设备验收。总体路线不是一次可交付的单任务，每批在执行前细化并检查覆盖；A/B1/B2/B3/C1/C2a/C2b/C2c1/C2c2/D1/D2/D3/D4/E1/E2/E3/E4 已完成局部验收，新版备份设置及实际生产接线仍在最终 E 激活关口。
 
 ## 目标与关键连接
 
@@ -285,6 +285,14 @@ C2c2五项任务于2026-10-13局部验收通过：53项新增测试，119项定�
 
 五任务局部验收完成：新增42项/5 suites（查询16、状态11、Compose6、工作区4、完整Room5），最终1317项 JVM/111 suites强制重跑通过（0 failure/error/skipped），Debug重新打包、androidTest编译/构建检查、lint0 error/55既有warning，独立复审无遗留问题。跨时区民用日期/今日真实窗口有实质RED/GREEN；新旧工作区9项定向复验通过，加载同步修正和首次全量失败保留在验收记录。只读日历状态单独拆分，避免把窗口/选择状态混入已有列表写入VM；维护许可和统一编辑身份共用现有边界。无生产/设备/进程重建/Release/性能验收，资源关闭警告仍待定位。
 
+### E4 · 第十七批：统一导航与新版设置准备（2026-10-14，局部验收通过）
+
+用户确认范围；沿用既有设计和当前分支。任务为：①独立新版设置领域接口与完整v6 Room实现，严格读取、同世代原子更新且保留其他偏好；②独立设置StateFlow、读取失败禁写、保存回执与提醒失败分离，复用主题/日期/币种/权限控件，只显示计划和订阅提醒；③四入口准备导航与通知所有者，原世代准入、保留计划筛选/草稿、过期确认拒绝、维护拒绝不重放，新通知定位同身份，旧通知仅回首页提示失效；④真实交互、VM和完整Room测试，独立审查及全量JVM/Debug/androidTest/lint；⑤同步README/CHANGELOG/验收并提交推送功能分支。生产Room5/Hilt/MainActivity/默认v1备份/旧提醒绑定/版本/APK不变，生产统一激活及F验收仍后续。
+
+导航准备组件必须使用已实现页面和显式模块绑定，不使用空页或假业务数据。通知等待草稿保存或显式放弃，消费后不因重新组合重放；新通知严格核对action、URI、Long类型元数据和源世代，旧ID绝不解释成planId。新版设置不是v2备份DTO冒充应用领域模型；数据库事务同时核对本机世代，提醒效果在提交之后执行，不因效果失败重复写入。
+
+五任务局部验收完成：新增51项/5 suites，最终1368项 JVM/116 suites强制重跑（0 failure/error/skipped），Debug重新打包、androidTest重新编译/包构建检查、lint0 error/55既有warning。独立源审查反馈全部关闭，最后“被拒的新请求遗留旧弹窗”有17项/2失败RED与修复后17项GREEN；最终全量在该修复后重跑，不以较早1366项结果替代。冻结Back/旧关闭确认、延迟到达旧确认、错误详情恢复导航、原SQL取消/暂停Main交付取消/效果在途取消、实际Room失效均有回归。完整过程和限制见验收；无生产切换或设备/Release/性能验收。
+
 ### E 后续总纲（不是 E3 的生产激活承诺）
 
 - 新建 `ui/plan/PlanViewModel.kt` / PlanUiState / PlanScreen / PlanList，`PlanEditorViewModel.kt` / editor state / PlanEditor / PlanDetail，`PlanStatisticsViewModel.kt` / PlanStatisticsScreen，日历分拆组件。StateFlow、维护准入和原世代结果发布沿用 GenerationAccess。
@@ -345,4 +353,5 @@ git diff --check
 - E1：统一列表查询、PlanViewModel/StateFlow、原生手账筛选/列表及完成/撤销已实现准备；维护许可与原世代发布、回执后提醒失败/取消仅重试效果、旧UI回调固定渲染令牌。新增52项/4 suites，1191项 JVM /100 suites强制重跑通过，Debug/androidTest构建检查、lint0 error/55既有warning，独立审查全部反馈关闭。实际命令、失败历史、资源警告及边界见验收；未接生产入口/v6。
 - E2五项任务于2026-10-14局部验收完成：详情/编辑、同身份日期转换与准备工作区；新84项/6 suites，最终1275项 JVM /106 suites强制重跑、Debug/androidTest构建检查、lint0 error/55既有warning、独立复审全部反馈关闭。锁内保存/删除核对、确认修订、原世代/编辑会话和回执失败重试都有回归；未接生产入口/v6。
 - E3于2026-10-14局部验收完成：日历/独立全库统计和准备工作区接线，新增42项/5 suites，最终1317项 JVM/111 suites强制重跑、Debug/androidTest构建检查及lint0 error/55既有warning；计划/代码复审关闭，失败过程和限制见验收记录。
-- 后续统一导航/设置及实际生产数据库/备份/提醒接线在最终E激活关口一并完成。F版本和覆盖升级交付仍未完成，完整E–F未完成，生产仍为0.1.1/schema5、已发布APK未改，不等于整个V1已完成。
+- E4于2026-10-14局部验收完成：统一四入口/草稿与通知所有者、新版领域设置/Room事务/独立状态及共享展示控件；新增51项/5 suites，最终1368项 JVM/116 suites强制重跑、Debug/androidTest构建检查、lint0 error/55既有warning，独立复审无遗留问题。
+- 后续新版备份设置及实际生产数据库/备份/提醒/Hilt/MainActivity接线在最终E激活关口一并完成。F版本和覆盖升级交付仍未完成，完整E–F未完成，生产仍为0.1.1/schema5、已发布APK未改，不等于整个V1已完成。

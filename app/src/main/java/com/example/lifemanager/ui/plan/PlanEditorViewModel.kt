@@ -220,12 +220,12 @@ class PlanEditorViewModel(private val repository:PlanRepository,private val case
     }
     private fun dirty()=state.value.draft?.let { it!=PlanDraft(it.base) }==true
     fun requestClose(stamp:PlanEditorStamp) {
-        if(!matches(stamp,true) || state.value.isBusy) return
+        if(!matches(stamp,true) || state.value.isBusy || access.maintenance.value!=MaintenanceState.IDLE) return
         pending=null
         if(dirty())state.update { it.copy(confirmClose=true,stamp=it.stamp.copy(revision=it.stamp.revision+1)) }else close()
     }
     fun confirmClose(stamp:PlanEditorStamp) {
-        if(!matches(stamp,true) || state.value.isBusy || !state.value.confirmClose) return
+        if(!matches(stamp,true) || state.value.isBusy || access.maintenance.value!=MaintenanceState.IDLE || !state.value.confirmClose) return
         val next=pending;if(next==null)close()else select(next)
     }
     fun cancelClose(stamp:PlanEditorStamp) { if(matches(stamp,true)) { pending=null;state.update { it.copy(confirmClose=false,stamp=it.stamp.copy(revision=it.stamp.revision+1)) } } }
