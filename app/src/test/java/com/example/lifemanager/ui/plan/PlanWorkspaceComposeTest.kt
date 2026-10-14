@@ -75,7 +75,11 @@ class PlanWorkspaceComposeTest {
         waitFor { f.model.uiState.value.draft!=null && f.model.uiState.value.isAvailable }
         compose.onNodeWithContentDescription("计划标题").performTextReplacement("提醒失败目标")
         scroll(hasText("保存计划"));compose.onNodeWithText("保存计划").performClick()
-        waitFor { !f.model.uiState.value.isBusy && f.model.uiState.value.reminderReceipt!=null }
+        // A commit receipt precedes the separately admitted detail read. Do not act on the
+        // outgoing editor's semantics while the detail pane is still loading.
+        waitFor { val state=f.model.uiState.value
+            !state.isBusy && !state.isLoading && state.isAvailable && state.pane==PlanPane.DETAIL &&
+                state.detail?.title=="提醒失败目标" && state.reminderReceipt!=null }
         scroll(hasText("返回计划"));compose.onNodeWithText("返回计划").performClick()
         waitFor { f.model.uiState.value.pane==PlanPane.LIST && f.model.uiState.value.isAvailable }
         scroll(hasText("仅重试 #41 的提醒"));f.effects={_,_->}

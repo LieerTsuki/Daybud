@@ -3,7 +3,7 @@
 日期：2026-10-10。依据：已获用户全文确认的 [设计](../specs/2026-10-10-v1-unified-plans-design.md)。
 分支：`feat/v1-unified-plans`，用户选择在当前干净分支开发，不创建工作树。
 
-`writing-plans` 技能不可用，使用文件级任务、明确依赖与验收记录替代。Buddy 默认的新分支 / PR / 网页验收流程不直接套用原生 Android；不新增 Linear、网页依赖或流程文档。沿用现有 Gradle、TDD、独立审查及 Android 设备验收。总体路线不是一次可交付的单任务，每批在执行前细化并检查覆盖；A/B1/B2/B3/C1/C2a/C2b/C2c1/C2c2/D1/D2/D3/D4/E1/E2 已完成局部验收，下一批 E3 日历/全库统计，生产接线仍在最终 E 激活提交。
+`writing-plans` 技能不可用，使用文件级任务、明确依赖与验收记录替代。Buddy 默认的新分支 / PR / 网页验收流程不直接套用原生 Android；不新增 Linear、网页依赖或流程文档。沿用现有 Gradle、TDD、独立审查及 Android 设备验收。总体路线不是一次可交付的单任务，每批在执行前细化并检查覆盖；A/B1/B2/B3/C1/C2a/C2b/C2c1/C2c2/D1/D2/D3/D4/E1/E2/E3 已完成局部验收，后续统一导航/设置及生产接线仍在最终 E 激活关口。
 
 ## 目标与关键连接
 
@@ -14,7 +14,7 @@
 | 日期不是假区间，长期目标不挤入今日，重复完成结束系列 | PlanTimeRules / PlanOccurrences → 列表、日历、冲突、统计、提醒 | 确定性时区 / DST / 边界测试 |
 | v1/v2 备份严格验证再恢复，旧令牌不能写新 ID | 版本分派 → 校验 → 转换 → 保护备份 / 维护事务 → 世代 | codec、真实 Room / 文件 / 旧草稿回归 |
 | 完成或关提醒后不会继续投递，也不会与旧广播重号 | PlanReminderScheduler / Receiver → 当前仓库、设置、世代、例外 | 延迟广播、升级校准、权限设备测试 |
-| 四入口均为实装功能，可离线运行并保留草稿 | Hilt 单数据库 → 三个 Plan VM → Compose / 导航 / Settings | JVM、设备 CRUD / 导航 / 适配 |
+| 四入口均为实装功能，可离线运行并保留草稿 | Hilt 单数据库 → 列表/编辑/日历/统计独立状态 → Compose / 导航 / Settings | JVM、设备 CRUD / 导航 / 适配 |
 
 ## 激活关口
 
@@ -273,7 +273,19 @@ C2c2五项任务于2026-10-13局部验收通过：53项新增测试，119项定�
 
 五项局部验收完成：新增84项/6 suites，最终1275项 JVM /106 suites强制重跑通过，Debug重新打包、androidTest构建检查及lint0 error/55既有warning；独立审查反馈全部关闭。当前输入用格式提示文本，确认展示具体参数和截止互斥表示；同ID重编辑/当前草稿再激活/保留例外/冲突与跳转旧确认/锁等待删除都有真实回归。提交回执先消费草稿，多个提醒失败分别重试。失败历史、缓存范围与归属待定位的资源警告见验收；不是生产v6/设备/进程重建或V1发布。
 
-### E 后续总纲（不是 E2 的生产激活承诺）
+### E3 · 第十六批：日历与独立全库统计准备（2026-10-14，局部验收通过）
+
+用户确认本批范围，沿用已批准设计和当前功能分支；不切生产 schema/Hilt/根导航，不更改版本、main 或发布 APK。`writing-plans` 与 Buddy 运行脚本仍不可用，使用以下文件级五任务和真实验收记录。
+
+1. `domain/plan/PlanCalendarQuery.kt` 与测试：月/周/日有限窗口、日分组/稳定身份，复用 PlanOccurrences 与取消例外；日期截止/全天保留 LocalDate，按计划时区的日期窗口准入并按保存日期截取，不先用展示时区 Instant 窗口误删远距离时区日期项。Instant 按展示时区分组，跨日真实区间覆盖相交日期、排他结束不多占一天；无日期排除，已完成系列仅完成日一标记，整个查询共享计算预算且超限不返回部分成功。
+2. `ui/plan/PlanCalendarViewModel.kt` / 日历状态与 `PlanStatisticsViewModel.kt` / 统计状态：独立全库 Flow 失效后在 GenerationAccess 中重读，维护取消保留选择、替换清旧事实，旧回调固定世代；错误不是成功空列表/零统计。全库统计复用已有规则，今天真实日程按展示时区今日 Instant 窗口真实相交且按计划 ID 去重，不把系列完成标记当日程；仅日期项在其计划时区比较日范围，因此该统计不是日历日期格的机械计数。注入 Clock，页面显示/恢复前台及可见时每60秒重算当前 now/系统展示时区，仍同许可内查询/发布；覆盖无数据库变化的截止跨越、午夜及改区。
+3. `PlanCalendarScreen.kt` / `PlanStatisticsScreen.kt` / `PlanWorkspace.kt`：原生卡通 Material3，浅深色/长文本/320dp/200% 字体/语义；真实已实现页面在准备工作区切换，月格选日、前后窗口/回今天/显示已完成，周日为按日列表而非小时拖拽时间轴；日历打开统一详情、返回保留日历选择和列表筛选，编辑页不提供绕过草稿保护的切页入口。
+4. JVM/Compose/完整 v6 Room 测试、独立只读审查；全量 JVM 强制重跑、Debug/androidTest 构建及 lint。设备执行/进程重建/生产接线/性能和 Release 仍后续，不能以本批 Robolectric 验证代替。
+5. 同步 README/CHANGELOG/验收/计划，局部验收完成才提交并推送当前功能分支，核对远端；不合并 main、不操作个人设备或用户库。
+
+五任务局部验收完成：新增42项/5 suites（查询16、状态11、Compose6、工作区4、完整Room5），最终1317项 JVM/111 suites强制重跑通过（0 failure/error/skipped），Debug重新打包、androidTest编译/构建检查、lint0 error/55既有warning，独立复审无遗留问题。跨时区民用日期/今日真实窗口有实质RED/GREEN；新旧工作区9项定向复验通过，加载同步修正和首次全量失败保留在验收记录。只读日历状态单独拆分，避免把窗口/选择状态混入已有列表写入VM；维护许可和统一编辑身份共用现有边界。无生产/设备/进程重建/Release/性能验收，资源关闭警告仍待定位。
+
+### E 后续总纲（不是 E3 的生产激活承诺）
 
 - 新建 `ui/plan/PlanViewModel.kt` / PlanUiState / PlanScreen / PlanList，`PlanEditorViewModel.kt` / editor state / PlanEditor / PlanDetail，`PlanStatisticsViewModel.kt` / PlanStatisticsScreen，日历分拆组件。StateFlow、维护准入和原世代结果发布沿用 GenerationAccess。
 - 共用新增/编辑，时间模式与隐藏参数保留、移除重复区间明确确认；长文本、保存错误 / 提醒错误分开，同一草稿不可重复创建。分类转换保留筛选并提示去向，不隐式退出未保存页。
@@ -332,4 +344,5 @@ git diff --check
 - D4五项任务于2026-10-13局部验收完成：文件/维护隔离实现、42项新测试，77项D4+D3组合及1139项/96 suites全量JVM强制重跑、Debug/androidTest构建检查、lint0 error/55既有warning、独立复审无遗留问题。取消误报与异常世代的完整诊断、RED/GREEN、重复验证和运行资源警告保留；没有生产激活/设备执行或用户库/文件操作。
 - E1：统一列表查询、PlanViewModel/StateFlow、原生手账筛选/列表及完成/撤销已实现准备；维护许可与原世代发布、回执后提醒失败/取消仅重试效果、旧UI回调固定渲染令牌。新增52项/4 suites，1191项 JVM /100 suites强制重跑通过，Debug/androidTest构建检查、lint0 error/55既有warning，独立审查全部反馈关闭。实际命令、失败历史、资源警告及边界见验收；未接生产入口/v6。
 - E2五项任务于2026-10-14局部验收完成：详情/编辑、同身份日期转换与准备工作区；新84项/6 suites，最终1275项 JVM /106 suites强制重跑、Debug/androidTest构建检查、lint0 error/55既有warning、独立复审全部反馈关闭。锁内保存/删除核对、确认修订、原世代/编辑会话和回执失败重试都有回归；未接生产入口/v6。
-- 下一批E3：日历/独立全库统计；实际生产数据库/备份/提醒/导航/设置接线最后一并完成。F版本和覆盖升级交付仍未完成，完整E–F未完成，生产仍为0.1.1/schema5、已发布APK未改，不等于整个V1已完成。
+- E3于2026-10-14局部验收完成：日历/独立全库统计和准备工作区接线，新增42项/5 suites，最终1317项 JVM/111 suites强制重跑、Debug/androidTest构建检查及lint0 error/55既有warning；计划/代码复审关闭，失败过程和限制见验收记录。
+- 后续统一导航/设置及实际生产数据库/备份/提醒接线在最终E激活关口一并完成。F版本和覆盖升级交付仍未完成，完整E–F未完成，生产仍为0.1.1/schema5、已发布APK未改，不等于整个V1已完成。

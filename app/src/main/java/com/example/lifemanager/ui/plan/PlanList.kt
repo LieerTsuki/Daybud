@@ -52,7 +52,7 @@ internal fun priorityLabel(value: TodoPriority): String = when (value) {
 }
 
 @Composable
-private fun timeLabel(row: PlanListRow, zone: ZoneId): String = when (val time = row.occurrence?.time) {
+internal fun timeLabel(row: PlanListRow, zone: ZoneId): String = when (val time = row.occurrence?.time) {
     is PlanOccurrenceTime.DeadlineInstant -> "日程 · 截止 ${displayDateTime(time.at, zone)}"
     is PlanOccurrenceTime.DeadlineDate -> "日程 · 截止 ${displayDate(time.date)}（${row.plan.timeZone}）"
     is PlanOccurrenceTime.Timed -> "日程 · ${displayDateTime(time.start, zone)} — ${displayDateTime(time.end, zone)}"
