@@ -1,5 +1,44 @@
 # V1 统一计划分批验收
 
+## E5 · 第十八批：新版备份设置与导航保护（2026-10-15，局部验收通过）
+
+用户已确认本批范围，基线145ae17；继续当前功能分支。不切生产Room5/Hilt/MainActivity/默认备份或版本，不发布APK、不合并main、不接触个人数据。沿用已批准的V2文件/维护底座，新增独立备份设置所有者及真实准备页面；完整生产原子激活和F验收仍后续。
+
+过程记录：基线旧备份/准备导航定向测试命令成功（13s，40 tasks：1 executed/39 up-to-date；未在当时汇总数量，不补造数字）。新所有者首次测试编译发现调度器接收者错误，修正后仅因缺失新API编译失败（20s），这两次不算行为RED。首实现16项VM测试通过（3m23s；40 tasks：11 executed/29 up-to-date，0 failure/error/skipped），随后用户中断，保留未提交文件；恢复后继续页面与安全边界测试，不以16项定向结果替代完整验收。独立审查及最终运行证据将在完成后补充。
+
+页面行为RED：14项/3失败（3m30s，40 tasks：5 executed/35 up-to-date），缺失V2入口、保留旧偏好回调仍写入、保留旧导航回调仍切页；接入真实准备页面及实时busy保护后36项/3 suites通过（3m27s，40 tasks：12 executed/28 up-to-date）。没有将通过的原有用例冒充新增RED。
+
+独立审查首次服务容量错误无审查结论；重新只读审查发现3项Important：lazy任务尚未进体即取消后无清理；重建时已返回文件结果清空pending票据但VM仍处PICK阶段，重复启动选择器；已在世代读取等待的通知交付可跨越备份开始。回归36项/4失败（1m30s），其中提前取消1项与选择器两项均实质RED（选择器期望启动1次实际2次），通知用例最初拦住Legacy接收第二次读取，尚未发布pending而超时，不计有效RED。改为第三次/最终交付读取后单项1失败（1m41s；期望IDLE实际PREPARING），正确捕捉竞争。
+
+按根因修正：原worker以ATOMIC进入try且第一步ensureActive，取消前无I/O但保证清理；source/output分别持有rememberSaveable已启动标记与未归还票据，结果消费不抹去本操作启动历史，新UUID不能覆盖旧未归还结果；设置备份回调同步核对live destination==SETTINGS、pending/confirmation均空和编辑/偏好状态，与最终Main通知交付互斥，交付完成后旧设置回调也失效。补充完整13实体Room的设置所有者→真实文件暂存/保护→单事务恢复/取消三项测试。当前复验进行中，最终数量与限制另补。
+
+修复后43项/5 suites定向通过（3m3s，40 tasks：10 executed/30 up-to-date，0 failure/error/skipped）：VM17、原导航新增回归后17、Dialog4、Picker2、完整Room3。独立只读复审确认3项Important均关闭，无新增Critical/Important/Minor；审查只认可隔离准备，不替代运行证据。最终源随后仅补齐ATOMIC的DelicateCoroutinesApi显式opt-in（取消安全理由及入口ensureActive不变），避免新增生产编译警告；全量命令在该最终源上运行，结果待补。
+
+### 实现与安全边界
+
+- `V1BackupSettingsViewModel` 独立StateFlow，用实际版本/时间生成新V2文档，隐私确认先于输出；旧V1先严格验证再共享转换，展示真实新表数量、源格式和旧待办本次设备时区来源。一次操作固定原世代与UUID，文件/确认回调还校验阶段；旧回调不能改投新操作。恢复的保护文件必须另存并重读成功，之后才显示独立最终确认；清空可明确跳过保护，但仍需最终确认并保留设置。
+- 复用D4原子维护，不新写事务/闹钟旁路；数据成功、未变更、结果未知分开。已提交取消及提醒失败不提示回滚、不重复SQL；未知结果禁止新导出/恢复/清空，只有用户显式重读本机严格世代与完整快照成功才解除，不能把读失败当回滚。维护许可内读取/发布当前事实，普通慢文件读写不持有SQL事务。
+- 新版设置和准备导航显式绑定真实备份所有者，无缺省占位模块。备份busy期间切页/返回/偏好写入有实时检查；通知交付与备份开始互斥。源/输出分别保存已启动标记与未归还票据，重建不重新创建VM操作，不把旧系统结果改绑新UUID；进程新所有者从IDLE开始，过期回调被拒绝。E5应用代码不将URI或文档字节写入自有UIState、rememberSaveable/自定义Bundle或日志，也不在弹窗展示；文件位置仅在活动操作及工作流内存中使用。此保证不覆盖Android/AndroidX文件结果传输、框架持久化或框架日志，不作跨平台绝对隐私承诺。
+- 新增32项（4个新suite：VM17/Dialog4/Picker2/Room3，既有导航suite新增6项）。完整目标Room证据包含13实体、实际snapshot/mutation、codec、私有暂存文件与workflow；提醒端在本套接线测试中替换为无系统效果端口，既有真实系统提醒测试仍由全量回归覆盖，不声称本批已操作真实AlarmManager或文件提供方。
+
+### 最终验证
+
+最终源（含三处修正、补齐opt-in）执行：
+
+```powershell
+$env:JAVA_HOME='D:\jdk'
+.\.tools\gradle-9.4.1\bin\gradle.bat -I .\.tools\phase5-test-network.gradle :app:testDebugUnitTest --rerun :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --console=plain
+git diff --check
+```
+
+BUILD SUCCESSFUL，4m25s，101 tasks（19 executed/82 up-to-date）。实际XML汇总1400项/120 suites，failure/error/skipped均0；相比基线1368项/116 suites新增32项/4 suites，未用历史结果或只用BUILD SUCCESSFUL替代数量。Debug重新打包；androidTest KAPT/Kotlin/ASM重新执行，下游包和assemble为UP-TO-DATE构建检查，没有设备执行。lint三类源重新分析并生成报告，实际XML为0 error/55 warning，本批修改/新增文件无lint问题。既有AGP/KAPT/旧测试deprecated警告仍存在，本批新ATOMIC已显式说明并opt-in。资源CloseGuard日志本轮出现在TodoReminderAdmissionTest和LauncherBrandingTest结果中，不证明资源归属于这两个类，不宣称消除泄漏。
+
+独立最终源复审无Critical/Important/Minor遗留；文档复审发现“Bundle/日志不含URI”的绝对说法超出应用控制，已缩小为E5自有状态/存储/日志范围。README/CHANGELOG未发布区/原实施计划/本验收同步；仅按用户授权提交并推送当前feat/v1-unified-plans，不修改origin、不合并main、不提交密钥或个人数据。五任务局部验收完成，不等于生产V1启用。
+
+### 限制与后续
+
+本批不切生产Room6/Hilt/MainActivity/旧Worker/Receiver/默认v1备份，不调整0.1.1/code2，不合并main、不发布或安装APK。Robolectric保存状态重建不是实际设备旋转或强杀进程证明；没有本批connectedAndroidTest、真实SAF/Downloads/云文件提供方、个人库恢复、生产覆盖安装、Release/正式签名、真机/大库内存或性能验收。仍保留D4文件提供方别名/协作取消/不保证跨系统原子/64MiB及100k受限内存表示/资源关闭警告等限制。新版生产数据库、全部消费者和提醒/备份绑定须在最终E关口一起激活，F交付后续，不能把本批准备状态当手机已启用功能。
+
 ## E4 · 第十七批：统一导航与新版设置准备（2026-10-14，局部验收通过）
 
 用户确认范围；基线2ad6096、当前feat/v1-unified-plans初始干净。按E4局部准备，不切生产Room5/Hilt/MainActivity/默认v1备份/旧提醒绑定/版本0.1.1-code2，不发布或安装APK，不合并main，不接触个人数据。完整生产激活及F仍后续。

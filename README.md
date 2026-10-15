@@ -2,7 +2,7 @@
 
 日子芽是 Kotlin + Jetpack Compose 的离线生活管理工具，包含待办、日程、习惯打卡与订阅费用管理。
 
-更新日期：2026-10-14。
+更新日期：2026-10-15。
 
 每次版本更新附带[更新内容文档](CHANGELOG.md)；开发中分批结果与已发布版本分开记录，此约定已写入仓库 `AGENTS.md`。
 
@@ -11,6 +11,8 @@
 > 当前预览版本为 `v0.1.1-rizhiya-preview-20261009`，对应源码提交 `777e1e9`。2026-10-09 将 `feat/phase5-settings-backup` 的 Phase 5 功能、第一批 UI 与日子芽名称/图标整合至 `main`，默认分支包含这些代码；本次整合仅更新合并状态文档，不改动应用实现或已发布 APK。APK 仍是测试预览版，不是正式发布版。合并验证范围与未验收项见[主分支整合记录](https://github.com/lieer-12/app/blob/main/docs/main-merge-acceptance.md)。
 
 ## V1 统一计划改版 · 开发中
+
+第十八批E5已完成新版备份设置与导航保护的局部准备验收：接入已有V2文件与维护流程，提供旧V1转换预览、独立保护备份及最终确认；备份期间保护切页与偏好写入，取消保留草稿，提交结果未知时禁止重复操作。新增32项，最终1400项JVM/120 suites强制重跑通过（0 failure/error/skipped），Debug重新打包、androidTest编译/构建检查通过，lint0 error/55既有warning；独立审查发现的3处时序问题均经回归修正并复审关闭。详见[验收记录](docs/v1-unified-plans-acceptance.md)。生产0.1.1/code2/schema5、main和下载APK不变，仍不是手机已启用V1；生产原子接线及F设备/覆盖升级/Release/性能验收尚未完成。
 
 第十七批 E4 已完成统一导航与新版设置的局部准备验收（2026-10-14）：四个真实页面「计划 / 打卡 / 订阅 / 设置」显式绑定持有的模块所有者，切页保护计划草稿、保留日历选择；新计划通知严格验证并等待草稿决策，旧通知只回首页提示失效，不使用旧 ID 定位新记录。新版设置通过独立领域接口与完整 v6 Room 装置读取/更新，只显示计划与订阅提醒，保留主题、日期、币种及默认提醒日；提交后取消/提醒失败不会重复保存。TDD 新增51项/5 suites，最终1368项 JVM/116 suites强制重跑通过（0 failure/error/skipped），Debug重新打包、androidTest编译/构建检查、lint0 error/55既有warning；独立复审无遗留问题，详情见[验收记录](docs/v1-unified-plans-acceptance.md)。这仍是准备代码：生产0.1.1/code2/schema5、main和下载APK不变，新版备份设置、生产原子接线及设备/覆盖升级/Release/性能验收尚未完成；不是手机已经启用V1四入口。
 

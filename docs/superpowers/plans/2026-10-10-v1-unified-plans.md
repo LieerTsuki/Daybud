@@ -293,6 +293,12 @@ C2c2五项任务于2026-10-13局部验收通过：53项新增测试，119项定�
 
 五任务局部验收完成：新增51项/5 suites，最终1368项 JVM/116 suites强制重跑（0 failure/error/skipped），Debug重新打包、androidTest重新编译/包构建检查、lint0 error/55既有warning。独立源审查反馈全部关闭，最后“被拒的新请求遗留旧弹窗”有17项/2失败RED与修复后17项GREEN；最终全量在该修复后重跑，不以较早1366项结果替代。冻结Back/旧关闭确认、延迟到达旧确认、错误详情恢复导航、原SQL取消/暂停Main交付取消/效果在途取消、实际Room失效均有回归。完整过程和限制见验收；无生产切换或设备/Release/性能验收。
 
+### E5 · 第十八批：新版备份设置与导航保护（2026-10-15，局部验收通过）
+
+用户确认既有设计下的本批边界。①独立V1备份设置StateFlow所有者，使用D4的V2文件/维护流程，导出隐私确认、V1/V2真实转换预览、保护文件重读验证与独立最终确认，清空保留设置；②真实Compose设置与四入口准备导航显式持有该所有者，原世代/操作UUID/阶段检查、旧文件回调、重建、忙碌切页/偏好/Back保护；③不确定提交禁用新备份操作，显式读取当前严格快照后才解除，不自动重试SQL；④VM/Compose/真实完整Room测试、独立审查与全量JVM/Debug/androidTest/lint；⑤更新README/CHANGELOG/验收并提交推送当前功能分支。生产Room5/Hilt/MainActivity/默认v1备份/旧提醒/0.1.1-code2/APK/main不变。
+
+五任务局部验收完成：新增32项/4新suites（VM17/Dialog4/Picker2/完整Room3，既有导航suite新增6项），最终1400项JVM/120 suites强制重跑通过，0 failure/error/skipped；Debug重新打包、androidTest编译/包构建检查、lint0 error/55既有warning。独立审查3处时序问题均有实质RED/GREEN并复审关闭；早期测试接收者/接口编译问题、通知阻塞错误位置超时及后续正确复现均保留验收记录。真实文件提供方/设备进程死亡/生产覆盖升级/Release/性能不由Robolectric替代；完整E生产激活和F仍后续。
+
 ### E 后续总纲（不是 E3 的生产激活承诺）
 
 - 新建 `ui/plan/PlanViewModel.kt` / PlanUiState / PlanScreen / PlanList，`PlanEditorViewModel.kt` / editor state / PlanEditor / PlanDetail，`PlanStatisticsViewModel.kt` / PlanStatisticsScreen，日历分拆组件。StateFlow、维护准入和原世代结果发布沿用 GenerationAccess。
@@ -354,4 +360,5 @@ git diff --check
 - E2五项任务于2026-10-14局部验收完成：详情/编辑、同身份日期转换与准备工作区；新84项/6 suites，最终1275项 JVM /106 suites强制重跑、Debug/androidTest构建检查、lint0 error/55既有warning、独立复审全部反馈关闭。锁内保存/删除核对、确认修订、原世代/编辑会话和回执失败重试都有回归；未接生产入口/v6。
 - E3于2026-10-14局部验收完成：日历/独立全库统计和准备工作区接线，新增42项/5 suites，最终1317项 JVM/111 suites强制重跑、Debug/androidTest构建检查及lint0 error/55既有warning；计划/代码复审关闭，失败过程和限制见验收记录。
 - E4于2026-10-14局部验收完成：统一四入口/草稿与通知所有者、新版领域设置/Room事务/独立状态及共享展示控件；新增51项/5 suites，最终1368项 JVM/116 suites强制重跑、Debug/androidTest构建检查、lint0 error/55既有warning，独立复审无遗留问题。
-- 后续新版备份设置及实际生产数据库/备份/提醒/Hilt/MainActivity接线在最终E激活关口一并完成。F版本和覆盖升级交付仍未完成，完整E–F未完成，生产仍为0.1.1/schema5、已发布APK未改，不等于整个V1已完成。
+- E5于2026-10-15局部验收完成：新版备份设置、独立StateFlow所有者及导航/偏好/文件回调保护；新增32项/4新suites，最终1400项JVM/120 suites强制重跑、Debug/androidTest构建检查及lint0 error/55既有warning通过，独立复审关闭。
+- 后续实际生产数据库/备份/提醒/Hilt/MainActivity接线在最终E激活关口一并完成。F版本和覆盖升级交付仍未完成，完整E–F未完成，生产仍为0.1.1/schema5、已发布APK未改，不等于整个V1已完成。

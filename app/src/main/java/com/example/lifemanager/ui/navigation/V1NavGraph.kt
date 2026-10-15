@@ -18,6 +18,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.lifemanager.ui.plan.*
 import com.example.lifemanager.ui.settings.V1SettingsViewModel
 import com.example.lifemanager.ui.settings.V1SettingsScreen
+import com.example.lifemanager.ui.settings.V1BackupSettingsViewModel
 import com.example.lifemanager.ui.settings.LocalDateFormat
 import com.example.lifemanager.ui.habit.HabitViewModel
 import com.example.lifemanager.ui.habit.HabitScreen
@@ -31,21 +32,22 @@ import kotlinx.coroutines.launch
 @Composable
 fun V1NavGraph(navigation:PlanNavigationViewModel,list:PlanViewModel,editor:PlanEditorViewModel,
     calendar:PlanCalendarViewModel,statistics:PlanStatisticsViewModel,settings:V1SettingsViewModel,
-    habits:HabitViewModel,subscriptions:SubscriptionViewModel) {
+    habits:HabitViewModel,subscriptions:SubscriptionViewModel,backup:V1BackupSettingsViewModel) {
     val state=navigation.uiState.collectAsStateWithLifecycle().value
     val edit=editor.uiState.collectAsStateWithLifecycle().value
     val prefs=settings.uiState.collectAsStateWithLifecycle().value
+    val operation=backup.uiState.collectAsStateWithLifecycle().value
     val stamp=edit.stamp // Immutable rendering stamp for every captured tab callback.
     val scope=rememberCoroutineScope()
     val pages=rememberSaveableStateHolder()
-    val enabled=state.generation!=null && !state.isMaintaining && !prefs.isSaving && !prefs.isMaintaining && !edit.isBusy
+    val enabled=state.generation!=null && !state.isMaintaining && !prefs.isSaving && !prefs.isMaintaining && !edit.isBusy && !operation.busy
     fun liveNavigationAllowed()=!settings.uiState.value.isSaving && !settings.uiState.value.isMaintaining &&
-        !editor.uiState.value.isBusy && !editor.uiState.value.isMaintaining
+        !editor.uiState.value.isBusy && !editor.uiState.value.isMaintaining && !backup.uiState.value.busy
     LaunchedEffect(prefs.settings?.planReminders,state.destination) {
         // Same-source preference changes and returning to Plan refresh hints without clearing drafts.
         if(state.destination==V1Destination.PLAN && prefs.settings!=null)editor.retryRead()
     }
-    LaunchedEffect(state.pending?.ticket,edit.stamp,edit.isLoading,edit.isAvailable,edit.isBusy,prefs.isSaving,state.waitingForDraft) {
+    LaunchedEffect(state.pending?.ticket,edit.stamp,edit.isLoading,edit.isAvailable,edit.isBusy,prefs.isSaving,state.waitingForDraft,operation.busy) {
         if(liveNavigationAllowed())navigation.deliver(editor)
     }
     BackHandler(enabled=state.destination!=V1Destination.PLAN || state.isMaintaining) {
@@ -78,10 +80,13 @@ fun V1NavGraph(navigation:PlanNavigationViewModel,list:PlanViewModel,editor:Plan
                             V1Destination.PLAN->PlanWorkspace(list,editor,calendar,statistics)
                             V1Destination.HABIT->HabitScreen(habits)
                             V1Destination.SUBSCRIPTION->SubscriptionScreen(subscriptions)
-                            V1Destination.SETTINGS->V1SettingsScreen(settings) { if(liveNavigationAllowed())navigation.requestDestination(V1Destination.PLAN,stamp) }
+                            V1Destination.SETTINGS->V1SettingsScreen(settings,backup,
+                                onBack={ if(liveNavigationAllowed())navigation.requestDestination(V1Destination.PLAN,stamp) },
+                                canStartBackup={ !editor.uiState.value.isBusy && !editor.uiState.value.isMaintaining &&
+                                    navigation.uiState.value.let { it.destination==V1Destination.SETTINGS && it.pending==null && it.confirmation==null } })
                         }
                         // Registered after destination children; their BackHandlers cannot win a freeze.
-                        BackHandler(enabled=state.isMaintaining || edit.isMaintaining || prefs.isMaintaining) {}
+                        BackHandler(enabled=state.isMaintaining || edit.isMaintaining || prefs.isMaintaining || operation.busy) {}
                     } }
                 }
             }

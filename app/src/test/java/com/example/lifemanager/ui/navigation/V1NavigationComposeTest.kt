@@ -52,6 +52,8 @@ class V1NavigationComposeTest {
     private val prefs=MemoryV1Settings().apply { afterWrite={ f.enabled=rows.value.planReminders } }
     private val settings=V1SettingsViewModel(prefs,access,SettingsEffects(),Dispatchers.IO)
     private val nav=PlanNavigationViewModel(access,Dispatchers.IO)
+    private val backupWorld=V1BackupSettingsViewModelTest.World(Dispatchers.IO,f.generations,f.coordinator)
+    private val backup=backupWorld.model
     private val habit=HabitViewModel(EmptyHabits(),Dispatchers.IO,access)
     private val subscription=SubscriptionViewModel(EmptySubscriptions(),object:SubscriptionReminderSchedulerContract {
         override fun cancel(subscriptionId:Long,reminderDays:Set<Int>) {};override fun cancelAll(subscriptionId:Long) {}
@@ -59,12 +61,12 @@ class V1NavigationComposeTest {
         override fun observeSettings()=flowOf(AppSettings());override suspend fun getSettings()=AppSettings()
         override suspend fun updateSettings(transform:(AppSettings)->AppSettings) { error("not a production V1 settings binding") }
     },Dispatchers.IO,access)
-    @After fun cleanup() { listOf(f.model,list,calendar,stats,settings,nav,habit,subscription).forEach { it.viewModelScope.cancel() } }
+    @After fun cleanup() { listOf(f.model,list,calendar,stats,settings,nav,habit,subscription,backup).forEach { it.viewModelScope.cancel() } }
     private fun waitFor(predicate:()->Boolean) { compose.waitUntil(5000) { compose.waitForIdle();predicate() } }
     private fun show() {
         compose.setContent { Box(Modifier.size(360.dp,720.dp)) {
             backDispatcher=checkNotNull(LocalOnBackPressedDispatcherOwner.current).onBackPressedDispatcher
-            V1NavGraph(nav,list,f.model,calendar,stats,settings,habit,subscription)
+            V1NavGraph(nav,list,f.model,calendar,stats,settings,habit,subscription,backup)
         } }
         waitFor { f.model.uiState.value.isAvailable && settings.uiState.value.isAvailable && list.uiState.value.isAvailable }
     }
@@ -79,6 +81,70 @@ class V1NavigationComposeTest {
         compose.onNodeWithContentDescription("计划入口").performClick();waitFor { nav.uiState.value.destination==V1Destination.PLAN }
         compose.onNodeWithText("新建计划").assertExists()
     }
+    @Test fun `unified settings exposes actual backup controls`() {
+        show();compose.onNodeWithContentDescription("设置入口").performClick();waitFor { nav.uiState.value.destination==V1Destination.SETTINGS }
+        compose.onNodeWithText("导出完整 V2 备份").performScrollTo().assertIsDisplayed().performClick()
+        waitFor { backup.uiState.value.step==BackupStep.EXPORT_NOTICE }
+        compose.onNodeWithText("取消").performClick();waitFor { !backup.uiState.value.busy }
+        assertTrue(backupWorld.saved.isEmpty())
+    }
+    @Test fun `retained tab action is rejected while backup waits for privacy consent`() {
+        show();compose.onNodeWithContentDescription("设置入口").performClick();waitFor { nav.uiState.value.destination==V1Destination.SETTINGS }
+        val old=compose.onNodeWithContentDescription("打卡入口").fetchSemanticsNode().config[SemanticsActions.OnClick].action!!
+        compose.runOnIdle { backup.start(BackupAction.EXPORT,f.token) };waitFor { backup.uiState.value.step==BackupStep.EXPORT_NOTICE }
+        compose.runOnIdle { old() };compose.waitForIdle()
+        assertEquals(V1Destination.SETTINGS,nav.uiState.value.destination)
+    }
+    @Test fun `retained preference action cannot write while backup is busy`() {
+        show();compose.onNodeWithContentDescription("设置入口").performClick();waitFor { nav.uiState.value.destination==V1Destination.SETTINGS }
+        compose.onNodeWithContentDescription("计划提醒").performScrollTo()
+        val old=compose.onNodeWithContentDescription("计划提醒").fetchSemanticsNode().config[SemanticsActions.OnClick].action!!
+        compose.runOnIdle { backup.start(BackupAction.EXPORT,f.token) };waitFor { backup.uiState.value.step==BackupStep.EXPORT_NOTICE }
+        compose.runOnIdle { old() };compose.waitForIdle()
+        assertEquals(0,prefs.writes)
+    }
+    @Test fun `pending notification delivery excludes backup start even from a retained action`() {
+        show();compose.onNodeWithContentDescription("设置入口").performClick();waitFor { nav.uiState.value.destination==V1Destination.SETTINGS }
+        compose.onNodeWithText("导出完整 V2 备份").performScrollTo()
+        val old=compose.onNodeWithText("导出完整 V2 备份").fetchSemanticsNode().config[SemanticsActions.OnClick].action!!
+        val entered=CompletableDeferred<Unit>();val release=CompletableDeferred<Unit>()
+        var reads=0
+        // Legacy receive captures and then rechecks; the third read is final delivery admission.
+        f.generations.beforeCurrent={ if(++reads>=3) { entered.complete(Unit);release.await() } }
+        try {
+            compose.runOnIdle { nav.receive(PlanNotificationClick.Legacy) }
+            waitFor { entered.isCompleted && nav.uiState.value.pending!=null }
+            compose.runOnIdle { old() }
+            assertEquals(BackupStep.IDLE,backup.uiState.value.step)
+        } finally { f.generations.beforeCurrent={};release.complete(Unit) }
+        waitFor { nav.uiState.value.destination==V1Destination.PLAN }
+        compose.runOnIdle { old() };assertEquals(BackupStep.IDLE,backup.uiState.value.step)
+    }
+    @Test fun `cancelled backup maintenance retains draft and system back cannot leave confirmation`() {
+        show();compose.runOnIdle { f.model.openNew(f.token) };waitFor { f.model.uiState.value.draft!=null && f.model.uiState.value.isAvailable }
+        val originalStamp=f.model.uiState.value.stamp
+        compose.onNodeWithContentDescription("设置入口").performClick();waitFor { nav.uiState.value.destination==V1Destination.SETTINGS }
+        compose.runOnIdle { backup.start(BackupAction.CLEAR,f.token) };waitFor { backup.uiState.value.step==BackupStep.CLEAR_CHOICE }
+        compose.onNodeWithText("跳过备份，继续确认").performClick();waitFor { backup.uiState.value.step==BackupStep.FINAL_CONFIRM }
+        compose.runOnIdle { backDispatcher.onBackPressed() };compose.waitForIdle()
+        assertEquals(V1Destination.SETTINGS,nav.uiState.value.destination)
+        // Back may cancel the dialog; either path must retain the original draft and identity.
+        if(backup.uiState.value.busy)compose.onNodeWithText("取消，保留原数据").performClick()
+        waitFor { !backup.uiState.value.busy && !f.model.uiState.value.isMaintaining }
+        assertEquals(originalStamp,f.model.uiState.value.stamp);assertNotNull(f.model.uiState.value.draft)
+        assertEquals(0,backupWorld.commits)
+    }
+    @Test fun `successful maintenance invalidates retained draft and stale editor callback`() {
+        show();compose.runOnIdle { f.model.openNew(f.token) };waitFor { f.model.uiState.value.draft!=null && f.model.uiState.value.isAvailable }
+        val oldStamp=f.model.uiState.value.stamp
+        compose.onNodeWithContentDescription("设置入口").performClick();waitFor { nav.uiState.value.destination==V1Destination.SETTINGS }
+        compose.runOnIdle { backup.start(BackupAction.CLEAR,f.token) };waitFor { backup.uiState.value.step==BackupStep.CLEAR_CHOICE }
+        compose.onNodeWithText("跳过备份，继续确认").performClick();waitFor { backup.uiState.value.step==BackupStep.FINAL_CONFIRM }
+        compose.onNodeWithText("确认清空业务数据").performClick()
+        waitFor { backup.uiState.value.outcome==V1BackupOutcome.COMMITTED && f.model.uiState.value.stamp.generation==DataGeneration(5) }
+        compose.runOnIdle { f.model.change(PlanField.TITLE,"过期内容",oldStamp) }
+        assertEquals(null,f.model.uiState.value.draft);assertEquals(1,backupWorld.commits)
+    }
     @Test fun `tab dialog cancels without losing input and explicit discard switches`() {
         show();compose.runOnIdle { f.model.openNew(f.token) };waitFor { f.model.uiState.value.draft!=null && f.model.uiState.value.isAvailable }
         compose.onNodeWithContentDescription("计划标题").performTextReplacement("切页保留")
@@ -88,14 +154,14 @@ class V1NavigationComposeTest {
         waitFor { nav.uiState.value.destination==V1Destination.SETTINGS };assertEquals(0,f.repo.writes)
     }
     @Test fun `unified reminder control persists real preference independently`() {
-        compose.setContent { LifeManagerTheme { V1SettingsScreen(settings,{}) } };waitFor { settings.uiState.value.isAvailable }
+        compose.setContent { LifeManagerTheme { V1SettingsScreen(settings,backup,{}) } };waitFor { settings.uiState.value.isAvailable }
         compose.onNodeWithContentDescription("计划提醒").performScrollTo().performClick()
         waitFor { !prefs.rows.value.planReminders && !settings.uiState.value.isSaving }
         assertFalse(settings.uiState.value.settings!!.planReminders)
         assertEquals(true,prefs.rows.value.subscriptionReminders)
     }
     @Test fun `settings read error disables old controls and retry restores real data`() {
-        compose.setContent { LifeManagerTheme { V1SettingsScreen(settings,{}) } };waitFor { settings.uiState.value.isAvailable }
+        compose.setContent { LifeManagerTheme { V1SettingsScreen(settings,backup,{}) } };waitFor { settings.uiState.value.isAvailable }
         prefs.failRead=true;prefs.signal.value++
         waitFor { !settings.uiState.value.isAvailable }
         compose.onNodeWithText("深色").assertIsNotEnabled();compose.onNodeWithText("重新读取设置").performScrollTo().assertExists()
@@ -122,14 +188,14 @@ class V1NavigationComposeTest {
     }
     @Test fun `dark narrow large font unified settings remain scrollable and actionable`() {
         compose.setContent { CompositionLocalProvider(LocalDensity provides Density(1f,2f)) {
-            LifeManagerTheme(themeMode=ThemeMode.DARK) { Box(Modifier.size(320.dp,640.dp)) { V1SettingsScreen(settings,{}) } }
+            LifeManagerTheme(themeMode=ThemeMode.DARK) { Box(Modifier.size(320.dp,640.dp)) { V1SettingsScreen(settings,backup,{}) } }
         } };waitFor { settings.uiState.value.isAvailable }
         compose.onNodeWithContentDescription("订阅提醒").performScrollTo().performClick()
         waitFor { !settings.uiState.value.isSaving && !prefs.rows.value.subscriptionReminders }
         compose.onNodeWithText("返回计划").performScrollTo().assertExists()
     }
     @Test fun `retained reminder switch cannot write replacement preferences`() {
-        compose.setContent { LifeManagerTheme { V1SettingsScreen(settings,{}) } };waitFor { settings.uiState.value.isAvailable }
+        compose.setContent { LifeManagerTheme { V1SettingsScreen(settings,backup,{}) } };waitFor { settings.uiState.value.isAvailable }
         compose.onNodeWithContentDescription("计划提醒").performScrollTo()
         val old=compose.onNodeWithContentDescription("计划提醒").fetchSemanticsNode().config[SemanticsActions.OnClick].action!!
         compose.mainClock.autoAdvance=false
