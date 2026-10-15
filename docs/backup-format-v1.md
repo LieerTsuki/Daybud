@@ -1,7 +1,6 @@
 # 完整备份格式 v1（Phase 5 内部接口）
 
-当前已实现快照和编解码基础；文件选择、输出后重读、保护备份及恢复确认流程仍待接线。
-这不是可点击使用的备份功能，也不是完整 Phase 5 验收。
+本文固定0.1.1/schema5历史备份的wire/hash契约。该版已发布的预览包可导出V1；当前1.0.0/schema6源码仅导出V2，严格校验旧V1后转换导入。不要将历史字段表改写为V2。实际生产接线及本轮文件验收见[新版格式](backup-format-v2.md)与[F交付验收](v1-delivery-acceptance.md)。
 
 ## 文件结构
 
@@ -65,10 +64,10 @@ JSON 读入在构造树时拒绝重复的**解码后**字段名（如 `id` 与 `
 INTEGER/Long 值验证 0–7，不能将不兼容整数截断成合法选项。
 文件 I/O 不在快照事务中执行；系统权限、闹钟缓存、草稿和待消费导航事件不导出。
 
-文件包含明文个人数据。最终 UI 必须提示隐私风险，文件输出必须关闭并重新读取验证
-后才报告成功；上述文件闭环、保护备份和恢复事务不在本批编解码器中实现。
+文件包含明文个人数据。当前生产UI提示隐私风险，文件输出关闭并重新读取验证
+后才报告成功；上述文件闭环、保护备份和恢复事务不属于纯编解码器的职责。
 第七批文件适配与导出 / 输入预览的底层契约见 [文件安全说明](backup-file-safety.md)；
-设置文件选择器、保护备份与数据库恢复仍未开放或完成验收。
+设置文件选择器、保护备份与数据库恢复的当前实测范围见[F交付验收](v1-delivery-acceptance.md)，不要将本格式契约本身当作设备验收。
 
 实现参考：[Kotlin JSON 树 API](https://kotlinlang.org/api/kotlinx.serialization/kotlinx-serialization-json/)
 和 [1.8.1 字符串转义规范实现](https://github.com/Kotlin/kotlinx.serialization/blob/v1.8.1/formats/json/commonMain/src/kotlinx/serialization/json/internal/StringOps.kt)。

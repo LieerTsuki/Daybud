@@ -67,7 +67,7 @@ fun PlanScreen(state: PlanUiState, onFilterChanged: (PlanFilter) -> Unit,
             }
             extraContent()
             if (onNew != null) item(key = "new-plan") {
-                Button(onNew, enabled = enabled && canNavigate && !state.isLoading, modifier = Modifier.fillMaxWidth()) { Text("新建计划") }
+                Button(onNew, enabled = enabled && canNavigate && !state.isLoading, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text("新建计划") }
             }
             if (state.isMaintaining) item(key = "maintenance") { Text("正在维护数据，暂不能修改") }
             if (state.readError != null) item(key = "read-error") {
@@ -118,7 +118,7 @@ fun PlanScreen(state: PlanUiState, onFilterChanged: (PlanFilter) -> Unit,
                 }
             }
             item(key = "priority") { FilterStrip("优先级") {
-                FilterChip(selected = filter.priority == null, onClick = { onFilterChanged(filter.copy(priority = null)) }, enabled = enabled, label = { Text("全部优先级") })
+                FilterChip(selected = filter.priority == null, onClick = { onFilterChanged(filter.copy(priority = null)) }, enabled = enabled, modifier = Modifier.heightIn(min = 48.dp), label = { Text("全部优先级") })
                 TodoPriority.entries.reversed().forEach { value ->
                     FilterChip(selected = filter.priority == value, onClick = { onFilterChanged(filter.copy(priority = value)) }, enabled = enabled,
                         label = { Text(priorityLabel(value)) })

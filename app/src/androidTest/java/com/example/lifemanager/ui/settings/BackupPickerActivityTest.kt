@@ -23,7 +23,7 @@ class BackupPickerActivityTest {
         openSettings()
         compose.onNodeWithText("从 V1 / V2 备份恢复").performScrollTo().performClick()
         cancelSystemPicker()
-        compose.onNodeWithText("已取消").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("已取消，原数据和草稿已保留。").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("从 V1 / V2 备份恢复").performScrollTo().assertIsEnabled()
     }
 
@@ -33,7 +33,7 @@ class BackupPickerActivityTest {
         compose.onNodeWithText("导出明文备份").assertIsDisplayed()
         compose.onNodeWithText("选择保存位置").performClick()
         cancelSystemPicker()
-        compose.onNodeWithText("已取消").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("已取消，原数据和草稿已保留。").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("导出完整 V2 备份").performScrollTo().assertIsEnabled()
     }
 
@@ -52,6 +52,10 @@ class BackupPickerActivityTest {
         }
         assertTrue(pickerVisible, "Actual Android system document picker must have appeared")
         assertTrue(automation.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK))
-        compose.waitUntil(10_000) { compose.onAllNodesWithText("已取消").fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(10_000) {
+            ViewModelProvider(compose.activity)[V1BackupSettingsViewModel::class.java].uiState.value.let {
+                !it.busy && it.outcome == V1BackupOutcome.UNCHANGED && it.message == "已取消，原数据和草稿已保留。"
+            }
+        }
     }
 }

@@ -1,5 +1,9 @@
 # V1 统一计划分批验收
 
+## F · 1.0.0候选交付（2026-10-15至16）
+
+承接E6提交8e9ce14。当前源码1.0.0/code3，最终1122项JVM/92 suites及70项API35设备测试通过，0 failure/error/skipped；Debug/androidTest/Release构建成功，lint0 error/47既有warning。首轮设备67项/12失败、定向15项通过、采证脚本WAL遗漏的诊断，以及覆盖升级、真实文件往返、签名/性能/交付边界均集中记录于[本轮F交付验收](v1-delivery-acceptance.md)。以下E6及以前章节是历史结果，不将其版本/设备状态当作当前结论。
+
 ## E6 · 第十九批：生产整体接线（2026-10-15，源码验收通过，未发布）
 
 范围已获用户确认，前置统计测试同步修复独立提交3ddbef6，远端已核对，main仍b016bcbc。首次schannel推送两次TLS握手失败；改用单次命令OpenSSL后成功，保持证书校验且未改origin/持久Git配置。

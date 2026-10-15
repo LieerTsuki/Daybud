@@ -40,7 +40,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        setIntent(intent)
+        // Navigation owns this consumed event; keep the launch Intent stable for recreation.
         receiveNotificationIntent(intent)
     }
 

@@ -24,7 +24,8 @@ class SettingsActivityTest {
         val original = model().uiState.value.settings!!
         try {
             compose.onNodeWithContentDescription("设置入口").performClick()
-            compose.onNodeWithText("深色").performClick()
+            compose.waitUntil(5000) { compose.onAllNodes(hasText("深色") and isEnabled()).fetchSemanticsNodes().isNotEmpty() }
+            compose.onNodeWithText("深色").performScrollTo().performClick()
             compose.waitUntil(5000) { model().uiState.value.settings?.theme == ThemeMode.DARK && !model().uiState.value.isSaving }
             compose.onNodeWithText("DD-MM-YYYY").performScrollTo().performClick()
             compose.waitUntil(5000) { model().uiState.value.settings?.dateFormat == DateFormat.DMY && !model().uiState.value.isSaving }

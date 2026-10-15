@@ -332,6 +332,14 @@ C2c2五项任务于2026-10-13局部验收通过：53项新增测试，119项定�
 
 ## 命令与证据
 
+### F本轮执行记录（2026-10-15至16）
+
+1. 当前功能分支继续，E6基线8e9ce14；补三项真实Activity设备用例，修正启动Intent生命周期跟踪、两个48dp布局及设置／文件选择器设备测试同步。首轮67项／12失败，定向15项通过，最终70项API35全量通过，0 failure/error/skipped。
+2. 版本1.0.0/code3，1122项JVM／92 suites强制重跑通过，Debug/androidTest缓存构建检查、Release重新打包及lint0 error／47既有warning。中断命令不计整条成功，最终成功日志及XML另列于交付验收。
+3. 全新专用AVD实际安装旧发布APK并种完整十表数据，旧版真实导出V1后同证书覆盖安装；全部计划字段／关系／六表原值核对通过。原生SQLite和主机raw/WAL采证双核对升级74、V1恢复75、V2恢复76，重开各自稳定；两个恢复均经真实系统选择器、独立保护备份和最终确认。旧采证脚本漏WAL的失败已隔离并修复后重跑。
+4. Release另以既有预览证书签名，v2/v3及zipalign通过，12,435,895字节；覆盖安装及非debuggable flags核对通过。冷启动／切页采样、签名／SHA、失败过程与模拟器边界集中于[交付验收](../../v1-delivery-acceptance.md)及[交付说明](../../v1-release-notes.md)。
+5. 同步README、CHANGELOG、schema及备份说明，独立代码复审9/10无遗留问题。按F既定范围提交／推送功能分支，保持main与历史Release；物理设备、稳定60fps、大库／云提供方、正式签名及商店资格保持未验收，不将预览候选写成正式商店交付。
+
 ```powershell
 $env:JAVA_HOME='D:\jdk'
 .\.tools\gradle-9.4.1\bin\gradle.bat -I .tools/phase5-test-network.gradle :app:testDebugUnitTest --tests 'com.example.lifemanager.domain.plan.*' --rerun --console=plain
@@ -375,4 +383,4 @@ git diff --check
 - E4于2026-10-14局部验收完成：统一四入口/草稿与通知所有者、新版领域设置/Room事务/独立状态及共享展示控件；新增51项/5 suites，最终1368项 JVM/116 suites强制重跑、Debug/androidTest构建检查、lint0 error/55既有warning，独立复审无遗留问题。
 - E5于2026-10-15局部验收完成：新版备份设置、独立StateFlow所有者及导航/偏好/文件回调保护；新增32项/4新suites，最终1400项JVM/120 suites强制重跑、Debug/androidTest构建检查及lint0 error/55既有warning通过，独立复审关闭。
 - E6于2026-10-15完成生产源码原子接线验收：同一Room6/Hilt数据库上的计划/打卡/订阅/设置、V2备份及统一提醒；旧正常双入口业务退役，历史兼容保留。最终1122项JVM/92 suites强制重跑、Debug重新打包、androidTest构建检查及新lint报告通过（0 error/47 warning），独立源码复审无遗留问题。测试退役/移植有映射，不把1400→1122当作新增数量。
-- F版本和设备/覆盖升级/Release/性能交付仍未完成；分支源码schema6、应用版本暂留0.1.1/code2，main和已发布APK仍旧schema5，不等于整个V1已发布。
+- F已推进1.0.0/code3预览候选、70项设备回归、完整旧APK覆盖升级／真实V1与V2往返、Release签名与体积；本轮性能实测及最终交付状态见[交付验收](../../v1-delivery-acceptance.md)。main和历史已发布APK仍旧schema5，不将模拟器候选等同于真机／稳定60fps／商店发布。

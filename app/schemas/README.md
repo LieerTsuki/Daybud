@@ -71,3 +71,19 @@ This accepts source activation, not deployment. Application version stays
 installed-APK upgrades, version bump and release delivery belong to F. A schema
 export alone is never permission to upgrade personal data. No destructive
 fallback or downgrade is provided.
+
+## F 1.0.0 candidate delivery (2026-10-16)
+
+The current feature source is now 1.0.0/code3, still using the same production
+v6 snapshot and identity hash. The E6 version text above describes its historical
+checkpoint. This batch changes no database DDL or historical schema asset.
+1122 JVM tests in 92 suites and 70 API35 instrumentation tests passed with no
+failures/errors/skips; Debug/androidTest/Release builds and lint checks passed
+(0 errors / 47 existing warnings). A fresh dedicated AVD also installed the
+published 0.1.1 APK, seeded all ten legacy tables, exported a real V1 file and
+covered it with the same-certificate 1.0.0 APK. Full production-field and relation
+checks passed at generation74, then V1 and V2 restore/reopen passed at75 and76.
+The evidence reader retains raw main/WAL bytes and cross-checks device SQLite.
+See `docs/v1-delivery-acceptance.md` for the failed WAL-reader attempt, rerun,
+actual file-provider boundary, signature/performance results and remaining limits.
+No personal-device, stable60fps or store-release acceptance is implied.

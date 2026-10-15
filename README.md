@@ -2,7 +2,7 @@
 
 日子芽是 Kotlin + Jetpack Compose 的离线生活管理工具；V1 将待办与日程统一为计划，同时保留习惯打卡和订阅费用管理。
 
-更新日期：2026-10-15。
+更新日期：2026-10-16。
 
 每次版本更新附带[更新内容文档](CHANGELOG.md)；开发中分批结果与已发布版本分开记录，此约定已写入仓库 `AGENTS.md`。
 
@@ -10,7 +10,11 @@
 
 > 当前预览版本为 `v0.1.1-rizhiya-preview-20261009`，对应源码提交 `777e1e9`。2026-10-09 将 `feat/phase5-settings-backup` 的 Phase 5 功能、第一批 UI 与日子芽名称/图标整合至 `main`，默认分支包含这些代码；本次整合仅更新合并状态文档，不改动应用实现或已发布 APK。APK 仍是测试预览版，不是正式发布版。合并验证范围与未验收项见[主分支整合记录](https://github.com/lieer-12/app/blob/main/docs/main-merge-acceptance.md)。
 
-## V1 统一计划改版 · 开发中
+## V1 统一计划改版 · 1.0.0 候选交付
+
+F 本轮已将源码提升至 **1.0.0 / code3 / Room6**，完成1122项JVM/92 suites和70项API35设备测试（均0 failure/error/skipped）、Debug/androidTest/Release构建，以及lint检查（0 error/47既有warning）。补齐真实计划操作、同ID日期转换、完成/撤销、统计/日历、严格新通知及草稿旋转设备闭环，并修正设备回归发现的问题。实际覆盖升级、备份往返、签名、性能和交付文件以[1.0.0交付验收](docs/v1-delivery-acceptance.md)及[交付说明](docs/v1-release-notes.md)为准。
+
+以下分批记录保留各批当时状态；其中“版本暂留0.1.1”属于历史，当前分支源码为1.0.0。顶部链接仍是已发布的旧0.1.1预览，main与历史Release不自动替换。1.0.0候选使用既有预览证书，正式签名、真机、稳定60fps和商店分发资格仍需另行验收，不将模拟器通过扩大为这些结论。
 
 第十九批 E6 源码接线验收通过（2026-10-15）：Room v6、计划/打卡/订阅/设置四入口、新版设置、V2 备份及统一提醒共用生产数据库单例。旧独立待办/日程正常写入与页面退役，历史迁移、V1备份验证和旧通知安全兼容保留，不使用 destructive migration。最终1122项JVM/92 suites强制重跑通过（0 failure/error/skipped），Debug重新打包、androidTest构建检查通过，重新生成的lint报告0 error/47 warning，独立源码复审无遗留问题。测试条数变化与旧用例移植/退役见[覆盖映射](docs/e6-test-coverage-mapping.md)，完整失败过程和限制见[验收记录](docs/v1-unified-plans-acceptance.md)。
 
@@ -24,7 +28,7 @@ E6前置基线修复（2026-10-15）：统计工作区测试在切页刷新尚�
 
 已确认以统一计划模型和表替代独立待办 / 日程：无日期归待办，有日期归日程；添加截止日期更新同一条记录，两类均可完成 / 撤销，重复日程完成表示整个系列结束。目标导航为「计划 / 打卡 / 订阅 / 设置」，目标版本 1.0.0 / versionCode 3。
 
-当前在 `feat/v1-unified-plans` 分批开发，A至E5的领域、存储/迁移、提醒、备份和页面准备及E6的生产源码接线已完成本批范围验收，逐批历史结果见下文。F的设备覆盖升级、版本、Release/性能与交付尚未完成。应用版本号仍暂留0.1.1 / code2；顶部下载包及main仍是旧schema5预览，不包含本分支的V1。不提供destructive migration或降级安装方案。详见仓库内 [完整设计](docs/superpowers/specs/2026-10-10-v1-unified-plans-design.md)、[实施计划](docs/superpowers/plans/2026-10-10-v1-unified-plans.md)及[分批验收](docs/v1-unified-plans-acceptance.md)。
+当前在 `feat/v1-unified-plans` 推进F交付，A至E6历史结果见下文；当前源码为1.0.0/code3，顶部旧下载包及main仍是schema5预览。F本轮范围、实测结果和未验收限制集中于[交付验收](docs/v1-delivery-acceptance.md)。不提供destructive migration或降级安装方案。详见[完整设计](docs/superpowers/specs/2026-10-10-v1-unified-plans-design.md)、[实施计划](docs/superpowers/plans/2026-10-10-v1-unified-plans.md)及[分批验收](docs/v1-unified-plans-acceptance.md)。
 
 第一批领域底座局部验收通过：按 TDD 实现分类、完成 / 撤销、日期转换及全库统计规则，新增 34 项测试；该批 703 项 JVM / 70 suites 使用 `--rerun` 全量重跑通过，Debug 构建检查成功，lint 0 error / 55 warning。独立审查问题已关闭；未运行新迁移 / 新 UI 的设备验收，不把领域测试当作整个 V1 已完成。
 

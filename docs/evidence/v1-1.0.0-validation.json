@@ -1,0 +1,439 @@
+{
+  "date": "2026-10-16",
+  "timezone": "Asia/Shanghai",
+  "sourceBaseCommit": "8e9ce143d4bbadf566dbf991078b71c4f2711df5",
+  "applicationId": "com.example.lifemanager",
+  "versionName": "1.0.0",
+  "versionCode": 3,
+  "schema": 6,
+  "publication": "Local preview candidate; no new public GitHub release or main merge",
+  "jvm": {
+    "suites": 92,
+    "tests": 1122,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "instrumentation": {
+    "suites": 1,
+    "tests": 70,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "lint": {
+    "Error": 0,
+    "Fatal": 0,
+    "Warning": 47
+  },
+  "release": {
+    "file": "rizhiya-1.0.0-preview-release.apk",
+    "bytes": 12435895,
+    "sha256": "acd7349f8445500fd6928952c8d602db89c0a92eb295a769f7ee0b410d34db94",
+    "debuggable": false,
+    "certificateSha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+    "signatureSchemes": [
+      "v2",
+      "v3"
+    ],
+    "signing": "Existing preview debug certificate",
+    "zipalign": true
+  },
+  "device": {
+    "api": 35,
+    "android": 15,
+    "abi": "x86_64",
+    "display": "1080x2400",
+    "gpu": "host NVIDIA GeForce RTX 4050 Laptop GPU",
+    "upgradeAvd": "Rizhiya_F_Upgrade_20261016",
+    "instrumentationAvd": "Rizhiya_Branding",
+    "upgradeTimezone": "GMT"
+  },
+  "upgrade": {
+    "upgraded": {
+      "checked": {
+        "schema": 6,
+        "generation": 74,
+        "plans": 4,
+        "planColumnsChecked": 27,
+        "unchangedTables": [
+          "tags",
+          "habits",
+          "habit_records",
+          "subscriptions",
+          "subscription_payments",
+          "subscription_reminders"
+        ],
+        "foreignKeyViolations": 0
+      },
+      "raw": {
+        "nativeGeneration": 74,
+        "files": {
+          "main": {
+            "bytes": 155648,
+            "sha256": "7390a7ea33bf708f33bd785f86516026caefdb0eec1698c40ccc4ef79ee50357"
+          }
+        }
+      }
+    },
+    "reopened": {
+      "checked": {
+        "schema": 6,
+        "generation": 74,
+        "plans": 4,
+        "planColumnsChecked": 27,
+        "unchangedTables": [
+          "tags",
+          "habits",
+          "habit_records",
+          "subscriptions",
+          "subscription_payments",
+          "subscription_reminders"
+        ],
+        "foreignKeyViolations": 0
+      },
+      "raw": {
+        "nativeGeneration": 74,
+        "files": {
+          "main": {
+            "bytes": 155648,
+            "sha256": "7390a7ea33bf708f33bd785f86516026caefdb0eec1698c40ccc4ef79ee50357"
+          }
+        }
+      }
+    },
+    "v1-restored": {
+      "checked": {
+        "schema": 6,
+        "generation": 75,
+        "plans": 4,
+        "planColumnsChecked": 27,
+        "unchangedTables": [
+          "tags",
+          "habits",
+          "habit_records",
+          "subscriptions",
+          "subscription_payments",
+          "subscription_reminders"
+        ],
+        "foreignKeyViolations": 0
+      },
+      "raw": {
+        "nativeGeneration": 75,
+        "files": {
+          "main": {
+            "bytes": 155648,
+            "sha256": "7390a7ea33bf708f33bd785f86516026caefdb0eec1698c40ccc4ef79ee50357"
+          },
+          "-wal": {
+            "bytes": 119512,
+            "sha256": "8bbc04a51418d0d5a7595553fdf8b018890dc90fc45aa6ec44e62eb5118e3985"
+          }
+        }
+      }
+    },
+    "v1-reopened": {
+      "checked": {
+        "schema": 6,
+        "generation": 75,
+        "plans": 4,
+        "planColumnsChecked": 27,
+        "unchangedTables": [
+          "tags",
+          "habits",
+          "habit_records",
+          "subscriptions",
+          "subscription_payments",
+          "subscription_reminders"
+        ],
+        "foreignKeyViolations": 0
+      },
+      "raw": {
+        "nativeGeneration": 75,
+        "files": {
+          "main": {
+            "bytes": 155648,
+            "sha256": "7390a7ea33bf708f33bd785f86516026caefdb0eec1698c40ccc4ef79ee50357"
+          },
+          "-wal": {
+            "bytes": 119512,
+            "sha256": "8bbc04a51418d0d5a7595553fdf8b018890dc90fc45aa6ec44e62eb5118e3985"
+          }
+        }
+      }
+    },
+    "v2-restored": {
+      "checked": {
+        "schema": 6,
+        "generation": 76,
+        "plans": 4,
+        "planColumnsChecked": 27,
+        "unchangedTables": [
+          "tags",
+          "habits",
+          "habit_records",
+          "subscriptions",
+          "subscription_payments",
+          "subscription_reminders"
+        ],
+        "foreignKeyViolations": 0
+      },
+      "raw": {
+        "nativeGeneration": 76,
+        "files": {
+          "main": {
+            "bytes": 155648,
+            "sha256": "7390a7ea33bf708f33bd785f86516026caefdb0eec1698c40ccc4ef79ee50357"
+          },
+          "-wal": {
+            "bytes": 238992,
+            "sha256": "d79bee9e67185230aaf32cfa1738efa55c63a1cd5bd6cf28c2fab688dec0ef6c"
+          }
+        }
+      }
+    },
+    "v2-reopened": {
+      "checked": {
+        "schema": 6,
+        "generation": 76,
+        "plans": 4,
+        "planColumnsChecked": 27,
+        "unchangedTables": [
+          "tags",
+          "habits",
+          "habit_records",
+          "subscriptions",
+          "subscription_payments",
+          "subscription_reminders"
+        ],
+        "foreignKeyViolations": 0
+      },
+      "raw": {
+        "nativeGeneration": 76,
+        "files": {
+          "main": {
+            "bytes": 155648,
+            "sha256": "7390a7ea33bf708f33bd785f86516026caefdb0eec1698c40ccc4ef79ee50357"
+          },
+          "-wal": {
+            "bytes": 238992,
+            "sha256": "d79bee9e67185230aaf32cfa1738efa55c63a1cd5bd6cf28c2fab688dec0ef6c"
+          }
+        }
+      }
+    }
+  },
+  "backups": {
+    "old-v1.json": {
+      "bytes": 2450,
+      "sha256": "a3d112d003b817d5f59c2a0d3739ebdb8c2d63a2cb5ad3bc1acb4822f206563f",
+      "formatVersion": 1,
+      "schemaVersion": 5,
+      "appVersion": "0.1.1",
+      "rowCounts": {
+        "habit_records": 1,
+        "habits": 1,
+        "schedule_exceptions": 1,
+        "schedules": 2,
+        "subscription_payments": 1,
+        "subscription_reminders": 1,
+        "subscriptions": 1,
+        "tags": 1,
+        "todo_tag_cross_ref": 1,
+        "todos": 2
+      }
+    },
+    "v1-protection-v2.json": {
+      "bytes": 3508,
+      "sha256": "9bb5b13afbe7de1a9db7a82c40a75d63a99787b6cd52f5b7b71f7a7154bc0095",
+      "formatVersion": 2,
+      "schemaVersion": 6,
+      "appVersion": "1.0.0",
+      "rowCounts": {
+        "habit_records": 1,
+        "habits": 1,
+        "plan_exceptions": 1,
+        "plan_legacy_refs": 4,
+        "plan_tag_cross_ref": 1,
+        "plans": 4,
+        "subscription_payments": 1,
+        "subscription_reminders": 1,
+        "subscriptions": 1,
+        "tags": 1
+      }
+    },
+    "export-v2.json": {
+      "bytes": 3508,
+      "sha256": "6405d1d0cefc79f6452c33fa99d5344d6cbe531abd2ffe52de0503c3f6dbef5c",
+      "formatVersion": 2,
+      "schemaVersion": 6,
+      "appVersion": "1.0.0",
+      "rowCounts": {
+        "habit_records": 1,
+        "habits": 1,
+        "plan_exceptions": 1,
+        "plan_legacy_refs": 4,
+        "plan_tag_cross_ref": 1,
+        "plans": 4,
+        "subscription_payments": 1,
+        "subscription_reminders": 1,
+        "subscriptions": 1,
+        "tags": 1
+      }
+    },
+    "v2-protection.json": {
+      "bytes": 3508,
+      "sha256": "5ed42786b15e61fc409362a70c08f041f2ba1dbfadaa934176418f1bb613a09f",
+      "formatVersion": 2,
+      "schemaVersion": 6,
+      "appVersion": "1.0.0",
+      "rowCounts": {
+        "habit_records": 1,
+        "habits": 1,
+        "plan_exceptions": 1,
+        "plan_legacy_refs": 4,
+        "plan_tag_cross_ref": 1,
+        "plans": 4,
+        "subscription_payments": 1,
+        "subscription_reminders": 1,
+        "subscriptions": 1,
+        "tags": 1
+      }
+    }
+  },
+  "performance": {
+    "serial": "emulator-5582",
+    "version": "1.0.0",
+    "code": 3,
+    "debuggable": false,
+    "coldTotalTimeMs": [
+      496,
+      483,
+      543,
+      631,
+      474
+    ],
+    "medianMs": 496,
+    "maxMs": 631,
+    "navigationCycles": 5,
+    "navigationMinimumDelaySeconds": 0.9,
+    "confirmedNavigations": [
+      {
+        "destination": "打卡",
+        "automationElapsedMs": 3125
+      },
+      {
+        "destination": "订阅",
+        "automationElapsedMs": 3110
+      },
+      {
+        "destination": "设置",
+        "automationElapsedMs": 3094
+      },
+      {
+        "destination": "计划",
+        "automationElapsedMs": 3156
+      },
+      {
+        "destination": "打卡",
+        "automationElapsedMs": 3094
+      },
+      {
+        "destination": "订阅",
+        "automationElapsedMs": 3093
+      },
+      {
+        "destination": "设置",
+        "automationElapsedMs": 3110
+      },
+      {
+        "destination": "计划",
+        "automationElapsedMs": 3172
+      },
+      {
+        "destination": "打卡",
+        "automationElapsedMs": 3078
+      },
+      {
+        "destination": "订阅",
+        "automationElapsedMs": 3109
+      },
+      {
+        "destination": "设置",
+        "automationElapsedMs": 3109
+      },
+      {
+        "destination": "计划",
+        "automationElapsedMs": 3188
+      },
+      {
+        "destination": "打卡",
+        "automationElapsedMs": 3125
+      },
+      {
+        "destination": "订阅",
+        "automationElapsedMs": 3109
+      },
+      {
+        "destination": "设置",
+        "automationElapsedMs": 3094
+      },
+      {
+        "destination": "计划",
+        "automationElapsedMs": 3203
+      },
+      {
+        "destination": "打卡",
+        "automationElapsedMs": 3094
+      },
+      {
+        "destination": "订阅",
+        "automationElapsedMs": 3078
+      },
+      {
+        "destination": "设置",
+        "automationElapsedMs": 3125
+      },
+      {
+        "destination": "计划",
+        "automationElapsedMs": 3125
+      }
+    ],
+    "gfxSummary": [
+      "Total frames rendered: 1052",
+      "Janky frames: 31 (2.95%)",
+      "Janky frames (legacy): 188 (17.87%)",
+      "50th percentile: 17ms",
+      "90th percentile: 22ms",
+      "95th percentile: 22ms",
+      "99th percentile: 26ms",
+      "Number Missed Vsync: 0",
+      "50th gpu percentile: 13ms",
+      "90th gpu percentile: 18ms",
+      "95th gpu percentile: 18ms",
+      "99th gpu percentile: 21ms",
+      "Total frames rendered: 1052",
+      "Janky frames: 31 (2.95%)",
+      "Janky frames (legacy): 188 (17.87%)",
+      "50th percentile: 17ms",
+      "90th percentile: 22ms",
+      "95th percentile: 22ms",
+      "99th percentile: 26ms",
+      "Number Missed Vsync: 0",
+      "50th gpu percentile: 13ms",
+      "90th gpu percentile: 18ms",
+      "95th gpu percentile: 18ms",
+      "99th gpu percentile: 21ms"
+    ],
+    "limitation": "Emulator, synthetic small database, system launch and navigation smoke only; no physical-device or stable-60fps acceptance."
+  },
+  "unaccepted": [
+    "Physical devices",
+    "Stable 60 fps",
+    "Large databases",
+    "Cloud document providers",
+    "Vendor background policies",
+    "Production signing",
+    "App-store publication eligibility"
+  ]
+}
