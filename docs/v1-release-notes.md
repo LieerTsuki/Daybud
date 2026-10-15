@@ -1,10 +1,10 @@
 # 日子芽 1.0.0 预览交付说明
 
-日期：2026-10-16。版本 **1.0.0 / versionCode 3 / Room schema6**，包名仍为 `com.example.lifemanager`。本次是功能分支的本地预览交付；main及GitHub历史Release未替换。正式签名、真机／稳定60fps和应用商店分发资格未验收。
+日期：2026-10-16。版本 **1.0.0 / versionCode 3 / Room schema6**，包名仍为 `com.example.lifemanager`。已于2026-10-16T01:24:20+08:00[公开发布预览版](https://github.com/LieerTsuki/Daybud/releases/tag/v1.0.0-rizhiya-preview-20261016)，V1已合并main；APK对应源码`4db24de`，历史Release保留。正式签名、真机／稳定60fps和应用商店分发资格未验收。
 
 ## 文件与安装身份
 
-交付文件位于本机仓库 `.tools/delivery-v1/`：
+[从GitHub下载签名APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.0.0-rizhiya-preview-20261016/rizhiya-1.0.0-preview-release.apk)，或在[Release Assets](https://github.com/LieerTsuki/Daybud/releases/tag/v1.0.0-rizhiya-preview-20261016)下载校验文件及完整交付包。本机原始交付文件仍位于`.tools/delivery-v1/`：
 
 | 文件 | 大小 | SHA-256 |
 | --- | ---: | --- |
@@ -36,3 +36,5 @@
 模拟器不是物理设备；尚不承诺稳定60fps、大库／云文件提供方、厂商后台提醒可靠性或商店发布资格。不同URI指向同一文件的提供方别名仍是已知限制，保护备份请使用独立新文件。六张自增表MAX或目标序列耗尽时拒绝恢复／清空并保留原库，极端文件仍可只读救援导出。通知投递不等于用户看到，跨Room与Android服务不承诺exactly-once。进程死亡后不会自动重放未完成的备份或保留所有草稿。
 
 更新范围与历史记录见[CHANGELOG](../CHANGELOG.md)。
+
+发布与合并的追加复验见[发布记录](v1-publication.md)。

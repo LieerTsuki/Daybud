@@ -81,3 +81,7 @@ Release Gradle 配置不引入正式签名，也不把 unsigned APK 当成可安
 本轮完成1.0.0/code3的**本地预览Release候选交付**：设备回归、实际旧APK覆盖升级、真实Downloads与系统选择器V1/V2闭环、Release构建／既有证书签名／安装／体积与模拟器性能采样均有本轮证据。结构化汇总见[evidence/v1-1.0.0-validation.json](evidence/v1-1.0.0-validation.json)，文件与SHA见[交付说明](v1-release-notes.md)。按F范围提交推送功能分支，不自动合并main或改写历史Release；本次未在GitHub公开发布新资产。
 
 物理设备、稳定60fps、大库／云文件提供方、厂商后台策略、正式签名与商店发布资格仍未验收。此结论不关闭这些项目，也不将产品版本号等同于正式发布资格。
+
+## 已授权公开发布与合并（2026-10-16）
+
+用户在本地候选交付后明确要求“发布并合并”。V1已无冲突快进合并main，合并后完整JVM强制重跑1122项/92 suites通过，Debug/androidTest/Release和lint通过；未重跑此前70项设备，也不扩大真机/性能结论。GitHub预览Release于2026-10-16T01:24:20+08:00发布：[v1.0.0-rizhiya-preview-20261016](https://github.com/LieerTsuki/Daybud/releases/tag/v1.0.0-rizhiya-preview-20261016)，APK源码`4db24de`及SHA保持不变。上节“未公开发布”描述候选验收当时的状态，当前以本节与[发布记录](v1-publication.md)为准。历史Release未覆盖。

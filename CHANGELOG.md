@@ -2,9 +2,18 @@
 
 本文件随每次版本更新维护。未发布区是开发进度，不代表手机安装包已经包含新功能。
 
-## 未发布 · V1 统一计划改版
+## 1.0.0 / code3 · 统一计划预览版（2026-10-16已发布）
 
-当前候选版本：1.0.0 / versionCode 3 / Room6；已公开发布的历史 APK 仍为0.1.1 / code2 / Room5。以下各批说明记录当时状态，当前进度以F交付记录为准，不把本地候选写成已公开发布版本。
+- 发布：[v1.0.0-rizhiya-preview-20261016](https://github.com/LieerTsuki/Daybud/releases/tag/v1.0.0-rizhiya-preview-20261016)；已验收APK源码 [`4db24de`](https://github.com/LieerTsuki/Daybud/commit/4db24deb56d9562fede555d7d3aa7100f5013cee)，V1已合并main。历史Release不覆盖，当前安装身份仍为`com.example.lifemanager`，数据库schema6。
+- 新版统一计划／打卡／订阅／设置四入口，计划详情编辑、同ID日期转换、完成/撤销、日历和全库统计；接入统一提醒及V2备份，严格兼容旧V1恢复。此前A至F的开发记录保留在下方。
+- 下载[非调试预览Release APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.0.0-rizhiya-preview-20261016/rizhiya-1.0.0-preview-release.apk)，12,435,895字节，SHA-256 `acd7349f8445500fd6928952c8d602db89c0a92eb295a769f7ee0b410d34db94`；沿用0.1.1预览证书。
+- 升级前在旧版导出独立完整备份；同签名覆盖安装，不卸载清数据解决签名冲突，不向schema6设备降级安装旧版。V2导出／旧V1严格转换、独立保护备份、最终确认及原子事务保持；不同URI文件别名与六表MAX/耗尽序列保护边界不变。
+- 合并后本次强制重跑1122项JVM/92 suites通过，Debug/androidTest/Release/lint核对通过；70项API35设备与覆盖升级／文件往返／性能来自同一源码4db24de的前一验收，未冒充本次新增设备运行。模拟器冷启动中位496ms／最大631ms；真机、稳定60fps、大库/云提供方、正式签名和商店资格未验收。
+- 证据：[F完整验收](docs/v1-delivery-acceptance.md)、[发布与合并记录](docs/v1-publication.md)、[交付说明](docs/v1-release-notes.md)。
+
+## V1开发历史（以下为发布前记录）
+
+以下记录1.0.0发布前各批当时状态；当时公开下载仍为0.1.1。当前公开发布、版本及入口以上方1.0.0发布记录为准。
 
 ### 2026-10-16 · F：设备回归与1.0.0候选交付
 

@@ -6,19 +6,19 @@
 
 每次版本更新附带[更新内容文档](CHANGELOG.md)；开发中分批结果与已发布版本分开记录，此约定已写入仓库 `AGENTS.md`。
 
-[下载日子芽 0.1.1 预览 APK](https://github.com/lieer-12/app/releases/download/v0.1.1-rizhiya-preview-20261009/app-debug.apk) · [版本说明](https://github.com/lieer-12/app/releases/tag/v0.1.1-rizhiya-preview-20261009) · [主分支代码](https://github.com/lieer-12/app/tree/main)
+[下载日子芽 1.0.0 预览 Release APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.0.0-rizhiya-preview-20261016/rizhiya-1.0.0-preview-release.apk) · [版本说明](https://github.com/LieerTsuki/Daybud/releases/tag/v1.0.0-rizhiya-preview-20261016) · [主分支代码](https://github.com/LieerTsuki/Daybud/tree/main)
 
-> 当前预览版本为 `v0.1.1-rizhiya-preview-20261009`，对应源码提交 `777e1e9`。2026-10-09 将 `feat/phase5-settings-backup` 的 Phase 5 功能、第一批 UI 与日子芽名称/图标整合至 `main`，默认分支包含这些代码；本次整合仅更新合并状态文档，不改动应用实现或已发布 APK。APK 仍是测试预览版，不是正式发布版。合并验证范围与未验收项见[主分支整合记录](https://github.com/lieer-12/app/blob/main/docs/main-merge-acceptance.md)。
+> 当前预览版本为 `v1.0.0-rizhiya-preview-20261016`，于 2026-10-16T01:24:20+08:00 发布，对应已验收源码 [`4db24de`](https://github.com/LieerTsuki/Daybud/commit/4db24deb56d9562fede555d7d3aa7100f5013cee)。V1功能分支已合并到main；APK为1.0.0/code3/schema6，使用既有预览证书的非调试Release构建。历史0.1.1仍保留：[旧版下载](https://github.com/lieer-12/app/releases/tag/v0.1.1-rizhiya-preview-20261009)。发布/合并核对见[发布记录](docs/v1-publication.md)。
 
-## V1 统一计划改版 · 1.0.0 候选交付
+## V1 统一计划改版 · 1.0.0 预览版已发布
 
 F 本轮已将源码提升至 **1.0.0 / code3 / Room6**，完成1122项JVM/92 suites和70项API35设备测试（均0 failure/error/skipped）、Debug/androidTest/Release构建，以及lint检查（0 error/47既有warning）。补齐真实计划操作、同ID日期转换、完成/撤销、统计/日历、严格新通知及草稿旋转设备闭环，并修正设备回归发现的问题。实际覆盖升级、备份往返、签名、性能和交付文件以[1.0.0交付验收](docs/v1-delivery-acceptance.md)及[交付说明](docs/v1-release-notes.md)为准。
 
-以下分批记录保留各批当时状态；其中“版本暂留0.1.1”属于历史，当前分支源码为1.0.0。顶部链接仍是已发布的旧0.1.1预览，main与历史Release不自动替换。1.0.0候选使用既有预览证书，正式签名、真机、稳定60fps和商店分发资格仍需另行验收，不将模拟器通过扩大为这些结论。
+以下分批记录保留各批当时状态；其中“版本暂留0.1.1”属于历史，当前分支源码为1.0.0。顶部链接已更新为新1.0.0预览，main已合并V1；历史Release和旧APK继续保留。1.0.0候选使用既有预览证书，正式签名、真机、稳定60fps和商店分发资格仍需另行验收，不将模拟器通过扩大为这些结论。
 
 第十九批 E6 源码接线验收通过（2026-10-15）：Room v6、计划/打卡/订阅/设置四入口、新版设置、V2 备份及统一提醒共用生产数据库单例。旧独立待办/日程正常写入与页面退役，历史迁移、V1备份验证和旧通知安全兼容保留，不使用 destructive migration。最终1122项JVM/92 suites强制重跑通过（0 failure/error/skipped），Debug重新打包、androidTest构建检查通过，重新生成的lint报告0 error/47 warning，独立源码复审无遗留问题。测试条数变化与旧用例移植/退役见[覆盖映射](docs/e6-test-coverage-mapping.md)，完整失败过程和限制见[验收记录](docs/v1-unified-plans-acceptance.md)。
 
-这不是V1发布：源码应用版本仍暂留0.1.1/code2，main与顶部下载的0.1.1/schema5 APK不变。本批未执行设备测试、实际覆盖升级、真实文件提供方、Release或性能验收，F完成后再交付1.0.0/code3；不要将E6本地包当作已验收的手机升级包，不安装旧版来降级已升级的数据库。历史各批“未接生产”的说明是当时状态，不是当前源码状态。
+E6历史边界（当时未发布）：源码应用版本仍暂留0.1.1/code2，main与顶部下载的0.1.1/schema5 APK不变。本批未执行设备测试、实际覆盖升级、真实文件提供方、Release或性能验收，F完成后再交付1.0.0/code3；不要将E6本地包当作已验收的手机升级包，不安装旧版来降级已升级的数据库。历史各批“未接生产”的说明是当时状态，不是当前源码状态。
 
 E6前置基线修复（2026-10-15）：统计工作区测试在切页刷新尚未完成时立即查找结果，现以测试专用延迟调度稳定覆盖该窗口，等待新鲜读取就绪后执行原有断言。定向4项及全量1400项/120 suites通过，生产代码未变；这是测试同步修复，不是E6生产接入完成，过程见[验收记录](docs/v1-unified-plans-acceptance.md)。
 
@@ -28,7 +28,7 @@ E6前置基线修复（2026-10-15）：统计工作区测试在切页刷新尚�
 
 已确认以统一计划模型和表替代独立待办 / 日程：无日期归待办，有日期归日程；添加截止日期更新同一条记录，两类均可完成 / 撤销，重复日程完成表示整个系列结束。目标导航为「计划 / 打卡 / 订阅 / 设置」，目标版本 1.0.0 / versionCode 3。
 
-当前在 `feat/v1-unified-plans` 推进F交付，A至E6历史结果见下文；当前源码为1.0.0/code3，顶部旧下载包及main仍是schema5预览。F本轮范围、实测结果和未验收限制集中于[交付验收](docs/v1-delivery-acceptance.md)。不提供destructive migration或降级安装方案。详见[完整设计](docs/superpowers/specs/2026-10-10-v1-unified-plans-design.md)、[实施计划](docs/superpowers/plans/2026-10-10-v1-unified-plans.md)及[分批验收](docs/v1-unified-plans-acceptance.md)。
+V1功能分支已合并到 `main`，当前源码和顶部已发布APK均为1.0.0/code3/schema6。A至E6历史结果见下文，F本轮实测结果和未验收限制见[交付验收](docs/v1-delivery-acceptance.md)，本次公开发布/合并见[发布记录](docs/v1-publication.md)。不提供destructive migration或降级安装方案。
 
 第一批领域底座局部验收通过：按 TDD 实现分类、完成 / 撤销、日期转换及全库统计规则，新增 34 项测试；该批 703 项 JVM / 70 suites 使用 `--rerun` 全量重跑通过，Debug 构建检查成功，lint 0 error / 55 warning。独立审查问题已关闭；未运行新迁移 / 新 UI 的设备验收，不把领域测试当作整个 V1 已完成。
 
@@ -68,11 +68,11 @@ E6前置基线修复（2026-10-15）：统计工作区测试在切页刷新尚�
 
 图像生成服务返回 429 后，用户明确选择手工绘制 Android 原生矢量方案；本图标不是 AI 生成图片。提供自适应、圆形入口和 Android 13+ 单色主题图层。可查看[圆角预览](https://github.com/lieer-12/app/blob/main/docs/assets/rizhiya-icon-rounded.png)与[圆形预览](https://github.com/lieer-12/app/blob/main/docs/assets/rizhiya-icon-circle.png)；预览是裁剪示例，实际外框由手机桌面的图标形状与主题决定，不能保证所有设备一致。
 
-已提交并推送名称与图标改动，发布 0.1.1 / versionCode 2 预览 APK；applicationId、Debug 签名、数据库 schema 和业务逻辑不变。旧 0.1.0 Release 保留，不覆盖其安装包；顶部下载入口已指向新版。验证结果与覆盖安装边界见[名称与图标验收](https://github.com/lieer-12/app/blob/main/docs/branding-acceptance.md)。
+已提交并推送名称与图标改动，发布 0.1.1 / versionCode 2 预览 APK；applicationId、Debug 签名、数据库 schema 和业务逻辑不变。旧 0.1.0 Release 保留，不覆盖其安装包；当时顶部下载入口指向0.1.1；现在已更新为1.0.0。验证结果与覆盖安装边界见[名称与图标验收](https://github.com/lieer-12/app/blob/main/docs/branding-acceptance.md)。
 
 本批全量验证与 2026-10-09 推送前复验：669 项 JVM / 68 套件、57 项 API 35 设备测试 / 24 套件，均无 failure / error / skipped；两类测试均使用 `--rerun` 重新执行，Debug/Release 构建检查通过，lint 0 error / 55 warning。在项目专用模拟器覆盖安装后，一条旧版合成待办仍可见；不将此局部检查等同于全部真实数据或真机验收。
 
-以下能力清单、UI第一批和Phase 5章节描述已发布0.1.1及其历史基线，不是当前V1分支的入口/格式清单。V1开发状态与未验收项以上方E6说明为准。
+以下能力清单、UI第一批和Phase 5章节描述已发布0.1.1及其历史基线，不是当前V1分支的入口/格式清单。V1当前状态与未验收项以上方F及发布记录为准。
 
 0.1.1实现范围：Phase 1（待办事项核心闭环）、Phase 2（日程安排）、Phase 3（习惯打卡）、Phase 4（订阅费用管理），以及 Phase 5 的设置和完整备份维护。四个业务模块共享同一个 Room 数据库，底部导航另保留设置页。Phase 5 功能回归通过，稳定 60 fps / 真机等未验收项仍明确保留；不代表原文档全部高级功能和发布要求均已完成。
 
@@ -115,11 +115,11 @@ Phase 5 功能回归通过：完整 JSON 导出/预览/恢复，保护备份与�
 
 最低支持 Android 8.0（API 26），无需 Android Studio。
 
-1. 用手机浏览器点击 [下载 app-debug.apk（约 18.7 MB）](https://github.com/lieer-12/app/releases/download/v0.1.1-rizhiya-preview-20261009/app-debug.apk)，也可在 [预览版页面](https://github.com/lieer-12/app/releases/tag/v0.1.1-rizhiya-preview-20261009) 的 Assets 中下载。
+1. 用手机浏览器点击 [下载1.0.0预览Release APK（约12.44MB）](https://github.com/LieerTsuki/Daybud/releases/download/v1.0.0-rizhiya-preview-20261016/rizhiya-1.0.0-preview-release.apk)，也可在[预览版页面](https://github.com/LieerTsuki/Daybud/releases/tag/v1.0.0-rizhiya-preview-20261016)的Assets中下载。
 2. 下载后打开 APK，按系统提示允许当前浏览器/文件管理器安装来自此来源的应用，然后安装。
 3. 安装完成后打开应用；可关闭刚才授予的安装权限。不要下载 Source code ZIP 或未签名 Release APK，它们不能作为此预览安装包使用。
 
-此包为 Debug 签名测试版，不是应用商店正式版本，也不代表 Phase 5 性能或全部 UI 已验收。文件大小 18,685,604 字节；SHA-256：`65340e0b33e4976722836c9cdaa8ab2e2ba73f9d8b84d04ffe46a108e88631bf`。
+此包为既有预览证书签署的非debuggable Release构建，不是应用商店正式签名版。文件大小12,435,895字节；SHA-256：`acd7349f8445500fd6928952c8d602db89c0a92eb295a769f7ee0b410d34db94`。真机、稳定60fps及商店资格仍未验收。
 
 用手机浏览器打开 APK，按系统提示仅允许该浏览器/文件管理器安装来自此来源的应用，安装后可关闭此权限。无需关闭 Play Protect 等全局安全保护；不同厂商菜单名称可能不同，参见 [Android 安装说明](https://support.google.com/pixelphone/answer/7391672?hl=zh-Hans)。GitHub 访问不畅时，可在电脑下载 APK 后用 USB 文件传输到手机安装，无需开启 USB 调试。
 
@@ -127,11 +127,11 @@ Phase 5 功能回归通过：完整 JSON 导出/预览/恢复，保护备份与�
 
 ## 完整备份与数据维护
 
-本节列出顶部可下载0.1.1预览包的v1格式行为。V1分支的E6已接入v2-only导出与严格v1/v2导入（源码验收通过，未发布），见[新版格式与边界](docs/backup-format-v2.md)；不应混用两种文件字段契约。
+当前1.0.0只导出V2，并严格校验后兼容导入旧V1。真实系统选择器、保护备份和恢复结果见[新版格式与边界](docs/backup-format-v2.md)与[交付验收](docs/v1-delivery-acceptance.md)。下方Phase5章节保留历史V1契约，不应混用字段。
 
 - 设置 → 导出完整备份：先确认明文隐私说明，再选择系统文档保存位置。写入、关闭并重新读取校验一致后才报告成功。
-- 设置 → 从备份恢复：受限复制来源到私有临时区，验证版本、SHA-256、全部十表 75 字段及关联；展示真实数量，确认替换语义；必须另外保存并验证当前数据的保护备份，再进行独立最终确认。
-- 只支持 JSON v1 / Room schema v5 的完整替换，不合并，不导入本机世代；恢复包含设置，清空业务数据则保留设置。使用单个 Room 事务，不使用 destructive migration。
+- 设置 → 从备份恢复：受限复制来源到私有临时区，验证版本、SHA-256、全部业务表字段及关联（V1先按旧契约验证再转换）；展示真实数量，确认替换语义；必须另外保存并验证当前数据的保护备份，再进行独立最终确认。
+- 支持JSON V2/schema6及经严格校验转换的旧V1/schema5，完整替换、不合并、不导入本机世代；恢复包含设置，清空业务数据则保留设置。使用单个 Room 事务，不使用 destructive migration。
 - 取消或事务失败保留原数据和未保存草稿；提交成功后旧草稿/旧通知/旧文件回调不能作用于恢复后的同 ID 记录。进程重建不自动重放未完成操作。
 - Room 提交和 Android 闹钟不是同一事务；提醒处理失败时明确区分“数据已提交”，并请求从当前 Room 数据重新校准。权限拒绝不影响离线 CRUD。
 - 备份为明文；SHA-256 不是加密或身份认证。默认上限 64 MiB / 100,000 行；峰值内存可能高于文件大小。文件提供方失败可能留下输出残片，应用不会删除用户选择的文件。

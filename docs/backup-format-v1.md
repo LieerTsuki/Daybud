@@ -1,6 +1,6 @@
 # 完整备份格式 v1（Phase 5 内部接口）
 
-本文固定0.1.1/schema5历史备份的wire/hash契约。该版已发布的预览包可导出V1；当前1.0.0/schema6源码仅导出V2，严格校验旧V1后转换导入。不要将历史字段表改写为V2。实际生产接线及本轮文件验收见[新版格式](backup-format-v2.md)与[F交付验收](v1-delivery-acceptance.md)。
+本文固定0.1.1/schema5历史备份的wire/hash契约。该版已发布的预览包可导出V1；当前已发布的1.0.0/schema6仅导出V2，严格校验旧V1后转换导入。不要将历史字段表改写为V2。实际生产接线及本轮文件验收见[新版格式](backup-format-v2.md)与[F交付验收](v1-delivery-acceptance.md)。
 
 ## 文件结构
 

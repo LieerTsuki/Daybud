@@ -87,3 +87,5 @@ The evidence reader retains raw main/WAL bytes and cross-checks device SQLite.
 See `docs/v1-delivery-acceptance.md` for the failed WAL-reader attempt, rerun,
 actual file-provider boundary, signature/performance results and remaining limits.
 No personal-device, stable60fps or store-release acceptance is implied.
+
+Publication update (2026-10-16): the validated V1 source4db24de is merged into main and the same signed APK is publicly available as `v1.0.0-rizhiya-preview-20261016`. No DDL or historical schema changed during publication. See docs/v1-publication.md for the new merge-time checks and preserved device/performance limits.

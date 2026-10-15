@@ -383,4 +383,8 @@ git diff --check
 - E4于2026-10-14局部验收完成：统一四入口/草稿与通知所有者、新版领域设置/Room事务/独立状态及共享展示控件；新增51项/5 suites，最终1368项 JVM/116 suites强制重跑、Debug/androidTest构建检查、lint0 error/55既有warning，独立复审无遗留问题。
 - E5于2026-10-15局部验收完成：新版备份设置、独立StateFlow所有者及导航/偏好/文件回调保护；新增32项/4新suites，最终1400项JVM/120 suites强制重跑、Debug/androidTest构建检查及lint0 error/55既有warning通过，独立复审关闭。
 - E6于2026-10-15完成生产源码原子接线验收：同一Room6/Hilt数据库上的计划/打卡/订阅/设置、V2备份及统一提醒；旧正常双入口业务退役，历史兼容保留。最终1122项JVM/92 suites强制重跑、Debug重新打包、androidTest构建检查及新lint报告通过（0 error/47 warning），独立源码复审无遗留问题。测试退役/移植有映射，不把1400→1122当作新增数量。
-- F已推进1.0.0/code3预览候选、70项设备回归、完整旧APK覆盖升级／真实V1与V2往返、Release签名与体积；本轮性能实测及最终交付状态见[交付验收](../../v1-delivery-acceptance.md)。main和历史已发布APK仍旧schema5，不将模拟器候选等同于真机／稳定60fps／商店发布。
+- F已完成1.0.0/code3预览验收、70项设备回归、完整旧APK覆盖升级／真实V1与V2往返、Release签名与体积；用户后续授权后已合并main并公开发布1.0.0/schema6预览。历史旧APK继续保留，不将模拟器预览等同于真机／稳定60fps／商店发布。性能及交付见[交付验收](../../v1-delivery-acceptance.md)，发布见下节。
+
+## F后续发布授权（2026-10-16）
+
+用户明确要求“发布并合并”，覆盖前述“不自动合并/发布”的默认范围。已将功能分支4db24de无冲突快进main，并重跑1122项JVM/92 suites及构建/lint验证；同一已验收APK以[v1.0.0-rizhiya-preview-20261016](https://github.com/LieerTsuki/Daybud/releases/tag/v1.0.0-rizhiya-preview-20261016)公开发布预览版，保留旧Release，不改签名/包名/数据库。既有70项设备与性能证据保留原日期，不声称本轮重做真机或稳定60fps。详见[发布记录](../../v1-publication.md)。

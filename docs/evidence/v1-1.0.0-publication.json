@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-16",
+  "publishedAt": "2026-10-15T17:24:20Z",
+  "publishedAtAsiaShanghai": "2026-10-16T01:24:20+08:00",
+  "repository": "LieerTsuki/Daybud",
+  "releaseId": 414074233,
+  "tag": "v1.0.0-rizhiya-preview-20261016",
+  "url": "https://github.com/LieerTsuki/Daybud/releases/tag/v1.0.0-rizhiya-preview-20261016",
+  "prerelease": true,
+  "draft": false,
+  "sourceCommit": "4db24deb56d9562fede555d7d3aa7100f5013cee",
+  "previousMain": "b016bcbc0f146ea6d9fe257b734700689de5cb51",
+  "merge": "fast-forward of validated V1 source",
+  "mergeValidation": {
+    "jvm": {
+      "suites": 92,
+      "tests": 1122,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "deviceTestsRerun": false,
+    "priorDeviceTests": 70,
+    "buildLog": ".tools/v1-publication-main-validation.log",
+    "buildSuccessful": true,
+    "elapsed": "6m 59s",
+    "tasks": {
+      "total": 155,
+      "executed": 16,
+      "upToDate": 139
+    },
+    "lint": {
+      "Error": 0,
+      "Fatal": 0,
+      "Warning": 47
+    }
+  },
+  "apk": {
+    "name": "rizhiya-1.0.0-preview-release.apk",
+    "bytes": 12435895,
+    "sha256": "acd7349f8445500fd6928952c8d602db89c0a92eb295a769f7ee0b410d34db94",
+    "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.0.0-rizhiya-preview-20261016/rizhiya-1.0.0-preview-release.apk"
+  },
+  "historicalReleasesPreserved": true,
+  "productionSigningAccepted": false,
+  "physicalDeviceAccepted": false,
+  "stable60fpsAccepted": false,
+  "publicDownloadVerified": true,
+  "tagVerified": "4db24deb56d9562fede555d7d3aa7100f5013cee",
+  "historicalPreviewTagVerified": "777e1e9bb1c762ba721d90604400d8a2b2091627"
+}

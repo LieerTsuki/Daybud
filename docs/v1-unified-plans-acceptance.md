@@ -1,5 +1,9 @@
 # V1 统一计划分批验收
 
+## 公开发布与main合并（2026-10-16）
+
+用户已授权，1.0.0预览版已公开发布并合并main；源码4db24de，追加JVM复验1122项/92 suites通过。完整发布信息与未验收边界见[发布记录](v1-publication.md)。
+
 ## F · 1.0.0候选交付（2026-10-15至16）
 
 承接E6提交8e9ce14。当前源码1.0.0/code3，最终1122项JVM/92 suites及70项API35设备测试通过，0 failure/error/skipped；Debug/androidTest/Release构建成功，lint0 error/47既有warning。首轮设备67项/12失败、定向15项通过、采证脚本WAL遗漏的诊断，以及覆盖升级、真实文件往返、签名/性能/交付边界均集中记录于[本轮F交付验收](v1-delivery-acceptance.md)。以下E6及以前章节是历史结果，不将其版本/设备状态当作当前结论。
