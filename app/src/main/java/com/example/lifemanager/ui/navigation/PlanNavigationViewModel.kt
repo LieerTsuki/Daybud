@@ -6,17 +6,22 @@ import com.example.lifemanager.domain.maintenance.*
 import com.example.lifemanager.domain.plan.PlanReminderToken
 import com.example.lifemanager.ui.common.GenerationAccess
 import com.example.lifemanager.ui.plan.*
+import com.example.lifemanager.ui.subscription.SubscriptionViewModel
+import com.example.lifemanager.ui.subscription.SubscriptionEditorState
+import com.example.lifemanager.ui.subscription.PaymentEditorState
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
 enum class V1Destination { PLAN, HABIT, SUBSCRIPTION, SETTINGS }
 sealed interface PlanNotificationClick {
     data class Detail(val token:PlanReminderToken):PlanNotificationClick
+    data class Subscription(val id:Long,val generation:DataGeneration):PlanNotificationClick
     data object Legacy:PlanNotificationClick
 }
 data class PlanNavigationAction(val ticket:Long,val destination:V1Destination,val generation:DataGeneration,
-    val planId:Long?=null,val legacy:Boolean=false,val rendered:PlanEditorStamp?=null)
-data class PlanNavigationConfirmation(val ticket:Long,val stamp:PlanEditorStamp)
+    val planId:Long?=null,val legacy:Boolean=false,val rendered:PlanEditorStamp?=null,val subscriptionId:Long?=null)
+data class PlanNavigationConfirmation(val ticket:Long,val stamp:PlanEditorStamp,
+    val subscriptionEditor:SubscriptionEditorState?=null,val paymentEditor:PaymentEditorState?=null)
 data class PlanNavigationState(val destination:V1Destination=V1Destination.PLAN,val generation:DataGeneration?=null,
     val pending:PlanNavigationAction?=null,val confirmation:PlanNavigationConfirmation?=null,
     val waitingForDraft:Boolean=false,val isMaintaining:Boolean=false,val error:String?=null,val message:String?=null)
@@ -55,14 +60,21 @@ class PlanNavigationViewModel(private val access:GenerationAccess,private val di
     }
     fun receive(click:PlanNotificationClick) {
         if(access.maintenance.value!=MaintenanceState.IDLE)return
+        if(click is PlanNotificationClick.Subscription && click.id<=0)return
         val ticket=nextTicket()
-        viewModelScope.launch(dispatcher) {
+        viewModelScope.launch(dispatcher,start=CoroutineStart.UNDISPATCHED) {
             try {
-                val token=when(click) { is PlanNotificationClick.Detail->click.token.generation;PlanNotificationClick.Legacy->access.capture() }
+                val token=when(click) {
+                    is PlanNotificationClick.Detail->click.token.generation
+                    is PlanNotificationClick.Subscription->click.generation
+                    PlanNotificationClick.Legacy->access.capture()
+                }
                 access.run(token) { withContext(Dispatchers.Main.immediate) {
                     if(ticket!=sequence)return@withContext
-                    state.update { it.copy(pending=PlanNavigationAction(ticket,V1Destination.PLAN,token,
-                        planId=(click as? PlanNotificationClick.Detail)?.token?.planId,legacy=click==PlanNotificationClick.Legacy),
+                    state.update { it.copy(pending=PlanNavigationAction(ticket,
+                        if(click is PlanNotificationClick.Subscription)V1Destination.SUBSCRIPTION else V1Destination.PLAN,token,
+                        planId=(click as? PlanNotificationClick.Detail)?.token?.planId,legacy=click==PlanNotificationClick.Legacy,
+                        subscriptionId=(click as? PlanNotificationClick.Subscription)?.id),
                         confirmation=null,waitingForDraft=false,error=null) }
                 } }
             } catch(error:Exception) { if(error is CancellationException)throw error }
@@ -82,30 +94,43 @@ class PlanNavigationViewModel(private val access:GenerationAccess,private val di
             } } } catch(error:Exception) { if(error is CancellationException)throw error }
         }
     }
-    suspend fun deliver(editor:PlanEditorViewModel):Boolean {
+    suspend fun deliver(editor:PlanEditorViewModel,subscriptions:SubscriptionViewModel?=null):Boolean {
         val action=state.value.pending ?: return false
         return effect(action) {
             val current=editor.uiState.value
             if(!ready(current,action))return@effect false
+            val sub=subscriptions?.uiState?.value
+            if(action.subscriptionId!=null && (sub==null || sub.generation!=action.generation || !sub.isAvailable || sub.isLoading))return@effect false
+            if(sub?.let { it.isBusy || it.isMaintaining || it.isExporting || it.isExportPending || it.editor.isSaving || it.paymentEditor.isSaving }==true)return@effect false
             if(action.rendered!=null && current.stamp!=action.rendered) { reject(action);return@effect false }
-            if(state.value.waitingForDraft && current.pane==PlanPane.EDIT)return@effect false
-            if(dirty(current)) {
-                state.update { it.copy(confirmation=PlanNavigationConfirmation(action.ticket,current.stamp)) };false
-            } else apply(action,editor)
+            val leavingSubscription=action.destination!=V1Destination.SUBSCRIPTION && sub?.let { it.editor.isOpen || it.paymentEditor.isOpen }==true
+            if(state.value.waitingForDraft && (current.pane==PlanPane.EDIT || leavingSubscription))return@effect false
+            if(dirty(current) || leavingSubscription) {
+                state.update { it.copy(confirmation=PlanNavigationConfirmation(action.ticket,current.stamp,
+                    if(leavingSubscription)sub.editor else null,if(leavingSubscription)sub.paymentEditor else null)) };false
+            } else apply(action,editor,subscriptions)
         }
     }
-    suspend fun confirmLeave(confirmation:PlanNavigationConfirmation,editor:PlanEditorViewModel):Boolean {
+    suspend fun confirmLeave(confirmation:PlanNavigationConfirmation,editor:PlanEditorViewModel,subscriptions:SubscriptionViewModel?=null):Boolean {
         val action=state.value.pending ?: return false
         if(state.value.confirmation!=confirmation || confirmation.ticket!=action.ticket || confirmation.ticket!=sequence)return false
         return effect(action) {
             val current=editor.uiState.value
             if(!ready(current,action) || current.stamp!=confirmation.stamp)return@effect false
+            val sub=subscriptions?.uiState?.value
+            if(action.subscriptionId!=null && (sub==null || sub.generation!=action.generation || !sub.isAvailable || sub.isLoading))return@effect false
+            if(sub?.let { it.isBusy || it.isMaintaining || it.isExporting || it.isExportPending || it.editor.isSaving || it.paymentEditor.isSaving }==true)return@effect false
+            if(confirmation.subscriptionEditor!=null || confirmation.paymentEditor!=null) {
+                if(sub==null || sub.editor!=confirmation.subscriptionEditor || sub.paymentEditor!=confirmation.paymentEditor)return@effect false
+                subscriptions.closeEditor(action.generation)
+                subscriptions.closePaymentEditor(action.generation)
+            }
             editor.requestClose(current.stamp)
             if(editor.uiState.value.confirmClose)editor.confirmClose(editor.uiState.value.stamp)
             if(editor.uiState.value.pane!=PlanPane.LIST)return@effect false
             // A detail open needs the fresh post-close snapshot; retain only the original event.
             state.update { it.copy(confirmation=null,waitingForDraft=false,pending=action.copy(rendered=null)) }
-            if(action.planId!=null)false else finish(action)
+            if(action.planId!=null)false else apply(action,editor,subscriptions)
         }
     }
     fun cancelLeave(confirmation:PlanNavigationConfirmation) {
@@ -118,7 +143,11 @@ class PlanNavigationViewModel(private val access:GenerationAccess,private val di
         (action.planId==null || (current.isAvailable && !current.isLoading)) && !current.isBusy && !current.isMaintaining && !current.confirmClose &&
         current.pendingMode==null && current.conflicts==null && !current.confirmDelete
     private fun dirty(current:PlanEditorState)=current.draft?.let { it!=PlanDraft(it.base) }==true
-    private fun apply(action:PlanNavigationAction,editor:PlanEditorViewModel):Boolean {
+    private fun apply(action:PlanNavigationAction,editor:PlanEditorViewModel,subscriptions:SubscriptionViewModel?=null):Boolean {
+        if(action.subscriptionId!=null) {
+            if(subscriptions==null)return false
+            subscriptions.openNotificationDetail(action.subscriptionId,action.generation)
+        }
         if(action.planId!=null) {
             val before=editor.uiState.value.stamp
             editor.open(action.planId,action.generation)

@@ -34,7 +34,7 @@ class HabitMigrationTest {
             close()
         }
 
-        helper.runMigrationsAndValidate(TEST_DB, 3, true, *LifeManagerDatabase.MIGRATIONS).use { database ->
+        helper.runMigrationsAndValidate(TEST_DB, 3, true, *LifeManagerDatabase.LEGACY_MIGRATIONS).use { database ->
             database.query("SELECT title FROM todos WHERE id = 7").use { cursor ->
                 assertTrue(cursor.moveToFirst())
                 assertEquals("迁移前待办", cursor.getString(0))

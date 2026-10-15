@@ -11,11 +11,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.example.lifemanager.domain.maintenance.MaintenanceCoordinator
 import com.example.lifemanager.domain.maintenance.MaintenanceState
-import com.example.lifemanager.domain.model.AppSettings
+import com.example.lifemanager.domain.model.V1AppSettings
+import com.example.lifemanager.domain.maintenance.DataGeneration
 import com.example.lifemanager.domain.model.BillingCycle
 import com.example.lifemanager.domain.model.Subscription
 import com.example.lifemanager.domain.model.SubscriptionPayment
-import com.example.lifemanager.domain.repository.SettingsRepository
+import com.example.lifemanager.domain.repository.V1SettingsRepository
 import com.example.lifemanager.domain.repository.SubscriptionRepository
 import com.example.lifemanager.notification.SubscriptionReminderSchedulerContract
 import com.example.lifemanager.ui.common.GenerationAccess
@@ -81,11 +82,10 @@ class SubscriptionScreenRegressionTest {
         override fun cancelAll(subscriptionId: Long) = Unit
     }
 
-    private class Preferences : SettingsRepository {
-        private val settings = MutableStateFlow(AppSettings())
-        override fun observeSettings() = settings
-        override suspend fun getSettings() = settings.value
-        override suspend fun updateSettings(transform: (AppSettings) -> AppSettings): Unit = error("Not used")
+    private class Preferences : V1SettingsRepository {
+        private val settings = MutableStateFlow(V1AppSettings())
+        override fun observe() = settings
+        override suspend fun update(expected: DataGeneration, transform: (V1AppSettings) -> V1AppSettings): V1AppSettings = error("Not used")
     }
 
     private class Records : SubscriptionRepository {

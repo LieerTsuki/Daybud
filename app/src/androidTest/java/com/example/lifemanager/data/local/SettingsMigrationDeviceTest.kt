@@ -1,5 +1,13 @@
 package com.example.lifemanager.data.local
 
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
+import com.example.lifemanager.data.plan.RoomV1SettingsRepository
+import com.example.lifemanager.data.repository.DataGenerationRepositoryImpl
+import com.example.lifemanager.domain.maintenance.DataGeneration
+import com.example.lifemanager.domain.model.*
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import androidx.room.testing.MigrationTestHelper
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
@@ -26,10 +34,51 @@ class SettingsMigrationDeviceTest {
         fixtures.forEach(original::execSQL)
         val before = tables.associateWith { readRows(original, it) }
         original.close()
-        helper.runMigrationsAndValidate(name, 5, true, *LifeManagerDatabase.MIGRATIONS).use { upgraded ->
+        helper.runMigrationsAndValidate(name, 5, true, *LifeManagerDatabase.LEGACY_MIGRATIONS).use { upgraded ->
             assertDefaults(upgraded)
             tables.forEach { table -> assertEquals(before[table], readRows(upgraded, table), table) }
         }
+    }
+
+    @Test fun historicalV5EvidenceThenActualV6FactoryKeepsUnchangedCellsAndConvertsPreferences(): Unit = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val name = "e6-settings-native-${System.nanoTime()}.db"
+        try {
+            val before = helper.createDatabase(name, 4).use { old ->
+                fixtures.forEach(old::execSQL)
+                tables.associateWith { readRows(old, it) }
+            }
+            // Keep the original 4->5 endpoint proof before exercising the current production factory.
+            helper.runMigrationsAndValidate(name, 5, true, *LifeManagerDatabase.LEGACY_MIGRATIONS).use { historical ->
+                assertDefaults(historical)
+                for (table in tables) assertEquals(before.getValue(table), readRows(historical, table), table)
+                historical.execSQL("UPDATE app_settings SET theme='DARK',dateFormat='DMY',defaultCurrency='EUR',todoReminders=0,scheduleReminders=1,subscriptionReminders=0,defaultReminderMask=7 WHERE id=1")
+                historical.execSQL("UPDATE app_maintenance SET generation=73 WHERE id=1")
+            }
+            val database = LifeManagerDatabaseFactory.open(context, name)
+            try {
+                val sqlite = database.openHelper.readableDatabase
+                assertEquals(6, sqlite.version)
+                val unchanged = listOf("tags", "habits", "habit_records", "subscriptions", "subscription_payments", "subscription_reminders")
+                for (table in unchanged) assertEquals(before.getValue(table), readRows(sqlite, table), table)
+                assertEquals(V1AppSettings(ThemeMode.DARK, DateFormat.DMY, "EUR", true, false, setOf(1,3,7)),
+                    RoomV1SettingsRepository(database).observe().first())
+                assertEquals(DataGeneration(74), DataGenerationRepositoryImpl(database).current())
+                sqlite.query("SELECT r.source,r.legacyId,p.title,p.reminderEnabled FROM plan_legacy_refs r JOIN plans p ON p.id=r.planId ORDER BY r.source").use {
+                    assertTrue(it.moveToNext()); assertEquals("SCHEDULE",it.getString(0)); assertEquals(6L,it.getLong(1))
+                    assertEquals("旧日程",it.getString(2)); assertEquals(1,it.getInt(3))
+                    assertTrue(it.moveToNext()); assertEquals("TODO",it.getString(0)); assertEquals(41L,it.getLong(1))
+                    assertEquals("旧待办",it.getString(2)); assertEquals(0,it.getInt(3)); assertTrue(!it.moveToNext())
+                }
+                sqlite.query("PRAGMA foreign_key_check").use { assertEquals(0,it.count) }
+            } finally { database.close() }
+            val reopened = LifeManagerDatabaseFactory.open(context, name)
+            try {
+                assertEquals(DataGeneration(74), DataGenerationRepositoryImpl(reopened).current())
+                assertEquals(2, reopened.planDao().allEntities().size)
+                assertEquals("EUR", RoomV1SettingsRepository(reopened).observe().first().defaultCurrency)
+            } finally { reopened.close() }
+        } finally { context.deleteDatabase(name) }
     }
 
     private fun checkOlderChain(version: Int) {
@@ -45,7 +94,7 @@ class SettingsMigrationDeviceTest {
             }
             fixtures.take(3).forEach(old::execSQL)
         }
-        helper.runMigrationsAndValidate(name, 5, true, *LifeManagerDatabase.MIGRATIONS).use { upgraded ->
+        helper.runMigrationsAndValidate(name, 5, true, *LifeManagerDatabase.LEGACY_MIGRATIONS).use { upgraded ->
             assertDefaults(upgraded)
             assertEquals(listOf(listOf("41", "旧待办", "备注", "HIGH", "1000", "0", null, "7", "8", null, "3")), readRows(upgraded, "todos"))
             assertEquals(listOf(listOf("41", "4")), readRows(upgraded, "todo_tag_cross_ref"))

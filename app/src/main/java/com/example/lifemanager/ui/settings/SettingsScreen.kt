@@ -29,8 +29,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
@@ -45,48 +43,12 @@ internal data class PreferenceReminder(val module:String,val label:String,val ch
 internal data class PreferenceState(val settings:PreferenceValues?,val generation:DataGeneration?,
     val isAvailable:Boolean,val isLoading:Boolean,val isSaving:Boolean,val isMaintaining:Boolean,val errorMessage:String?)
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewModel(), backupViewModel: BackupSettingsViewModel? = null) {
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val renderedGeneration = state.generation
-    val backup = backupViewModel?.uiState?.collectAsStateWithLifecycle()?.value
-    androidx.activity.compose.BackHandler(enabled = backup?.busy == true) {
-        if (backup?.canCancel == true) backup.operationId?.let { backupViewModel.cancel(it) }
-    }
-    SettingsContent(state, { viewModel.setTheme(it, renderedGeneration) }, { viewModel.retry(renderedGeneration) }, onBack,
-        { viewModel.setDateFormat(it, renderedGeneration) }, { viewModel.setDefaultCurrency(it, renderedGeneration) },
-        { day, selected -> viewModel.setDefaultReminderDay(day, selected, renderedGeneration) },
-        onReminderEnabledChanged = { module, enabled -> viewModel.setReminderEnabled(module, enabled, renderedGeneration) },
-        operationBusy = backup?.busy == true,
-        backupSection = {
-            if (backup != null) BackupSettingsSection(backup,
-                state.isAvailable && !state.isLoading && !state.isSaving && !state.isMaintaining, renderedGeneration, backupViewModel)
-        })
-}
-
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
-@Composable
-fun SettingsContent(state: SettingsUiState, onThemeChanged: (ThemeMode) -> Unit, onRetry: () -> Unit, onBack: () -> Unit,
-    onDateFormatChanged: (DateFormat) -> Unit = {}, onCurrencyChanged: (String) -> Unit = {},
-    onReminderDayChanged: (Int, Boolean) -> Unit = { _, _ -> },
-    onReminderEnabledChanged: (String, Boolean) -> Unit = { _, _ -> },
-    operationBusy: Boolean = false,
-    backupSection: @Composable () -> Unit = {}) {
-    val saved=state.settings
-    PreferenceContent(PreferenceState(saved?.let { PreferenceValues(it.theme,it.dateFormat,it.defaultCurrency,it.defaultReminderDays,
-        listOf(PreferenceReminder("todo","待办提醒",it.todoReminders),PreferenceReminder("schedule","日程提醒",it.scheduleReminders),
-            PreferenceReminder("subscription","订阅提醒",it.subscriptionReminders))) },state.generation,state.isAvailable,
-        state.isLoading,state.isSaving,state.isMaintaining,state.errorMessage),onThemeChanged,onRetry,onBack,onDateFormatChanged,
-        onCurrencyChanged,onReminderDayChanged,onReminderEnabledChanged,operationBusy,backupSection)
-}
-
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 internal fun PreferenceContent(state:PreferenceState,onThemeChanged:(ThemeMode)->Unit,onRetry:()->Unit,onBack:()->Unit,
     onDateFormatChanged:(DateFormat)->Unit,onCurrencyChanged:(String)->Unit,onReminderDayChanged:(Int,Boolean)->Unit,
     onReminderEnabledChanged:(String,Boolean)->Unit,operationBusy:Boolean=false,backupSection:@Composable ()->Unit={},
-    modulesDescription:String="当前已启用待办、日程、打卡和订阅费用管理。打卡提醒、暂停和归档尚未实现。",backLabel:String="返回待办") {
+    modulesDescription:String="当前已启用统一计划、打卡、订阅费用管理和设置。打卡提醒、暂停和归档尚未实现。",backLabel:String="返回计划") {
 
     Scaffold(
         topBar = { TopAppBar(title = { Text("设置") }) },

@@ -67,7 +67,7 @@ class UnifiedLegacyCleanupTest {
     @Test fun `mapped and cached legacy alarms are removed without colliding with new namespaces`() = fixture { f ->
         for (id in listOf(1L, 4294967296L, Long.MIN_VALUE, Long.MAX_VALUE)) {
             oldAlarm(f, id, false, false); oldAlarm(f, id, false, true)
-            ReminderAlarmInventory(f.context, "todo").remember(id)
+            rememberLegacyAlarm(f.context, id)
         }
         oldAlarm(f, 1, true, false); oldAlarm(f, 1, true, true)
         currentAlarm(f, "lifemanager://plan-reminder/v1/17/0/20454/1767260700000", PlanReminderReceiver::class.java)
@@ -75,11 +75,11 @@ class UnifiedLegacyCleanupTest {
         LegacyPlanReminderCleaner(f.context).clear(LegacyPlanReminderIds(scheduleIds = setOf(1)))
         assertEquals(listOf("lifemanager://plan-reminder/v1/17/0/20454/1767260700000",
             "lifemanager://subscription-reminder/17/3/2026-01-04"), alarmData(f))
-        assertTrue(ReminderAlarmInventory(f.context, "todo").ids().isEmpty())
+        assertTrue(legacyAlarmIds(f.context).isEmpty())
     }
     @Test fun `occurrence hints discover a deleted old schedule without alarm cache or mapping`() = fixture { f ->
         oldAlarm(f, 987, true, true)
-        ScheduleAlarmOccurrenceStore(f.context).remember(987, 1767260700000, DataGeneration(0))
+        rememberLegacyScheduleOccurrence(f.context, 987, 1767260700000, DataGeneration(0))
         LegacyPlanReminderCleaner(f.context).clear(LegacyPlanReminderIds())
         assertTrue(f.alarms.scheduledAlarms.isEmpty())
         assertTrue(f.context.getSharedPreferences("schedule_alarm_occurrences", 0).all.isEmpty())
@@ -97,10 +97,10 @@ class UnifiedLegacyCleanupTest {
         assertEquals(4, f.notifications.activeNotifications.size)
     }
     @Test fun `platform cancellation failure retains hints and a later pass retries actual alarms`() = fixture { f ->
-        oldAlarm(f, 99, false, true); ReminderAlarmInventory(f.context, "todo").remember(99)
+        oldAlarm(f, 99, false, true); rememberLegacyAlarm(f.context, 99)
         UnifiedAlarmService.failLegacyCancel = true
         assertFails { LegacyPlanReminderCleaner(f.context).clear(LegacyPlanReminderIds()) }
-        assertEquals(setOf(99L), ReminderAlarmInventory(f.context, "todo").ids())
+        assertEquals(setOf(99L), legacyAlarmIds(f.context))
         assertEquals(listOf("lifemanager://todo-reminder/99"), alarmData(f))
         UnifiedAlarmService.failLegacyCancel = false
         LegacyPlanReminderCleaner(f.context).clear(LegacyPlanReminderIds())
@@ -112,17 +112,17 @@ class UnifiedLegacyCleanupTest {
     }
     @Test fun `failure of old no data identity still attempts full URI and retains retry hint`() = fixture { f ->
         oldAlarm(f, 99, false, false); oldAlarm(f, 99, false, true)
-        ReminderAlarmInventory(f.context, "todo").remember(99)
+        rememberLegacyAlarm(f.context, 99)
         UnifiedAlarmService.failNoDataOnly = true
         assertFails { LegacyPlanReminderCleaner(f.context).clear(LegacyPlanReminderIds()) }
         assertEquals(listOf<String?>(null), alarmData(f))
-        assertEquals(setOf(99L), ReminderAlarmInventory(f.context, "todo").ids())
+        assertEquals(setOf(99L), legacyAlarmIds(f.context))
         UnifiedAlarmService.failNoDataOnly = false
         LegacyPlanReminderCleaner(f.context).clear(LegacyPlanReminderIds())
         assertTrue(f.alarms.scheduledAlarms.isEmpty())
     }
     @Test fun `legacy cancellation propagates cancellation rather than treating it as ordinary retry`() = fixture { f ->
-        oldAlarm(f, 99, false, true); ReminderAlarmInventory(f.context, "todo").remember(99)
+        oldAlarm(f, 99, false, true); rememberLegacyAlarm(f.context, 99)
         UnifiedAlarmService.cancelled = true
         assertFailsWith<CancellationException> { LegacyPlanReminderCleaner(f.context).clear(LegacyPlanReminderIds()) }
     }

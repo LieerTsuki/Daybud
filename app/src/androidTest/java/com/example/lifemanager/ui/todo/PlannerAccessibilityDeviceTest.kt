@@ -17,6 +17,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.lifemanager.MainActivity
+import com.example.lifemanager.ui.plan.PlanViewModel
+import com.example.lifemanager.ui.plan.PlanScreen
 import com.example.lifemanager.ui.theme.LifeManagerTheme
 import org.junit.Rule
 import org.junit.Test
@@ -29,29 +31,28 @@ import kotlin.test.assertTrue
 class PlannerAccessibilityDeviceTest {
     @get:Rule val compose = createAndroidComposeRule<MainActivity>()
 
-    @Test fun lightNarrowPageAtDoubleFontKeepsToolbarAndProgressReadable() = checkNarrowPage(false)
-    @Test fun darkNarrowPageAtDoubleFontKeepsToolbarAndProgressReadable() = checkNarrowPage(true)
+    @Test fun lightNarrowUnifiedPageAtDoubleFontKeepsControlsReadable() = checkNarrowPage(false)
+    @Test fun darkNarrowUnifiedPageAtDoubleFontKeepsControlsReadable() = checkNarrowPage(true)
 
     private fun checkNarrowPage(dark: Boolean) {
         compose.runOnIdle {
-            val model = ViewModelProvider(compose.activity)[TodoViewModel::class.java]
+            val model = ViewModelProvider(compose.activity)[PlanViewModel::class.java]
             compose.activity.setContent {
                 CompositionLocalProvider(LocalDensity provides Density(LocalDensity.current.density, fontScale = 2f)) {
                     LifeManagerTheme(darkTheme = dark) {
                         Box(Modifier.width(320.dp).height(500.dp)) {
-                            TodoScreen(viewModel = model, onOpenSettings = {})
+                            PlanScreen(viewModel = model, onNew = {})
                         }
                     }
                 }
             }
         }
         compose.waitForIdle()
-        assertTextFits("待办事项")
-        compose.onNodeWithContentDescription("搜索").assertIsDisplayed()
-        compose.onNodeWithContentDescription("添加待办").assertIsDisplayed().assertHeightIsAtLeast(48.dp)
-        compose.onNodeWithText("今日进度").performScrollTo().assertIsDisplayed()
-        assertTextFits("今日进度")
-        compose.onNodeWithContentDescription("今日完成进度").performScrollTo().assertIsDisplayed()
+        compose.waitUntil(10_000) { compose.onAllNodes(hasText("新建计划") and isEnabled()).fetchSemanticsNodes().isNotEmpty() }
+        assertTextFits("计划手账")
+        compose.onNodeWithText("新建计划").assertIsDisplayed().assertHeightIsAtLeast(48.dp)
+        assertTextFits("新建计划")
+        compose.onNodeWithText("搜索标题或备注").performScrollTo().assertIsDisplayed()
         // Lazy items below the compact viewport are not composed until scrolled into view.
         compose.onNode(SemanticsMatcher.keyIsDefined(SemanticsProperties.VerticalScrollAxisRange))
             .performScrollToNode(hasText("全部优先级"))

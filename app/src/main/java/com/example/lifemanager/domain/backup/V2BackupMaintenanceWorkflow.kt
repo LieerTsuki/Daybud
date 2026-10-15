@@ -3,7 +3,7 @@ package com.example.lifemanager.domain.backup
 import com.example.lifemanager.domain.maintenance.*
 import kotlinx.coroutines.*
 
-/** Isolated target workflow. All database ports must refer to the same target singleton. */
+/** All database ports must refer to the same application singleton. */
 class V2BackupMaintenanceWorkflow(private val snapshots: V2BackupRepository,
     private val mutations: V2BackupMutationRepository, private val files: V2BackupFileUseCases,
     private val generations: DataGenerationRepository, private val coordinator: MaintenanceCoordinator,

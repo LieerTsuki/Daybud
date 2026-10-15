@@ -4,6 +4,9 @@ import android.app.Application
 import android.app.NotificationManager
 import android.content.Intent
 import com.example.lifemanager.domain.maintenance.DataGeneration
+import com.example.lifemanager.domain.plan.PlanReminderToken
+import java.time.Instant
+import java.time.LocalDate
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
@@ -51,12 +54,15 @@ class ReminderSourceGenerationTest {
 
     @Test fun clickKeepsPostingGenerationAndCleanupPreservesCurrentNotification() {
         val context = RuntimeEnvironment.getApplication()
-        NotificationHelper.showTodoReminder(context, 41, "old", DataGeneration(37))
-        NotificationHelper.showScheduleReminder(context, 42, "current", DataGeneration(38))
+        val helper = PlanNotificationHelper(context)
+        val oldToken = PlanReminderToken(41, DataGeneration(37), LocalDate.of(2026, 1, 1), Instant.parse("2026-01-01T09:45:00Z"))
+        val currentToken = oldToken.copy(planId = 42, generation = DataGeneration(38))
+        helper.show(oldToken, "old")
+        helper.show(currentToken, "current")
         val manager = context.getSystemService(NotificationManager::class.java)
         val old = shadowOf(manager).allNotifications.first { it.extras.getCharSequence("android.text") == "old" }
         assertEquals(DataGeneration(37), ReminderGeneration.read(shadowOf(old.contentIntent).savedIntent))
-        ReminderNotifications(context).clearStale(DataGeneration(38))
+        helper.clearStale(DataGeneration(38), setOf(41, 42))
         assertEquals(listOf("current"), shadowOf(manager).allNotifications.map { it.extras.getCharSequence("android.text").toString() })
     }
 }

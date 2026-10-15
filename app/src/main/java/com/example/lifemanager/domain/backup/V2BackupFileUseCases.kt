@@ -8,7 +8,7 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 
-/** Isolated v2 files; UI privacy/operation identity and production activation belong to E. */
+/** Verified v2 output and bounded v1/v2 preview; UI owns consent and operation identity. */
 class V2BackupFileUseCases(private val repository: V2BackupRepository, private val codec: VersionedBackupCodec,
     private val files: BackupFileStore, private val maintenance: MaintenanceCoordinator,
     private val workDispatcher: CoroutineDispatcher, private val limits: BackupLimits = BackupLimits()) {

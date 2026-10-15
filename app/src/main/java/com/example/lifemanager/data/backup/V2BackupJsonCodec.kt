@@ -7,7 +7,7 @@ import java.nio.charset.CodingErrorAction
 import java.security.MessageDigest
 import kotlinx.serialization.json.*
 
-/** Isolated codec. Production BackupCodec/Hilt and v1 bytes stay unchanged until E. */
+/** Strict v2 codec; historical v1 byte/hash validation remains a separate compatibility codec. */
 class V2BackupJsonCodec(private val limits: BackupLimits = BackupLimits()) : V2BackupCodec {
     override fun encode(document: V2BackupDocument): ByteArray {
         V2BackupValidator.validate(document, limits)

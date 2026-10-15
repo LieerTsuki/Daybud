@@ -8,6 +8,7 @@ import android.content.IntentFilter
 import android.net.Uri
 import android.os.Looper
 import androidx.room.Room
+import com.example.lifemanager.data.plan.RoomV1SettingsRepository
 import com.example.lifemanager.data.local.LifeManagerDatabase
 import com.example.lifemanager.data.repository.SubscriptionRepositoryImpl
 import com.example.lifemanager.domain.maintenance.DataGeneration
@@ -44,6 +45,7 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalCoroutinesApi::class)
 class SubscriptionReminderAdmissionTest {
     private lateinit var database: LifeManagerDatabase
+    private lateinit var settings: RoomV1SettingsRepository
     private lateinit var repository: SubscriptionRepositoryImpl
     private lateinit var admission: ReminderAdmissionFixture
     private lateinit var originalTimeZone: TimeZone
@@ -64,7 +66,9 @@ class SubscriptionReminderAdmissionTest {
         val utcHour = Instant.now().atOffset(ZoneOffset.UTC).hour
         TimeZone.setDefault(TimeZone.getTimeZone(ZoneOffset.ofHours(12 - utcHour)))
         database = Room.inMemoryDatabaseBuilder(context, LifeManagerDatabase::class.java)
-            .allowMainThreadQueries().build()
+            .addCallback(LifeManagerDatabase.INITIALIZE).allowMainThreadQueries().build()
+        database.openHelper.writableDatabase.execSQL("UPDATE app_maintenance SET generation=37 WHERE id=1")
+        settings = RoomV1SettingsRepository(database)
         repository = SubscriptionRepositoryImpl(database)
         admission = ReminderAdmissionFixture()
     }
@@ -162,7 +166,7 @@ class SubscriptionReminderAdmissionTest {
             }
         }
         // Keep even the Android scheduler real; count entry to catch side effects on rejected paths.
-        val realScheduler by lazy { SubscriptionReminderScheduler(context) { admission.scheduling } }
+        val realScheduler by lazy { SubscriptionReminderScheduler(context) { ReminderSchedulingState(admission.generations, settings) } }
         val observedScheduler = object : SubscriptionReminderSchedulerContract {
             override suspend fun scheduleCurrent(subscription: Subscription, reminderDays: Set<Int>) {
                 alarmOperations++
@@ -181,10 +185,9 @@ class SubscriptionReminderAdmissionTest {
         val receiver = SubscriptionReminderReceiver(
             repositoryProvider = { repositoryResolutions++; observedRepository },
             schedulerProvider = { schedulerResolutions++; observedScheduler },
-            dispatcher = dispatcher,
             runnerProvider = { ReminderBroadcastRunner(admission.coordinator, dispatcher) },
             onBusy = { calibrationRequests++ },
-            settingsProvider = { admission.settings },
+            settingsProvider = { settings },
         )
         val intent = Intent("com.example.lifemanager.TEST_SUBSCRIPTION_ADMISSION")
             .setData(Uri.parse(ReminderKey.subscriptionData(subscription.id, 1, subscription.nextBillingDate)))

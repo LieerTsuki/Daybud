@@ -35,7 +35,7 @@ data class V1BackupUiState(
     val canCancel get() = busy && !checkingOutcome && step !in setOf(BackupStep.COMMITTING, BackupStep.RECONCILING)
 }
 
-/** Prepared V1 owner. All injected ports must share the same target database/coordinator. */
+/** All injected ports must share the application's database/coordinator. */
 class V1BackupSettingsViewModel(
     private val files: V2BackupFileUseCases,
     private val workflow: V2BackupMaintenanceWorkflow,

@@ -21,12 +21,17 @@ import android.service.notification.StatusBarNotification
 object SubscriptionNotificationHelper {
     const val CHANNEL_ID = "subscription_reminders"
 
+    fun createChannel(context: Context) {
+        context.getSystemService(NotificationManager::class.java)
+            .createNotificationChannel(NotificationChannel(CHANNEL_ID, "订阅扣费提醒", NotificationManager.IMPORTANCE_DEFAULT))
+    }
+
     fun showReminder(context: Context, subscription: Subscription, daysBefore: Int, dueDate: LocalDate, generation: DataGeneration) {
         if (Build.VERSION.SDK_INT >= 33 &&
             ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
         ) return
         val manager = context.getSystemService(NotificationManager::class.java)
-        manager.createNotificationChannel(NotificationChannel(CHANNEL_ID, "订阅扣费提醒", NotificationManager.IMPORTANCE_DEFAULT))
+        createChannel(context)
         val openIntent = PendingIntent.getActivity(
             context,
             ReminderKey.forSubscription(subscription.id, daysBefore),
@@ -53,13 +58,6 @@ object SubscriptionNotificationHelper {
             manager.notify(notificationTag(subscription.id, daysBefore), 0, notification)
         } catch (_: SecurityException) {
             // Revocation between the permission check and notify is a normal no-delivery outcome.
-        }
-    }
-
-    fun cancelAll(context: Context, subscriptionId: Long) {
-        val manager = context.getSystemService(NotificationManager::class.java)
-        SubscriptionReminderRules.supportedDays.forEach { days ->
-            manager.cancel(notificationTag(subscriptionId, days), 0)
         }
     }
 

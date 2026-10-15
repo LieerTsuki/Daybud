@@ -15,7 +15,9 @@ import com.example.lifemanager.ui.theme.LifeManagerTheme
 import java.time.Clock
 import java.time.ZoneId
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Rule
@@ -33,8 +35,12 @@ import kotlin.test.assertNull
 class PlanWorkspaceComposeTest {
     @get:Rule val compose=createComposeRule()
     private val f=EditorTestWorld(Dispatchers.IO)
-    private val list=PlanViewModel(f.repo,f.cases,GenerationAccess(f.generations,f.coordinator),Dispatchers.IO,Clock.fixed(f.now,ZoneId.of("Asia/Shanghai")))
-    @After fun cleanup() { list.viewModelScope.cancel();f.model.viewModelScope.cancel() }
+    @Volatile private var pendingListRead:CompletableDeferred<Unit>?=null
+    private val listRepository=object:PlanRepository by f.repo {
+        override fun observeAll()=f.repo.observeAll().onEach { pendingListRead?.await() }
+    }
+    private val list=PlanViewModel(listRepository,f.cases,GenerationAccess(f.generations,f.coordinator),Dispatchers.IO,Clock.fixed(f.now,ZoneId.of("Asia/Shanghai")))
+    @After fun cleanup() { pendingListRead?.complete(Unit);list.viewModelScope.cancel();f.model.viewModelScope.cancel() }
     private fun waitFor(predicate:()->Boolean) { compose.waitUntil(5_000) { compose.waitForIdle();predicate() } }
     private fun scroll(matcher:SemanticsMatcher) { compose.onNode(SemanticsMatcher.keyIsDefined(SemanticsActions.ScrollToIndex)).performScrollToNode(matcher) }
     private fun show() {
@@ -109,7 +115,15 @@ class PlanWorkspaceComposeTest {
         assertEquals(java.time.LocalDate.parse("2026-10-20"),f.repo.rows.value.single().dueDate)
     }
     @Test fun `retained list navigation actions cannot borrow a replacement generation`() {
-        f.repo.rows.value=listOf(Plan(id=7,title="旧数据",timeZone="Asia/Shanghai",createdAt=f.now,updatedAt=f.now));show()
+        show()
+        // Force the previously intermittent window: the initial empty snapshot is ready,
+        // but the seeded row's IO invalidation has not yet been published to the list.
+        pendingListRead=CompletableDeferred()
+        f.repo.rows.value=listOf(Plan(id=7,title="旧数据",timeZone="Asia/Shanghai",createdAt=f.now,updatedAt=f.now))
+        pendingListRead!!.complete(Unit)
+        waitFor { val state=list.uiState.value
+            state.isAvailable && !state.isLoading && state.generation==f.token &&
+                state.rows.any { it.plan.id==7L && it.plan.title=="旧数据" } }
         scroll(hasText("新建计划"));val oldNew=compose.onNodeWithText("新建计划").fetchSemanticsNode().config[SemanticsActions.OnClick].action!!
         scroll(hasText("旧数据"));val oldOpen=compose.onNodeWithText("旧数据").fetchSemanticsNode().config[SemanticsActions.OnClick].action!!
         compose.mainClock.autoAdvance=false

@@ -10,7 +10,7 @@ class BootReceiver : BroadcastReceiver() {
         try {
             // Durable work reads current Room data under the application's global permit.
             // No broadcast-lifetime database reads, alarm loop, or waiting for maintenance.
-            ReminderReconciliationWorker.enqueueImmediate(context.applicationContext)
+            UnifiedReminderReconciliationWorker.enqueueImmediate(context.applicationContext, resetSystem = true)
         } catch (_: Exception) {
             Log.w("BootReceiver", "Unable to enqueue reminder calibration; daily work remains available")
         }

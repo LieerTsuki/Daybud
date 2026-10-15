@@ -5,6 +5,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.example.lifemanager.domain.model.ScheduleRepeatRule
 
+/** Historical v2–v5 wire/migration DTO only; not a production database entity or DAO. */
 @Entity(
     tableName = "schedules",
     indices = [Index("startAt"), Index("allDayStartDate")],

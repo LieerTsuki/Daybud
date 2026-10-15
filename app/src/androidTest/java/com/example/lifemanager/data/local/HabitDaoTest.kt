@@ -1,7 +1,6 @@
 package com.example.lifemanager.data.local
 
 import android.content.Context
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.lifemanager.data.local.entity.HabitEntity
@@ -18,10 +17,11 @@ import kotlin.test.assertEquals
 
 @RunWith(AndroidJUnit4::class)
 class HabitDaoTest {
+    private lateinit var fixture: V6DeviceFixture
     private lateinit var database: LifeManagerDatabase
 
-    @Before fun setUp() { database = Room.inMemoryDatabaseBuilder(ApplicationProvider.getApplicationContext<Context>(), LifeManagerDatabase::class.java).build() }
-    @After fun tearDown() = database.close()
+    @Before fun setUp() { fixture = V6DeviceFixture(); database = fixture.database }
+    @After fun tearDown() = fixture.close()
 
     @Test fun duplicateDayIsStoredOnceAndDeletingHabitCascades() = runBlocking {
         val day = LocalDate.of(2026, 8, 22)

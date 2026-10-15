@@ -25,7 +25,7 @@ import java.time.ZoneId
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 
-/** E preparation adapter. Root navigation/Hilt activation is deliberately deferred. */
+/** Lifecycle-aware unified list bound to the Activity's retained production owner. */
 @Composable
 fun PlanScreen(viewModel: PlanViewModel, onNew: ((DataGeneration?) -> Unit)? = null,
     onOpen: ((Long, DataGeneration?) -> Unit)? = null, canNavigate: Boolean = true,

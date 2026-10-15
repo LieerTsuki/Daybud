@@ -5,7 +5,7 @@ import androidx.room.withTransaction
 import com.example.lifemanager.data.local.dao.BackupSnapshotDao
 import com.example.lifemanager.domain.backup.*
 
-/** Isolated target-store adapter. Production v5 repository/Hilt stays unchanged until E. */
+/** Transactional snapshot adapter over the application's unified store. */
 class V2BackupRepositoryImpl(private val database: RoomDatabase, dao: BackupSnapshotDao,
     limits: BackupLimits = BackupLimits()) : V2BackupRepository {
     private val sql = V2BackupSql(dao, limits)

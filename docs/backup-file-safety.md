@@ -4,6 +4,8 @@
 本文说明安全边界，不替代 `phase5-acceptance.md` 的实际回归结果。
 JSON 字段、版本、行数及 SHA-256 规则仍以 `backup-format-v1.md` 为准。
 
+V1 统一计划说明（2026-10-15，E6 源码接线验收通过，未发布）：上段及下文未加版本标注的类名是历史 Phase 5 实现记录。当前开发源码使用 `V2BackupFileUseCases`、`V2BackupMaintenanceWorkflow`、`V1BackupSettingsViewModel` 与同一生产 v6 数据库，导出只写 [格式 v2](backup-format-v2.md)，旧 v1 通过严格验证再转换后导入，不将旧 payload 直接写进新表。选择器票据、明文隐私、保护备份、最终确认和世代准入约束仍适用。本批运行结果见[V1分批验收](v1-unified-plans-acceptance.md)；旧已发布APK及历史验收不改写，设备/真实文件提供方验收留F。
+
 ## 分层和准入
 
 - domain 定义不依赖 Android 的 `BackupLocation`、`BackupFileStore`、
@@ -78,7 +80,7 @@ JSON 字段、版本、行数及 SHA-256 规则仍以 `backup-format-v1.md` 为�
 
 ## V1改版 · D4隔离工作流（2026-10-13）
 
-以上为仍在生产的V0/format1流程和历史验证；D4新增V2BackupFileUseCases、V2BackupReminderCaptureImpl与V2BackupMaintenanceWorkflow，只在完整合成v6库和测试文件装置验证，不替换旧Hilt/ViewModel/选择器/默认codec或版本。v2字段/十表/27列计划及旧文件转换以[新版格式说明](backup-format-v2.md)为准；不得把旧“75字段”限制套用新版。
+以上为历史V0/format1流程和验证；D4当时新增V2BackupFileUseCases、V2BackupReminderCaptureImpl与V2BackupMaintenanceWorkflow，只在完整合成v6库和测试文件装置验证，未替换旧Hilt/ViewModel/选择器/默认codec或版本。当前接线状态以页首E6说明为准；v2字段/十表/27列计划及旧文件转换以[新版格式说明](backup-format-v2.md)为准，不得把旧“75字段”限制套用新版。
 
 - 普通导出释放快照准入后才文件I/O；v1/v2预览使用同一有界私有暂存机制，真实计数/来源说明，不读写当前业务库。写入和恢复准备深拷贝全部可变集合，挂起后caller修改不能改变选定快照。
 - 保护文件关闭后重读，要求真实v2来源及整个文档一致；另一个合法文件或转换后的v1不能冒充成功。相同确切来源URI拒绝打开输出，不识别不同URI的通用提供方别名；不自动删除来源/输出/未成功保护文件。

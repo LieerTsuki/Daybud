@@ -5,6 +5,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.example.lifemanager.domain.model.TodoPriority
 
+/** Historical v1–v5 wire/migration DTO only; not a production database entity or DAO. */
 @Entity(
     tableName = "todos",
     indices = [Index("dueAt"), Index("isCompleted")],

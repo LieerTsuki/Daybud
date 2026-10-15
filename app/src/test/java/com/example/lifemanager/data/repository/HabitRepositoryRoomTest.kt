@@ -1,8 +1,8 @@
 package com.example.lifemanager.data.repository
 
 import android.app.Application
-import androidx.room.Room
 import com.example.lifemanager.data.local.LifeManagerDatabase
+import com.example.lifemanager.data.local.V6RoomFixture
 import com.example.lifemanager.data.local.entity.HabitRecordEntity
 import com.example.lifemanager.domain.model.Habit
 import com.example.lifemanager.domain.model.HabitFrequencyType
@@ -28,16 +28,18 @@ import kotlin.test.assertTrue
 @Config(sdk = [28], application = Application::class)
 @SQLiteMode(SQLiteMode.Mode.NATIVE)
 class HabitRepositoryRoomTest {
+    private lateinit var fixture: V6RoomFixture
     private lateinit var database: LifeManagerDatabase
     private lateinit var repository: HabitRepositoryImpl
     private val monday = LocalDate.of(2026, 9, 28)
 
     @Before fun setUp() {
-        database = Room.inMemoryDatabaseBuilder(RuntimeEnvironment.getApplication(), LifeManagerDatabase::class.java).build()
+        fixture = V6RoomFixture()
+        database = fixture.database
         repository = HabitRepositoryImpl(database)
     }
 
-    @After fun tearDown() = database.close()
+    @After fun tearDown() = fixture.close()
 
     @Test fun editingHabitPreservesAllRecordIdsDatesAndCreationTimes(): Unit = runBlocking {
         val id = repository.saveHabit(habit())

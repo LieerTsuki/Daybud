@@ -21,25 +21,25 @@ class BackupPickerActivityTest {
 
     @Test fun cancelledSystemSourcePickerKeepsSettingsAndReturnsToUsableActions() {
         openSettings()
-        compose.onNodeWithText("从备份恢复").performScrollTo().performClick()
+        compose.onNodeWithText("从 V1 / V2 备份恢复").performScrollTo().performClick()
         cancelSystemPicker()
         compose.onNodeWithText("已取消").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("从备份恢复").performScrollTo().assertIsEnabled()
+        compose.onNodeWithText("从 V1 / V2 备份恢复").performScrollTo().assertIsEnabled()
     }
 
     @Test fun exportShowsPrivacyConsentThenLaunchesRealSystemDestinationPicker() {
         openSettings()
-        compose.onNodeWithText("导出完整备份").performScrollTo().performClick()
+        compose.onNodeWithText("导出完整 V2 备份").performScrollTo().performClick()
         compose.onNodeWithText("导出明文备份").assertIsDisplayed()
         compose.onNodeWithText("选择保存位置").performClick()
         cancelSystemPicker()
         compose.onNodeWithText("已取消").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("导出完整备份").performScrollTo().assertIsEnabled()
+        compose.onNodeWithText("导出完整 V2 备份").performScrollTo().assertIsEnabled()
     }
 
     private fun openSettings() {
-        compose.waitUntil(5_000) { ViewModelProvider(compose.activity)[SettingsViewModel::class.java].uiState.value.isAvailable }
-        compose.onNode(hasText("设置") and SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Tab)).performClick()
+        compose.waitUntil(5_000) { ViewModelProvider(compose.activity)[V1SettingsViewModel::class.java].uiState.value.isAvailable }
+        compose.onNodeWithContentDescription("设置入口").performClick()
     }
     private fun cancelSystemPicker() {
         val automation = InstrumentationRegistry.getInstrumentation().uiAutomation

@@ -28,7 +28,7 @@ import com.example.lifemanager.ui.theme.LifeManagerTheme
 import com.example.lifemanager.domain.model.DateFormat
 import kotlinx.coroutines.launch
 
-/** Prepared graph requires every actual owner; no placeholder destination defaults. */
+/** Every destination uses the actual retained Activity owner. */
 @Composable
 fun V1NavGraph(navigation:PlanNavigationViewModel,list:PlanViewModel,editor:PlanEditorViewModel,
     calendar:PlanCalendarViewModel,statistics:PlanStatisticsViewModel,settings:V1SettingsViewModel,
@@ -37,18 +37,22 @@ fun V1NavGraph(navigation:PlanNavigationViewModel,list:PlanViewModel,editor:Plan
     val edit=editor.uiState.collectAsStateWithLifecycle().value
     val prefs=settings.uiState.collectAsStateWithLifecycle().value
     val operation=backup.uiState.collectAsStateWithLifecycle().value
+    val sub=subscriptions.uiState.collectAsStateWithLifecycle().value
     val stamp=edit.stamp // Immutable rendering stamp for every captured tab callback.
     val scope=rememberCoroutineScope()
     val pages=rememberSaveableStateHolder()
-    val enabled=state.generation!=null && !state.isMaintaining && !prefs.isSaving && !prefs.isMaintaining && !edit.isBusy && !operation.busy
+    val enabled=state.generation!=null && !state.isMaintaining && !prefs.isSaving && !prefs.isMaintaining && !edit.isBusy && !operation.busy &&
+        !sub.isBusy && !sub.isMaintaining && !sub.isExporting && !sub.isExportPending && !sub.editor.isSaving && !sub.paymentEditor.isSaving
     fun liveNavigationAllowed()=!settings.uiState.value.isSaving && !settings.uiState.value.isMaintaining &&
-        !editor.uiState.value.isBusy && !editor.uiState.value.isMaintaining && !backup.uiState.value.busy
+        !editor.uiState.value.isBusy && !editor.uiState.value.isMaintaining && !backup.uiState.value.busy &&
+        subscriptions.uiState.value.let { !it.isBusy && !it.isMaintaining && !it.isExporting && !it.isExportPending && !it.editor.isSaving && !it.paymentEditor.isSaving }
     LaunchedEffect(prefs.settings?.planReminders,state.destination) {
         // Same-source preference changes and returning to Plan refresh hints without clearing drafts.
         if(state.destination==V1Destination.PLAN && prefs.settings!=null)editor.retryRead()
     }
-    LaunchedEffect(state.pending?.ticket,edit.stamp,edit.isLoading,edit.isAvailable,edit.isBusy,prefs.isSaving,state.waitingForDraft,operation.busy) {
-        if(liveNavigationAllowed())navigation.deliver(editor)
+    LaunchedEffect(state.pending?.ticket,edit.stamp,edit.isLoading,edit.isAvailable,edit.isBusy,prefs.isSaving,state.waitingForDraft,operation.busy,
+        sub.generation,sub.isAvailable,sub.isLoading,sub.isBusy,sub.isMaintaining,sub.isExporting,sub.isExportPending,sub.editor,sub.paymentEditor) {
+        if(liveNavigationAllowed())navigation.deliver(editor,subscriptions)
     }
     BackHandler(enabled=state.destination!=V1Destination.PLAN || state.isMaintaining) {
         if(liveNavigationAllowed())navigation.requestDestination(V1Destination.PLAN,stamp)
@@ -83,17 +87,18 @@ fun V1NavGraph(navigation:PlanNavigationViewModel,list:PlanViewModel,editor:Plan
                             V1Destination.SETTINGS->V1SettingsScreen(settings,backup,
                                 onBack={ if(liveNavigationAllowed())navigation.requestDestination(V1Destination.PLAN,stamp) },
                                 canStartBackup={ !editor.uiState.value.isBusy && !editor.uiState.value.isMaintaining &&
+                                    subscriptions.uiState.value.let { !it.isBusy && !it.isMaintaining && !it.isExporting && !it.isExportPending && !it.editor.isOpen && !it.paymentEditor.isOpen } &&
                                     navigation.uiState.value.let { it.destination==V1Destination.SETTINGS && it.pending==null && it.confirmation==null } })
                         }
                         // Registered after destination children; their BackHandlers cannot win a freeze.
-                        BackHandler(enabled=state.isMaintaining || edit.isMaintaining || prefs.isMaintaining || operation.busy) {}
+                        BackHandler(enabled=state.isMaintaining || edit.isMaintaining || prefs.isMaintaining || operation.busy || sub.isBusy || sub.isExporting || sub.isExportPending) {}
                     } }
                 }
             }
             state.confirmation?.let { consent ->
                 AlertDialog(onDismissRequest={ navigation.cancelLeave(consent) },title={ Text("离开前保留草稿？") },
                     text={ Text("继续编辑可保留输入，保存或关闭草稿后再处理通知。放弃草稿不会写入数据库。") },
-                    confirmButton={ TextButton({ scope.launch { if(liveNavigationAllowed())navigation.confirmLeave(consent,editor) } },enabled=enabled) { Text("放弃草稿并继续") } },
+                    confirmButton={ TextButton({ scope.launch { if(liveNavigationAllowed())navigation.confirmLeave(consent,editor,subscriptions) } },enabled=enabled) { Text("放弃草稿并继续") } },
                     dismissButton={ TextButton({ navigation.cancelLeave(consent) }) { Text("继续编辑") } })
             }
         }

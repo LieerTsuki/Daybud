@@ -20,6 +20,7 @@
         </activity>
         <receiver android:name=".notification.TodoReminderReceiver" android:exported="false" />
         <receiver android:name=".notification.ScheduleReminderReceiver" android:exported="false" />
+        <receiver android:name=".notification.PlanReminderReceiver" android:exported="false" />
         <receiver android:name=".notification.SubscriptionReminderReceiver" android:exported="false" />
         <receiver android:name=".notification.BootReceiver" android:enabled="true" android:exported="false">
             <intent-filter>

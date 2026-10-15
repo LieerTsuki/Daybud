@@ -31,12 +31,12 @@ import kotlin.test.assertIs
 class WorkerMaintenanceDeviceTest {
     @Test fun defaultWorkerFactoryUsesTheApplicationCoordinatorAlsoUsedByReceivers(): Unit = runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        val coordinator = EntryPointAccessors.fromApplication(context, TodoReminderEntryPoint::class.java)
+        val coordinator = EntryPointAccessors.fromApplication(context, ReminderSafetyEntryPoint::class.java)
             .maintenanceCoordinator()
         // WorkManager's reflection fallback requires a Java (Context, WorkerParameters) constructor.
         val factory = factory()
-        val worker = assertIs<ReminderReconciliationWorker>(factory.createWorkerWithDefaultFallback(
-            context, ReminderReconciliationWorker::class.java.name, parameters(factory),
+        val worker = assertIs<UnifiedReminderReconciliationWorker>(factory.createWorkerWithDefaultFallback(
+            context, UnifiedReminderReconciliationWorker::class.java.name, parameters(factory),
         ))
         coordinator.withSession {
             assertEquals(ListenableWorker.Result.retry(), worker.doWork())
@@ -46,7 +46,7 @@ class WorkerMaintenanceDeviceTest {
 
     @Test fun drainingTheApplicationCoordinatorRejectsTheActualBackgroundWorker(): Unit = runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        val coordinator = EntryPointAccessors.fromApplication(context, TodoReminderEntryPoint::class.java)
+        val coordinator = EntryPointAccessors.fromApplication(context, ReminderSafetyEntryPoint::class.java)
             .maintenanceCoordinator()
         val generation = coordinator.capture()
         val release = CompletableDeferred<Unit>()
@@ -54,7 +54,7 @@ class WorkerMaintenanceDeviceTest {
         val maintenance = async(start = CoroutineStart.UNDISPATCHED) { coordinator.withSession {} }
         try {
             assertEquals(MaintenanceState.DRAINING, coordinator.state.value)
-            assertEquals(ListenableWorker.Result.retry(), ReminderReconciliationWorker(context, parameters(factory())).doWork())
+            assertEquals(ListenableWorker.Result.retry(), UnifiedReminderReconciliationWorker(context, parameters(factory())).doWork())
         } finally {
             release.complete(Unit)
             existing.await()

@@ -11,7 +11,7 @@ import java.time.ZoneId
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
-/** Prepared for E activation; intentionally not registered in production Hilt yet. */
+/** Unified list owner; the Activity's retained factory supplies the production domain ports. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class PlanViewModel(private val repository: PlanRepository, private val useCases: PlanUseCases,
     private val access: GenerationAccess, private val dispatcher: CoroutineDispatcher,

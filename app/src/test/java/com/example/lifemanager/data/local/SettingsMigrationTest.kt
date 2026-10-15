@@ -2,7 +2,6 @@ package com.example.lifemanager.data.local
 
 import android.app.Application
 import android.database.sqlite.SQLiteDatabase
-import androidx.room.Room
 import java.io.File
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
@@ -21,9 +20,8 @@ import kotlin.test.assertTrue
 @SQLiteMode(SQLiteMode.Mode.NATIVE)
 class SettingsMigrationTest {
     @Test fun newDatabaseContainsPersistedDefaultSettingsAndLocalGeneration() {
-        val database = Room.inMemoryDatabaseBuilder(RuntimeEnvironment.getApplication(), LifeManagerDatabase::class.java)
-            .addCallback(LifeManagerDatabase.INITIALIZE).allowMainThreadQueries().build()
-        try { assertSettings(database) } finally { database.close() }
+        val fixture = V6RoomFixture()
+        try { assertSettings(fixture.database, 0) } finally { fixture.close() }
     }
 
     @Test fun migrationFromV4PreservesEveryBusinessTableAndLongAmount(): Unit = runBlocking {
@@ -47,18 +45,24 @@ class SettingsMigrationTest {
                 fixtures.forEach(sqlite::execSQL)
                 sqlite.version = 4
             }
-            val database = Room.databaseBuilder(application, LifeManagerDatabase::class.java, name)
-                .addMigrations(*LifeManagerDatabase.MIGRATIONS).allowMainThreadQueries().build()
+            val database = LifeManagerDatabaseFactory.open(application, name)
             try {
-                    assertSettings(database)
-                    for (table in tables) database.openHelper.readableDatabase.query("SELECT COUNT(*) FROM $table").use {
-                        assertTrue(it.moveToFirst())
-                        assertEquals(1, it.getInt(0), "migration lost $table")
+                    assertSettings(database, 1)
+                    val sqlite = database.openHelper.readableDatabase
+                    for (table in listOf("tags", "plan_tag_cross_ref", "plan_exceptions", "habits", "habit_records",
+                        "subscriptions", "subscription_payments", "subscription_reminders")) {
+                        sqlite.query("SELECT COUNT(*) FROM $table").use {
+                            assertTrue(it.moveToFirst()); assertEquals(1, it.getInt(0), "migration lost $table")
+                        }
                     }
-                    val todo = database.todoDao().getAll().single()
-                    assertEquals(41L, todo.id)
-                    assertEquals("旧待办", todo.title)
-                    assertEquals(7L, todo.createdAt)
+                    assertEquals(2, database.planDao().allEntities().size)
+                    sqlite.query("SELECT p.title,p.createdAt FROM plans p JOIN plan_legacy_refs r ON r.planId=p.id WHERE r.source='TODO' AND r.legacyId=41").use {
+                        assertTrue(it.moveToFirst()); assertEquals("旧待办", it.getString(0)); assertEquals(7L, it.getLong(1))
+                        assertTrue(!it.moveToNext())
+                    }
+                    sqlite.query("SELECT p.title,e.occurrenceDate,e.isCancelled FROM plans p JOIN plan_legacy_refs r ON r.planId=p.id JOIN plan_exceptions e ON e.planId=p.id WHERE r.source='SCHEDULE' AND r.legacyId=6").use {
+                        assertTrue(it.moveToFirst()); assertEquals("旧日程", it.getString(0)); assertEquals(20000L,it.getLong(1)); assertEquals(1,it.getInt(2))
+                    }
                     database.openHelper.readableDatabase.query("SELECT amountMinor FROM subscriptions WHERE id = 8").use {
                         assertTrue(it.moveToFirst())
                         assertEquals(1_234_567_890_123L, it.getLong(0))
@@ -69,25 +73,25 @@ class SettingsMigrationTest {
         }
     }
 
-    private fun assertSettings(database: LifeManagerDatabase) {
+    private fun assertSettings(database: LifeManagerDatabase, generation: Long) {
         val sqlite = database.openHelper.readableDatabase
-        assertEquals(5, sqlite.version, "settings require a non-destructive v5 schema")
+        assertEquals(6, sqlite.version, "production settings require the unified schema")
         sqlite.query("SELECT name FROM sqlite_master WHERE type='table'").use { cursor ->
             val names = buildSet { while (cursor.moveToNext()) add(cursor.getString(0)) }
             assertTrue("app_settings" in names)
             assertTrue("app_maintenance" in names)
         }
-        sqlite.query("SELECT theme, dateFormat, defaultCurrency, todoReminders, scheduleReminders, subscriptionReminders, defaultReminderMask FROM app_settings WHERE id=1").use {
+        sqlite.query("SELECT theme, dateFormat, defaultCurrency, planReminders, subscriptionReminders, defaultReminderMask FROM app_settings WHERE id=1").use {
             assertTrue(it.moveToFirst())
             assertEquals("SYSTEM", it.getString(0))
             assertEquals("YMD", it.getString(1))
             assertEquals("CNY", it.getString(2))
-            assertEquals(listOf(1, 1, 1, 0), (3..6).map(it::getInt))
+            assertEquals(listOf(1, 1, 0), (3..5).map(it::getInt))
             assertTrue(!it.moveToNext())
         }
         sqlite.query("SELECT generation FROM app_maintenance WHERE id=1").use {
             assertTrue(it.moveToFirst())
-            assertEquals(0L, it.getLong(0))
+            assertEquals(generation, it.getLong(0))
         }
     }
 

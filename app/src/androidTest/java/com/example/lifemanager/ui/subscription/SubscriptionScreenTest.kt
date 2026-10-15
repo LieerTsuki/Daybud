@@ -9,7 +9,7 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.compose.runtime.CompositionLocalProvider
 import com.example.lifemanager.data.local.LifeManagerDatabase
-import com.example.lifemanager.data.repository.SettingsRepositoryImpl
+import com.example.lifemanager.data.plan.RoomV1SettingsRepository
 import com.example.lifemanager.data.repository.DataGenerationRepositoryImpl
 import com.example.lifemanager.domain.maintenance.MaintenanceCoordinator
 import com.example.lifemanager.ui.common.GenerationAccess
@@ -35,7 +35,7 @@ class SubscriptionScreenTest {
     private val settingsDatabase = Room.inMemoryDatabaseBuilder(ApplicationProvider.getApplicationContext(), LifeManagerDatabase::class.java)
         .addCallback(LifeManagerDatabase.INITIALIZE).build()
     private val generations = DataGenerationRepositoryImpl(settingsDatabase)
-    private val model = SubscriptionViewModel(repository, NoAlarms(), SettingsRepositoryImpl(settingsDatabase), Dispatchers.IO,
+    private val model = SubscriptionViewModel(repository, NoAlarms(), RoomV1SettingsRepository(settingsDatabase), Dispatchers.IO,
         GenerationAccess(generations, MaintenanceCoordinator(generations)))
     @After fun cleanup() { model.viewModelScope.cancel(); settingsDatabase.close() }
     private fun show(dateFormat: DateFormat = DateFormat.YMD) {

@@ -13,19 +13,11 @@ import android.os.Looper
 import androidx.room.Room
 import com.example.lifemanager.data.local.LifeManagerDatabase
 import com.example.lifemanager.data.repository.DataGenerationRepositoryImpl
-import com.example.lifemanager.data.repository.ScheduleRepositoryImpl
-import com.example.lifemanager.data.repository.SettingsRepositoryImpl
 import com.example.lifemanager.data.repository.SubscriptionRepositoryImpl
-import com.example.lifemanager.data.repository.TodoRepositoryImpl
 import com.example.lifemanager.domain.maintenance.DataGeneration
 import com.example.lifemanager.domain.maintenance.MaintenanceCoordinator
 import com.example.lifemanager.domain.model.BillingCycle
-import com.example.lifemanager.domain.model.Schedule
-import com.example.lifemanager.domain.model.ScheduleException
 import com.example.lifemanager.domain.model.Subscription
-import com.example.lifemanager.domain.model.Todo
-import com.example.lifemanager.domain.repository.TodoRepository
-import com.example.lifemanager.domain.repository.ScheduleRepository
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -51,6 +43,17 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
+import com.example.lifemanager.data.plan.RoomV1SettingsRepository
+import com.example.lifemanager.data.plan.RoomPlanReminderSources
+import com.example.lifemanager.domain.model.V1AppSettings
+import com.example.lifemanager.domain.repository.V1SettingsRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.first
+
+// Subscription receipt/admission cases are retained on the activated v6 schema.
+// Legacy todo/schedule cases map to PlanReminderIntegrationTest, UnifiedPlanCalibrationTest,
+// UnifiedLegacyCleanupTest, UnifiedWorkerRoutingTest and E6ReminderActivationTest.
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28], application = Application::class)
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
@@ -59,16 +62,10 @@ class ReminderSafetyIntegrationTest {
     private lateinit var database: LifeManagerDatabase
     private lateinit var generations: DataGenerationRepositoryImpl
     private lateinit var coordinator: MaintenanceCoordinator
-    private lateinit var settings: SettingsRepositoryImpl
-    private lateinit var todos: TodoRepositoryImpl
-    private lateinit var schedules: ScheduleRepositoryImpl
+    private lateinit var settings: RoomV1SettingsRepository
     private lateinit var subscriptions: SubscriptionRepositoryImpl
-    private lateinit var todoScheduler: ReminderScheduler
-    private lateinit var scheduleScheduler: ScheduleReminderScheduler
     private lateinit var subscriptionScheduler: SubscriptionReminderScheduler
-    private lateinit var reconciler: ReminderReconciler
     private var calibrations = 0
-    private val now get() = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MILLIS)
     private val alarms get() = shadowOf(context.getSystemService(AlarmManager::class.java))
     private val notifications get() = shadowOf(context.getSystemService(NotificationManager::class.java))
 
@@ -78,130 +75,68 @@ class ReminderSafetyIntegrationTest {
         database.openHelper.writableDatabase.execSQL("UPDATE app_maintenance SET generation=37 WHERE id=1")
         generations = DataGenerationRepositoryImpl(database)
         coordinator = MaintenanceCoordinator(generations)
-        settings = SettingsRepositoryImpl(database)
-        todos = TodoRepositoryImpl(database)
-        schedules = ScheduleRepositoryImpl(database)
+        settings = RoomV1SettingsRepository(database)
         subscriptions = SubscriptionRepositoryImpl(database)
         val state = ReminderSchedulingState(generations, settings)
-        todoScheduler = ReminderScheduler(context) { state }
-        scheduleScheduler = ScheduleReminderScheduler(context, { state }, { schedules })
         subscriptionScheduler = SubscriptionReminderScheduler(context) { state }
-        reconciler = ReminderReconciler(todos, todoScheduler, schedules, scheduleScheduler,
-            subscriptions, subscriptionScheduler, coordinator, settings, ReminderNotifications(context))
     }
     @After fun cleanup() { database.close() }
 
-    @Test fun allSchedulersReadRealGenerationAndSettingsAndOffReconciliationClearsEachModule() = runTest {
-        val todo = todo(now.plusSeconds(7200))
-        val schedule = schedule(now.plusSeconds(7200))
-        val subscription = subscription()
-        reconciler.reconcile()
-        assertEquals(3, alarms.scheduledAlarms.size)
-        alarms.scheduledAlarms.forEach {
-            assertEquals(DataGeneration(37), ReminderGeneration.read(shadowOf(it.operation).savedIntent))
+    private suspend fun reconcileSubscriptions() {
+        val expected = coordinator.capture()
+        coordinator.run(expected) {
+            UnifiedSubscriptionCalibration(context, subscriptions, generations,
+                RoomPlanReminderSources(database.planDao()), subscriptionScheduler).reconcile(expected, false)
         }
-        NotificationHelper.showTodoReminder(context, todo.id, todo.title, DataGeneration(37))
-        NotificationHelper.showScheduleReminder(context, schedule.id, schedule.title, DataGeneration(37))
-        SubscriptionNotificationHelper.showReminder(context, subscription, 1, subscription.nextBillingDate, DataGeneration(37))
-        settings.updateSettings { it.copy(todoReminders = false, scheduleReminders = false, subscriptionReminders = false) }
-        // Direct save paths also respect settings; no global admission is reacquired by schedulers.
-        coordinator.run(DataGeneration(37)) {
-            todoScheduler.scheduleCurrent(todo.id, todo.title, todo.dueAt!!)
-            scheduleScheduler.scheduleCurrent(schedule)
-            subscriptionScheduler.scheduleCurrent(subscription, setOf(1))
-        }
-        assertTrue(alarms.scheduledAlarms.isEmpty())
-        assertEquals(0, notifications.size())
-        repeat(2) { reconciler.reconcile() }
-        assertTrue(alarms.scheduledAlarms.isEmpty())
-        settings.updateSettings { it.copy(todoReminders = true, scheduleReminders = true, subscriptionReminders = true) }
-        reconciler.reconcile()
-        assertEquals(3, alarms.scheduledAlarms.size)
     }
 
-    @Test fun everyReceiverRejectsOldOrMissingSourceAfterCommitEvenWhenIdsStillExist() = runTest {
-        val todo = todo(now.plusSeconds(600))
-        val schedule = schedule(now.plusSeconds(600))
-        val subscription = subscription()
-        coordinator.withSession { session -> coordinator.withMaintenance(session) { generations.commit(session.generation) {} } }
-        for (source in listOf(37L, null)) {
-            deliver(todoReceiver(), todoIntent(todo, source))
-            deliver(scheduleReceiver(), scheduleIntent(schedule, source))
-            val dispatcher = StandardTestDispatcher(testScheduler)
-            deliver(SubscriptionReminderReceiver({ subscriptions }, { subscriptionScheduler }, dispatcher,
-                { ReminderBroadcastRunner(coordinator, dispatcher) }, { calibrations++ }, { settings }),
-                Intent().setData(Uri.parse(ReminderKey.subscriptionData(subscription.id, 1, subscription.nextBillingDate)))
-                    .putExtra(SubscriptionReminderReceiver.EXTRA_SUBSCRIPTION_ID, subscription.id)
-                    .putExtra(SubscriptionReminderReceiver.EXTRA_DAYS_BEFORE, 1)
-                    .putExtra(SubscriptionReminderReceiver.EXTRA_DUE_DATE, subscription.nextBillingDate.toString())
-                    .apply { source?.let { putExtra(ReminderGeneration.EXTRA, it) } })
-        }
-        assertEquals(0, notifications.size())
-        assertEquals(3, calibrations, "Only missing-source arrivals request fresh calibration")
-        deliver(todoReceiver(), todoIntent(todo, 38L))
-        deliver(scheduleReceiver(), scheduleIntent(schedule, 38L))
-        assertEquals(2, notifications.size(), "Current source and current Room qualifications still deliver")
-    }
-
-    @Test fun scheduleDeliveryUsesRoomTitleAndRejectsCancelledDisabledDeletedAndEarlyOccurrences() = runTest {
-        val current = schedule(now.plusSeconds(600))
-        val intent = scheduleIntent(current, 37L).putExtra(ScheduleReminderReceiver.EXTRA_TITLE, "forged")
-        deliver(scheduleReceiver(), intent)
-        assertEquals("Room schedule", notifications.allNotifications.single().extras.getCharSequence("android.text"))
-        context.getSystemService(NotificationManager::class.java).cancelAll()
-        schedules.saveException(ScheduleException(current.id, current.startAt!!.atOffset(ZoneOffset.UTC).toLocalDate(), true))
-        deliver(scheduleReceiver(), intent)
-        assertEquals(0, notifications.size())
-        schedules.saveException(ScheduleException(current.id, current.startAt!!.atOffset(ZoneOffset.UTC).toLocalDate(), false))
-        settings.updateSettings { it.copy(scheduleReminders = false) }
-        deliver(scheduleReceiver(), intent)
-        assertEquals(0, notifications.size())
-        settings.updateSettings { it.copy(scheduleReminders = true) }
-        schedules.saveSchedule(current.copy(reminderMinutes = 1))
-        deliver(scheduleReceiver(), intent)
-        assertEquals(0, notifications.size())
-        schedules.deleteSchedule(current.id)
-        deliver(scheduleReceiver(), intent)
-        assertEquals(0, notifications.size())
-    }
-
-    @Test fun toggleOffDuringEntityReadIsRecheckedBeforePost() = runTest {
-        val current = todo(now.plusSeconds(600))
-        val observed = object : TodoRepository by todos {
-            override suspend fun getAllTodos(): List<Todo> {
-                val rows = todos.getAllTodos()
-                settings.updateSettings { it.copy(todoReminders = false) }
-                return rows
+    @Test fun v1SwitchChangedDuringSubscriptionReadIsCheckedAgainBeforePosting() = runTest {
+        val originalZone = java.util.TimeZone.getDefault()
+        java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone(ZoneOffset.ofHours(12 - Instant.now().atOffset(ZoneOffset.UTC).hour)))
+        try {
+            val current = dueSubscription(Instant.now())
+            val observed = object : com.example.lifemanager.domain.repository.SubscriptionRepository by subscriptions {
+                override suspend fun getSubscription(id: Long): Subscription? {
+                    val row = subscriptions.getSubscription(id)
+                    // Already under the receiver's original admission. No nested coordinator.
+                    settings.update(DataGeneration(37)) { it.copy(subscriptionReminders = false) }
+                    return row
+                }
             }
-        }
-        deliver(todoReceiver(observed), todoIntent(current, 37L))
-        assertEquals(0, notifications.size())
+            val dispatcher = StandardTestDispatcher(testScheduler)
+            val receiver = SubscriptionReminderReceiver({ observed }, { subscriptionScheduler },
+                { ReminderBroadcastRunner(coordinator, dispatcher) }, { calibrations++ }, { settings })
+            deliver(receiver, currentPayload(current))
+            assertEquals(0, notifications.size())
+            assertTrue(alarms.scheduledAlarms.isEmpty())
+            assertEquals(false, settings.observe().first().subscriptionReminders)
+            assertTrue(assertNotNull(subscriptions.getSubscription(current.id)).isActive)
+            assertEquals(setOf(1), subscriptions.getReminderDays(current.id))
+            assertEquals(false, SubscriptionReminderScheduler.wasDelivered(context, current.id, 1,
+                current.nextBillingDate, DataGeneration(37)))
+        } finally { java.util.TimeZone.setDefault(originalZone) }
     }
 
-    @Test fun lostPostCommitCleanupIsRecoveredFromGenerationAndOperationalInventory() = runTest {
-        val current = todo(now.plusSeconds(7200))
-        reconciler.reconcile()
-        val oldAlarm = Intent(shadowOf(alarms.scheduledAlarms.single().operation).savedIntent)
-        NotificationHelper.showTodoReminder(context, current.id, "old", DataGeneration(37))
-        coordinator.withSession { session -> coordinator.withMaintenance(session) {
-            generations.commit(session.generation) { todos.deleteTodo(current.id) }
-        } }
-        // Equivalent to losing in-memory postcommit cleanup: a fresh pass has no old business rows.
-        reconciler.reconcile()
+    @Test fun unreadableV1FlagFailsClosedAndRequestsFreshCalibrationWithoutPosting() = runTest {
+        val current = dueSubscription(Instant.now())
+        database.openHelper.writableDatabase.execSQL("UPDATE app_settings SET subscriptionReminders=3")
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        deliver(SubscriptionReminderReceiver({ subscriptions }, { subscriptionScheduler },
+            { ReminderBroadcastRunner(coordinator, dispatcher) }, { calibrations++ }, { settings }), currentPayload(current))
+        assertEquals(0, notifications.size())
         assertTrue(alarms.scheduledAlarms.isEmpty())
-        assertEquals(0, notifications.size())
-        deliver(todoReceiver(), oldAlarm)
-        assertEquals(0, notifications.size())
+        assertEquals(1, calibrations)
+        assertEquals(false, SubscriptionReminderScheduler.wasDelivered(context, current.id, 1,
+            current.nextBillingDate, DataGeneration(37)))
+        assertEquals(DataGeneration(37), generations.current())
     }
 
-    @Test fun unreadableSettingsFailClosedWithoutDefaultingOrPosting() = runTest {
-        val current = todo(now.plusSeconds(600))
-        database.openHelper.writableDatabase.execSQL("DELETE FROM app_settings")
-        deliver(todoReceiver(), todoIntent(current, 37L))
-        assertEquals(0, notifications.size())
-        assertFailsWith<IllegalStateException> { reconciler.reconcile() }
-        assertTrue(alarms.scheduledAlarms.isEmpty())
-    }
+    private fun currentPayload(subscription: Subscription) = Intent()
+        .setData(Uri.parse(ReminderKey.subscriptionData(subscription.id, 1, subscription.nextBillingDate)))
+        .putExtra(SubscriptionReminderReceiver.EXTRA_SUBSCRIPTION_ID, subscription.id)
+        .putExtra(SubscriptionReminderReceiver.EXTRA_DAYS_BEFORE, 1)
+        .putExtra(SubscriptionReminderReceiver.EXTRA_DUE_DATE, subscription.nextBillingDate.toString())
+        .putExtra(ReminderGeneration.EXTRA, 37L)
 
     @Test fun consumedSubscriptionAlarmDuringCancelledFreezeIsRearmedNotMistakenForPendingIntent() = runTest {
         var clock = Instant.parse("2026-10-05T08:00:00Z")
@@ -218,39 +153,16 @@ class ReminderSafetyIntegrationTest {
         context.getSystemService(AlarmManager::class.java).cancel(old) // OS consumed the alarm, PI still exists.
         coordinator.withSession {
             val dispatcher = StandardTestDispatcher(testScheduler)
-            deliver(SubscriptionReminderReceiver({ subscriptions }, { subscriptionScheduler }, dispatcher,
+            deliver(SubscriptionReminderReceiver({ subscriptions }, { subscriptionScheduler },
                 { ReminderBroadcastRunner(coordinator, dispatcher) }, { calibrations++ }, { settings }), payload)
         } // Equivalent to declining the final confirmation: no generation/data change.
-        reconciler.reconcile()
+        reconcileSubscriptions()
         assertEquals(1, alarms.scheduledAlarms.size)
         val rearmed = alarms.scheduledAlarms.single()
         assertEquals(clock.toEpochMilli() + 1_000, rearmed.triggerAtTime)
         assertEquals(DataGeneration(37), ReminderGeneration.read(shadowOf(rearmed.operation!!).savedIntent))
         assertEquals(current.nextBillingDate.toString(), shadowOf(rearmed.operation!!).savedIntent.getStringExtra(SubscriptionReminderReceiver.EXTRA_DUE_DATE))
         assertEquals(1, calibrations)
-        assertEquals(0, notifications.size())
-    }
-
-    @Test fun scheduleDueDuringCancelledFreezeAndDelayedInexactDeliveryRemainRecoverable() = runTest {
-        var clock = Instant.parse("2026-10-05T08:00:00Z")
-        val state = ReminderSchedulingState(generations, settings)
-        scheduleScheduler = ScheduleReminderScheduler(context, { state }, { schedules }, { clock })
-        reconciler = ReminderReconciler(todos, todoScheduler, schedules, scheduleScheduler, subscriptions,
-            subscriptionScheduler, coordinator, settings, ReminderNotifications(context))
-        val current = schedule(Instant.parse("2026-10-05T09:10:00Z"))
-        scheduleScheduler.scheduleCurrent(current)
-        val old = alarms.scheduledAlarms.single().operation!!
-        val payload = Intent(shadowOf(old).savedIntent)
-        clock = Instant.parse("2026-10-05T09:00:00Z")
-        context.getSystemService(AlarmManager::class.java).cancel(old)
-        coordinator.withSession { deliver(scheduleReceiver(), payload) }
-        reconciler.reconcile()
-        assertEquals(1, alarms.scheduledAlarms.size)
-        assertEquals(clock.toEpochMilli() + 1_000, alarms.scheduledAlarms.single().triggerAtTime)
-        // A second fresh calibration must not drop an overdue but still undelivered inexact alarm.
-        reconciler.reconcile()
-        assertEquals(1, alarms.scheduledAlarms.size)
-        assertEquals(current.startAt!!.toEpochMilli(), shadowOf(alarms.scheduledAlarms.single().operation!!).savedIntent.getLongExtra(ScheduleReminderReceiver.EXTRA_OCCURRENCE_START, -1))
         assertEquals(0, notifications.size())
     }
 
@@ -275,45 +187,6 @@ class ReminderSafetyIntegrationTest {
         assertEquals(current.nextBillingDate.toString(), shadowOf(retry.operation!!).savedIntent.getStringExtra(SubscriptionReminderReceiver.EXTRA_DUE_DATE))
     }
 
-    @Test @Config(shadows = [RetryAlarmService::class])
-    fun failedScheduleRearmRetainsOverdueOccurrenceForNextRetry() = runTest {
-        var clock = Instant.parse("2026-10-05T08:00:00Z")
-        val state = ReminderSchedulingState(generations, settings)
-        val scheduler = ScheduleReminderScheduler(context, { state }, { schedules }, { clock })
-        val current = schedule(Instant.parse("2026-10-05T09:10:00Z"))
-        scheduler.scheduleCurrent(current)
-        clock = Instant.parse("2026-10-05T09:00:00Z")
-        RetryAlarmService.failNext = true
-        assertFailsWith<IllegalStateException> { scheduler.scheduleCurrent(current) }
-        scheduler.scheduleCurrent(current)
-        assertEquals(clock.toEpochMilli() + 1_000, alarms.scheduledAlarms.single().triggerAtTime)
-        assertEquals(current.startAt!!.toEpochMilli(), shadowOf(alarms.scheduledAlarms.single().operation!!).savedIntent.getLongExtra(ScheduleReminderReceiver.EXTRA_OCCURRENCE_START, -1))
-    }
-
-    @Test fun admittedScheduleReadFailureRetainsHintAndRequestsFreshRetry() = runTest {
-        val current = schedule(now.plusSeconds(600))
-        val hint = ScheduleAlarmOccurrenceStore(context)
-        hint.remember(current.id, current.startAt!!.toEpochMilli(), DataGeneration(37))
-        var failRead = true
-        val repository = object : ScheduleRepository by schedules {
-            override suspend fun getSchedules(): List<Schedule> {
-                if (failRead) error("synthetic temporary read failure")
-                return schedules.getSchedules()
-            }
-        }
-        val dispatcher = StandardTestDispatcher(testScheduler)
-        val receiver = ScheduleReminderReceiver(dispatcher, { ReminderBroadcastRunner(coordinator, dispatcher) },
-            { calibrations++ }, { repository }, { settings })
-        deliver(receiver, scheduleIntent(current, 37L))
-        assertEquals(current.startAt!!.toEpochMilli(), hint.pending(current.id, DataGeneration(37)))
-        assertEquals(1, calibrations)
-        assertEquals(0, notifications.size())
-        failRead = false
-        deliver(receiver, scheduleIntent(current, 37L))
-        assertEquals(null, hint.pending(current.id, DataGeneration(37)))
-        assertEquals(1, notifications.size())
-    }
-
     @Test fun admittedSubscriptionReadFailureRequestsRecoveryOfConsumedTodayAlarm() = runTest {
         val originalZone = java.util.TimeZone.getDefault()
         java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone(ZoneOffset.ofHours(12 - Instant.now().atOffset(ZoneOffset.UTC).hour)))
@@ -335,12 +208,12 @@ class ReminderSafetyIntegrationTest {
                 }
             }
             val dispatcher = StandardTestDispatcher(testScheduler)
-            deliver(SubscriptionReminderReceiver({ repository }, { subscriptionScheduler }, dispatcher,
+            deliver(SubscriptionReminderReceiver({ repository }, { subscriptionScheduler },
                 { ReminderBroadcastRunner(coordinator, dispatcher) }, { calibrations++ }, { settings }), payload)
             assertEquals(0, notifications.size())
             assertEquals(1, calibrations)
             failRead = false
-            reconciler.reconcile()
+            reconcileSubscriptions()
             assertEquals(clock.toEpochMilli() + 1_000, alarms.scheduledAlarms.single().triggerAtTime)
         } finally { java.util.TimeZone.setDefault(originalZone) }
     }
@@ -352,10 +225,10 @@ class ReminderSafetyIntegrationTest {
             val zone = java.time.ZoneId.systemDefault()
             var clock = LocalDate.now().atTime(8, 0).atZone(zone).toInstant()
             var cancelRead = false
-            val guardedSettings = object : com.example.lifemanager.domain.repository.SettingsRepository by settings {
-                override suspend fun getSettings(): com.example.lifemanager.domain.model.AppSettings {
+            val guardedSettings = object : V1SettingsRepository by settings {
+                override fun observe(): Flow<V1AppSettings> = flow {
                     if (cancelRead) throw kotlinx.coroutines.CancellationException("synthetic rearm timeout")
-                    return settings.getSettings()
+                    emit(settings.observe().first())
                 }
             }
             val state = ReminderSchedulingState(generations, guardedSettings)
@@ -369,7 +242,7 @@ class ReminderSafetyIntegrationTest {
             clock = Instant.now()
             cancelRead = true
             val dispatcher = StandardTestDispatcher(testScheduler)
-            deliver(SubscriptionReminderReceiver({ subscriptions }, { scheduler }, dispatcher,
+            deliver(SubscriptionReminderReceiver({ subscriptions }, { scheduler },
                 { ReminderBroadcastRunner(coordinator, dispatcher) }, { calibrations++ }, { settings }), payload)
             assertEquals(0, notifications.size(), "Cancellation before posting must suppress delivery")
             cancelRead = false
@@ -397,14 +270,14 @@ class ReminderSafetyIntegrationTest {
             val entered = kotlinx.coroutines.CompletableDeferred<Unit>()
             val resume = kotlinx.coroutines.CompletableDeferred<Unit>()
             var reads = 0
-            val observed = object : com.example.lifemanager.domain.repository.SettingsRepository by settings {
-                override suspend fun getSettings(): com.example.lifemanager.domain.model.AppSettings {
+            val observed = object : V1SettingsRepository by settings {
+                override fun observe(): Flow<V1AppSettings> = flow {
                     if (++reads == 2) { entered.complete(Unit); resume.await() }
-                    return settings.getSettings()
+                    emit(settings.observe().first())
                 }
             }
             val dispatcher = StandardTestDispatcher(testScheduler)
-            fun receiver() = SubscriptionReminderReceiver({ subscriptions }, { subscriptionScheduler }, dispatcher,
+            fun receiver() = SubscriptionReminderReceiver({ subscriptions }, { subscriptionScheduler },
                 { ReminderBroadcastRunner(coordinator, dispatcher) }, { calibrations++ }, { observed })
             val first = beginDelivery(receiver(), payload)
             val deadline = System.nanoTime() + 5_000_000_000L
@@ -436,7 +309,7 @@ class ReminderSafetyIntegrationTest {
             subscriptionScheduler.scheduleCurrent(current, setOf(1))
             val old = Intent(shadowOf(alarms.scheduledAlarms.single().operation!!).savedIntent)
             val dispatcher = StandardTestDispatcher(testScheduler)
-            fun receiver() = SubscriptionReminderReceiver({ subscriptions }, { subscriptionScheduler }, dispatcher,
+            fun receiver() = SubscriptionReminderReceiver({ subscriptions }, { subscriptionScheduler },
                 { ReminderBroadcastRunner(coordinator, dispatcher) }, { calibrations++ }, { settings })
             clock = Instant.now()
             deliver(receiver(), old)
@@ -464,10 +337,10 @@ class ReminderSafetyIntegrationTest {
             val zone = java.time.ZoneId.systemDefault()
             var clock = LocalDate.now().atTime(8, 0).atZone(zone).toInstant()
             var cancelFuture = false
-            val guarded = object : com.example.lifemanager.domain.repository.SettingsRepository by settings {
-                override suspend fun getSettings(): com.example.lifemanager.domain.model.AppSettings {
+            val guarded = object : V1SettingsRepository by settings {
+                override fun observe(): Flow<V1AppSettings> = flow {
                     if (cancelFuture && CountingSubscriptionNotifications.posts > 0) throw kotlinx.coroutines.CancellationException("synthetic post-marker interruption")
-                    return settings.getSettings()
+                    emit(settings.observe().first())
                 }
             }
             val state = ReminderSchedulingState(generations, guarded)
@@ -480,7 +353,7 @@ class ReminderSafetyIntegrationTest {
             context.getSystemService(AlarmManager::class.java).cancel(old)
             clock = Instant.now(); cancelFuture = true
             val dispatcher = StandardTestDispatcher(testScheduler)
-            fun receiver() = SubscriptionReminderReceiver({ subscriptions }, { scheduler }, dispatcher,
+            fun receiver() = SubscriptionReminderReceiver({ subscriptions }, { scheduler },
                 { ReminderBroadcastRunner(coordinator, dispatcher) }, { calibrations++ }, { settings })
             deliver(receiver(), payload)
             assertEquals(1, CountingSubscriptionNotifications.posts)
@@ -499,34 +372,6 @@ class ReminderSafetyIntegrationTest {
         return value.copy(id = subscriptions.saveSubscription(value, setOf(1)))
     }
 
-    private suspend fun todo(due: Instant): Todo {
-        val value = Todo(title = "Room todo", dueAt = due)
-        return value.copy(id = todos.saveTodo(value, emptyList()))
-    }
-    private suspend fun schedule(start: Instant): Schedule {
-        val value = Schedule(title = "Room schedule", startAt = start, endAt = start.plusSeconds(3600), reminderMinutes = 15, timeZone = "UTC")
-        return value.copy(id = schedules.saveSchedule(value))
-    }
-    private suspend fun subscription(): Subscription {
-        val value = Subscription(appName = "Room subscription", amountMinor = 100, billingCycle = BillingCycle.MONTHLY,
-            nextBillingDate = LocalDate.now().plusDays(7), startDate = LocalDate.now(), createdAt = now, updatedAt = now)
-        return value.copy(id = subscriptions.saveSubscription(value, setOf(1)))
-    }
-    private fun TestScope.todoReceiver(repository: TodoRepository = todos): TodoReminderReceiver {
-        val dispatcher = StandardTestDispatcher(testScheduler)
-        return TodoReminderReceiver({ repository }, dispatcher, { ReminderBroadcastRunner(coordinator, dispatcher) }, { calibrations++ }, { settings })
-    }
-    private fun TestScope.scheduleReceiver(): ScheduleReminderReceiver {
-        val dispatcher = StandardTestDispatcher(testScheduler)
-        return ScheduleReminderReceiver(dispatcher, { ReminderBroadcastRunner(coordinator, dispatcher) }, { calibrations++ }, { schedules }, { settings })
-    }
-    private fun todoIntent(todo: Todo, source: Long?) = Intent().setData(Uri.parse("lifemanager://todo-reminder/${todo.id}"))
-        .putExtra(TodoReminderReceiver.EXTRA_TODO_ID, todo.id).putExtra(TodoReminderReceiver.EXTRA_DUE_AT, todo.dueAt!!.toEpochMilli())
-        .apply { source?.let { putExtra(ReminderGeneration.EXTRA, it) } }
-    private fun scheduleIntent(schedule: Schedule, source: Long?) = Intent().setData(Uri.parse("lifemanager://schedule-reminder/${schedule.id}"))
-        .putExtra(ScheduleReminderReceiver.EXTRA_SCHEDULE_ID, schedule.id)
-        .putExtra(ScheduleReminderReceiver.EXTRA_OCCURRENCE_START, schedule.startAt!!.toEpochMilli())
-        .apply { source?.let { putExtra(ReminderGeneration.EXTRA, it) } }
 
     private fun TestScope.deliver(receiver: BroadcastReceiver, payload: Intent) {
         awaitDelivery(beginDelivery(receiver, payload))

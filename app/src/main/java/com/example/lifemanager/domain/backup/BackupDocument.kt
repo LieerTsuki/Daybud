@@ -27,7 +27,3 @@ interface BackupCodec {
     fun encode(document: BackupDocument): ByteArray
     fun decode(bytes: ByteArray): BackupDocument
 }
-
-interface BackupRepository {
-    suspend fun snapshot(): BackupPayload
-}

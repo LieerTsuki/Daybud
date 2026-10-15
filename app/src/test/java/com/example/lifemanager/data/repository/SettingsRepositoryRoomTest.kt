@@ -1,11 +1,15 @@
 package com.example.lifemanager.data.repository
 
 import android.app.Application
-import androidx.room.Room
-import com.example.lifemanager.data.local.LifeManagerDatabase
+import com.example.lifemanager.data.local.LifeManagerDatabaseFactory
+import com.example.lifemanager.data.local.V6RoomFixture
+import com.example.lifemanager.data.plan.RoomV1SettingsRepository
+import com.example.lifemanager.domain.maintenance.DataGeneration
 import com.example.lifemanager.domain.model.DateFormat
 import com.example.lifemanager.domain.model.ThemeMode
+import com.example.lifemanager.domain.model.V1AppSettings
 import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -16,121 +20,92 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.SQLiteMode
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28], application = Application::class)
 @SQLiteMode(SQLiteMode.Mode.NATIVE)
 class SettingsRepositoryRoomTest {
-    private lateinit var database: LifeManagerDatabase
-    private lateinit var repository: SettingsRepositoryImpl
+    private lateinit var fixture: V6RoomFixture
+    private val database get() = fixture.database
+    private lateinit var repository: RoomV1SettingsRepository
+    private val generation = DataGeneration(0)
     @Before fun setup() {
-        database = Room.inMemoryDatabaseBuilder(RuntimeEnvironment.getApplication(), LifeManagerDatabase::class.java)
-            .addCallback(LifeManagerDatabase.INITIALIZE).build()
-        repository = SettingsRepositoryImpl(database)
+        fixture = V6RoomFixture()
+        repository = RoomV1SettingsRepository(database)
     }
-    @After fun cleanup() = database.close()
+    @After fun cleanup() = fixture.close()
 
-    @Test fun databaseCreationPersistsDefaultsAndFirstReadDoesNotWriteBusinessRecords(): Unit = runBlocking {
-        assertEquals(ThemeMode.SYSTEM, repository.observeSettings().first().theme)
-        assertEquals("CNY", repository.getSettings().defaultCurrency)
-        assertEquals("SYSTEM", database.settingsDao().get()!!.theme)
-        assertTrue(database.todoDao().getAll().isEmpty())
+    @Test fun productionDefaultsReadWithoutCreatingBusinessRecords(): Unit = runBlocking {
+        assertEquals(V1AppSettings(), repository.observe().first())
+        assertTrue(database.planDao().allEntities().isEmpty())
+        assertEquals(DataGeneration(0), DataGenerationRepositoryImpl(database).current())
     }
 
-    @Test fun observingSettingsIsSideEffectFreeEvenWithAnInsertRejectingTrigger(): Unit = runBlocking {
-        database.settingsDao().get() // Opens the real factory-initialized schema before installing the test trigger.
+    @Test fun firstAndSubsequentFiniteObservationsNeverInitializeSettings(): Unit = runBlocking {
         database.openHelper.writableDatabase.execSQL(
-            "CREATE TRIGGER test_no_observation_insert BEFORE INSERT ON app_settings BEGIN SELECT RAISE(ABORT, 'observation must not initialize'); END",
-        )
-        assertEquals(ThemeMode.SYSTEM, repository.observeSettings().first().theme)
+            "CREATE TRIGGER reject_read_insert BEFORE INSERT ON app_settings BEGIN SELECT RAISE(ABORT, 'read must not initialize'); END")
+        repeat(2) { assertEquals(V1AppSettings(), repository.observe().first()) }
     }
 
-    @Test fun observingMissingSettingsFailsInsteadOfRepairingDuringSubscription(): Unit = runBlocking {
+    @Test fun missingSettingsReadAndUpdateFailWithoutRecreationOrTransformation(): Unit = runBlocking {
         database.openHelper.writableDatabase.execSQL("DELETE FROM app_settings")
-        assertFailsWith<IllegalStateException> { repository.observeSettings().first() }
-        assertEquals(null, database.settingsDao().get())
-    }
-
-    @Test fun finiteSettingsReadDoesNotAttemptAnInitializationWrite(): Unit = runBlocking {
-        database.settingsDao().get()
-        database.openHelper.writableDatabase.execSQL(
-            "CREATE TRIGGER test_no_finite_read_insert BEFORE INSERT ON app_settings BEGIN SELECT RAISE(ABORT, 'read must not initialize'); END",
-        )
-        assertEquals(ThemeMode.SYSTEM, repository.getSettings().theme)
-    }
-
-    @Test fun missingSettingsCannotBeSilentlyRecreatedByFiniteRead(): Unit = runBlocking {
-        database.openHelper.writableDatabase.execSQL("DELETE FROM app_settings")
-        assertFailsWith<IllegalStateException> { repository.getSettings() }
-        assertEquals(null, database.settingsDao().get())
-    }
-
-    @Test fun missingSettingsUpdateFailsBeforeTransformWithoutRecreatingDefaults(): Unit = runBlocking {
-        database.openHelper.writableDatabase.execSQL("DELETE FROM app_settings")
+        assertFailsWith<IllegalStateException> { repository.observe().first() }
         var transformed = false
         assertFailsWith<IllegalStateException> {
-            repository.updateSettings { transformed = true; it.copy(theme = ThemeMode.DARK) }
+            repository.update(generation) { transformed = true; it.copy(theme = ThemeMode.DARK) }
         }
-        assertEquals(false, transformed)
-        assertEquals(null, database.settingsDao().get())
+        assertFalse(transformed)
+        database.openHelper.readableDatabase.query("SELECT COUNT(*) FROM app_settings").use {
+            assertTrue(it.moveToFirst()); assertEquals(0, it.getInt(0))
+        }
     }
 
-    @Test fun settingsRoundTripRetainsIndependentFieldsAndAllReminderBits(): Unit = runBlocking {
-        repository.updateSettings { it.copy(theme = ThemeMode.DARK, dateFormat = DateFormat.DMY,
-            defaultCurrency = "USD", todoReminders = false, defaultReminderDays = setOf(1, 3, 7)) }
-        val reopenedRepository = SettingsRepositoryImpl(database)
-        val saved = reopenedRepository.observeSettings().first()
-        assertEquals(ThemeMode.DARK, saved.theme)
-        assertEquals(DateFormat.DMY, saved.dateFormat)
-        assertEquals("USD", saved.defaultCurrency)
-        assertEquals(setOf(1, 3, 7), saved.defaultReminderDays)
-        assertEquals(false, saved.todoReminders)
-        assertEquals(true, saved.scheduleReminders)
-        assertEquals(true, saved.subscriptionReminders)
+    @Test fun allReminderBitCombinationsRoundTripWithoutChangingIndependentFields(): Unit = runBlocking {
+        for (mask in 0..7) {
+            val days = listOf(1 to 1, 3 to 2, 7 to 4).filter { mask and it.second != 0 }.map { it.first }.toSet()
+            val expected = V1AppSettings(ThemeMode.DARK, DateFormat.DMY, "EUR", false, true, days)
+            assertEquals(expected, repository.update(generation) { expected })
+            assertEquals(expected, repository.observe().first())
+            database.openHelper.readableDatabase.query("SELECT defaultReminderMask FROM app_settings WHERE id=1").use {
+                assertTrue(it.moveToFirst()); assertEquals(mask, it.getInt(0))
+            }
+        }
+        assertEquals(generation, DataGenerationRepositoryImpl(database).current())
     }
 
-    @Test fun invalidCurrencyDoesNotOverwritePreviouslySavedSettings(): Unit = runBlocking {
-        repository.updateSettings { it.copy(theme = ThemeMode.DARK) }
-        assertFailsWith<IllegalArgumentException> { repository.updateSettings { it.copy(defaultCurrency = "INVALID") } }
-        assertEquals(ThemeMode.DARK, repository.getSettings().theme)
-        assertEquals("CNY", repository.getSettings().defaultCurrency)
+    @Test fun invalidCurrencyOrReminderDayCannotOverwriteSavedPreferences(): Unit = runBlocking {
+        val saved = repository.update(generation) { it.copy(theme = ThemeMode.DARK, defaultCurrency = "EUR") }
+        assertFailsWith<IllegalArgumentException> { repository.update(generation) { it.copy(defaultCurrency = "INVALID") } }
+        assertEquals(saved, repository.observe().first())
+        assertFailsWith<IllegalArgumentException> { repository.update(generation) { it.copy(defaultReminderDays = setOf(2)) } }
+        assertEquals(saved, repository.observe().first())
     }
 
-    @Test fun settingsSurviveClosingAndReopeningAFileBackedDatabase(): Unit = runBlocking {
+    @Test fun settingsSurviveProductionFactoryCloseAndReopen(): Unit = runBlocking {
         val context = RuntimeEnvironment.getApplication()
-        val name = "phase5-settings-${System.nanoTime()}.db"
-        fun open() = Room.databaseBuilder(context, LifeManagerDatabase::class.java, name)
-            .addMigrations(*LifeManagerDatabase.MIGRATIONS)
-            .addCallback(LifeManagerDatabase.INITIALIZE).build()
-        var fileDatabase = open()
+        val name = "e6-preferences-${System.nanoTime()}.db"
+        val expected = V1AppSettings(ThemeMode.LIGHT, DateFormat.MDY, "USD", false, false, setOf(1, 7))
         try {
-            SettingsRepositoryImpl(fileDatabase).updateSettings { it.copy(theme = ThemeMode.DARK,
-                dateFormat = DateFormat.MDY, defaultCurrency = "EUR", defaultReminderDays = setOf(1, 7)) }
-            fileDatabase.close()
-            fileDatabase = open()
-            val saved = SettingsRepositoryImpl(fileDatabase).getSettings()
-            assertEquals(ThemeMode.DARK, saved.theme)
-            assertEquals(DateFormat.MDY, saved.dateFormat)
-            assertEquals("EUR", saved.defaultCurrency)
-            assertEquals(setOf(1, 7), saved.defaultReminderDays)
-        } finally { fileDatabase.close(); context.deleteDatabase(name) }
+            val first = LifeManagerDatabaseFactory.open(context, name)
+            try { RoomV1SettingsRepository(first).update(generation) { expected } } finally { first.close() }
+            val reopened = LifeManagerDatabaseFactory.open(context, name)
+            try { assertEquals(expected, RoomV1SettingsRepository(reopened).observe().first()) } finally { reopened.close() }
+        } finally { context.deleteDatabase(name) }
     }
 
-    @Test fun unsupportedReminderOffsetDoesNotOverwriteSelection(): Unit = runBlocking {
-        repository.updateSettings { it.copy(defaultReminderDays = setOf(3)) }
-        assertFailsWith<IllegalArgumentException> { repository.updateSettings { it.copy(defaultReminderDays = setOf(2)) } }
-        assertEquals(setOf(3), repository.getSettings().defaultReminderDays)
+    @Test fun concurrentIndependentTransformsReadLatestCommittedPreference(): Unit = runBlocking {
+        coroutineScope {
+            val theme = async { repository.update(generation) { it.copy(theme = ThemeMode.DARK) } }
+            val currency = async { repository.update(generation) { it.copy(defaultCurrency = "EUR") } }
+            theme.await(); currency.await()
+        }
+        assertEquals(V1AppSettings(theme = ThemeMode.DARK, defaultCurrency = "EUR"), repository.observe().first())
     }
 
-    @Test fun concurrentIndependentUpdatesDoNotLoseEitherPreference(): Unit = runBlocking {
-        val theme = async { repository.updateSettings { it.copy(theme = ThemeMode.DARK) } }
-        val currency = async { repository.updateSettings { it.copy(defaultCurrency = "EUR") } }
-        theme.await(); currency.await()
-        val saved = repository.getSettings()
-        assertEquals(ThemeMode.DARK, saved.theme)
-        assertEquals("EUR", saved.defaultCurrency)
+    @Test fun sequentialDayChangesDoNotLoseEarlierCommitBeforeObservation(): Unit = runBlocking {
+        repository.update(generation) { it.copy(defaultReminderDays = it.defaultReminderDays + 1) }
+        repository.update(generation) { it.copy(defaultReminderDays = it.defaultReminderDays + 7) }
+        assertEquals(setOf(1, 7), repository.observe().first().defaultReminderDays)
     }
 }

@@ -3,22 +3,24 @@ package com.example.lifemanager.notification
 import android.content.Context
 import com.example.lifemanager.domain.maintenance.DataGeneration
 import com.example.lifemanager.domain.maintenance.DataGenerationRepository
-import com.example.lifemanager.domain.model.AppSettings
-import com.example.lifemanager.domain.repository.SettingsRepository
+import com.example.lifemanager.domain.maintenance.MaintenanceCoordinator
+import com.example.lifemanager.domain.model.V1AppSettings
+import com.example.lifemanager.domain.repository.V1SettingsRepository
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.first
 
-/** Caller already owns global admission then its module lock. No nested admission here. */
+/** Caller owns original admission and its module lock. Read fresh V1 facts without reacquiring either. */
 @Singleton
 class ReminderSchedulingState @Inject constructor(
     private val generations: DataGenerationRepository,
-    private val settings: SettingsRepository,
+    private val settings: V1SettingsRepository,
 ) {
-    suspend fun read(): Pair<DataGeneration, AppSettings> = generations.current() to settings.getSettings()
+    suspend fun read(): Pair<DataGeneration, V1AppSettings> = generations.current() to settings.observe().first()
 
     companion object {
         fun fromApplication(context: Context): ReminderSchedulingState =
@@ -31,10 +33,11 @@ class ReminderSchedulingState @Inject constructor(
 @InstallIn(SingletonComponent::class)
 interface ReminderSafetyEntryPoint {
     fun reminderSchedulingState(): ReminderSchedulingState
-    fun settingsRepository(): SettingsRepository
-    fun scheduleRepository(): com.example.lifemanager.domain.repository.ScheduleRepository
+    fun settingsRepository(): V1SettingsRepository
+    fun maintenanceCoordinator(): MaintenanceCoordinator
+    fun reminderBroadcastRunner(): ReminderBroadcastRunner
 }
 
-internal fun reminderSettings(context: Context): SettingsRepository =
+internal fun reminderSettings(context: Context): V1SettingsRepository =
     EntryPointAccessors.fromApplication(context.applicationContext, ReminderSafetyEntryPoint::class.java)
         .settingsRepository()

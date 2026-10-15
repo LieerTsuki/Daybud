@@ -10,7 +10,7 @@ import java.time.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
-/** Read-only calendar preparation; detail/editor owns all business writes. */
+/** Read-only calendar owner; detail/editor owns all business writes. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class PlanCalendarViewModel(private val repository:PlanRepository,private val access:GenerationAccess,
     private val dispatcher:CoroutineDispatcher,private val clock:Clock=Clock.systemDefaultZone()):ViewModel() {

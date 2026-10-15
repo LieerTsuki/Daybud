@@ -1,7 +1,6 @@
 package com.example.lifemanager.data.local
 
 import android.content.Context
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.lifemanager.data.local.entity.SubscriptionEntity
@@ -21,16 +20,14 @@ import kotlin.test.assertEquals
 
 @RunWith(AndroidJUnit4::class)
 class SubscriptionDaoTest {
+    private lateinit var fixture: V6DeviceFixture
     private lateinit var database: LifeManagerDatabase
 
     @Before fun setUp() {
-        database = Room.inMemoryDatabaseBuilder(
-            ApplicationProvider.getApplicationContext<Context>(),
-            LifeManagerDatabase::class.java,
-        ).build()
+        fixture = V6DeviceFixture(); database = fixture.database
     }
 
-    @After fun tearDown() = database.close()
+    @After fun tearDown() = fixture.close()
 
     @Test fun invalidReminderRollsBackSubscriptionChange() = runBlocking {
         val repository = SubscriptionRepositoryImpl(database)

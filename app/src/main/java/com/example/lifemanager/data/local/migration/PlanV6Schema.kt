@@ -3,7 +3,7 @@ package com.example.lifemanager.data.local.migration
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-/** Shared target DDL; not registered with the production v5 database. */
+/** Shared v6 DDL and fresh-install defaults used by the production factory and migration fixtures. */
 object PlanV6Schema {
     internal const val SETTINGS = "CREATE TABLE app_settings (id INTEGER NOT NULL, theme TEXT NOT NULL, dateFormat TEXT NOT NULL, defaultCurrency TEXT NOT NULL, planReminders INTEGER NOT NULL, subscriptionReminders INTEGER NOT NULL, defaultReminderMask INTEGER NOT NULL, PRIMARY KEY(id))"
     internal fun createPlans(db: SupportSQLiteDatabase) {

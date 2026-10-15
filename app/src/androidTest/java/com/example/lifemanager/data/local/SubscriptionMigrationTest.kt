@@ -26,7 +26,7 @@ class SubscriptionMigrationTest {
             close()
         }
 
-        helper.runMigrationsAndValidate(TEST_DB, 4, true, *LifeManagerDatabase.MIGRATIONS).use { database ->
+        helper.runMigrationsAndValidate(TEST_DB, 4, true, *LifeManagerDatabase.LEGACY_MIGRATIONS).use { database ->
             database.query("SELECT name FROM habits WHERE id = 4").use { cursor ->
                 assertTrue(cursor.moveToFirst())
                 assertEquals("读书", cursor.getString(0))

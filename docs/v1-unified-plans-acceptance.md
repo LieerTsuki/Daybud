@@ -1,5 +1,73 @@
 # V1 统一计划分批验收
 
+## E6 · 第十九批：生产整体接线（2026-10-15，源码验收通过，未发布）
+
+范围已获用户确认，前置统计测试同步修复独立提交3ddbef6，远端已核对，main仍b016bcbc。首次schannel推送两次TLS握手失败；改用单次命令OpenSSL后成功，保持证书校验且未改origin/持久Git配置。
+
+### 执行过程（中间状态；最终结论另列）
+
+测试先行：V1ProductionDatabaseTest新增3项，通过实际LifeManagerDatabaseFactory打开新库、完整v5合成库及v4升级链；首编译因RuntimeEnvironment泛型调用和混合SQL绑定数组推断失败，修正后新库1项有效RED，其余2项测试fixture错误（旧schema实体可省略indices），不算业务RED；改为可选indices后3项全部有效RED（1m7s，40 tasks：4 executed/36 up-to-date，均期望v6实际v5）。尚未切换实现。
+
+并行分工限定文件：父任务负责生产库/维护DAO/Core DI/备份设置/旧源退役及文档；入口所有者负责Activity/统一导航/订阅默认值及对应测试；提醒所有者负责通知/Application/Boot/Manifest/提醒DI及对应测试；测试装置所有者仅移植或明确映射退役的旧业务测试，保留v1原始wire/hash/schema/迁移回滚契约。所有Gradle由父任务串行，编译/测试运行期间冻结源文件写入，不提交半切换状态。首次入口+提醒组合编译被测试直接调用protected onNewIntent阻止（22s），属于测试调用错误，修正将使用系统生命周期入口，不改变生产方法可见性。
+
+修正为Instrumentation.callActivityOnNewIntent后，组合44项/16失败（1m31s，40 tasks：5 executed/35 up-to-date）：提醒新增12项有10项失败，其中9项因缺失生产Application依赖、Receiver注册、Boot队列、旧Worker/Receiver退役得到有效行为RED；另1项最初错误期望过期token删除库存，现按已有C2契约核对保留未确认屏障、旧到达被拒且不追补，不把该期望修正记作产品修复。订阅新增3项因仍读旧设置得到有效RED。Activity3项均为Robolectric未运行AndroidX Startup导致WorkManager未初始化的测试环境错误，不计行为RED；用测试专用Application shadow先初始化WorkManager再直接执行真实LifeManagerApp.onCreate，不添加生产hook。其后进入原子接线，未为重跑旧Activity而重建已退役业务系统，因此不声称Activity专用RED已完成；最终必须在实际Hilt/Room/Activity图上验证GREEN。
+
+实现阶段补充实际生产工厂v2/v3及由未变v2三表重建v1的完整升级回归；v1缺失原始asset限制不变。旧纯Todo/Schedule规则、DTO与入口退役，保留稳定枚举、原始wire实体和迁移/codec；原始测试数字1400不作为本批目标。旧源码和测试仅在工作分支中删除，Git历史可恢复，不删除个人数据库或历史schema/APK。
+
+首次接线集成命令定向生产工厂/Activity/订阅VM/提醒激活：3m29s，35 tasks：20 executed/15 up-to-date；生产Kotlin与Hilt Java编译通过，生成生产schema6（13实体，identityHash f664a1eb646c605ac7e47de42a6fa4c2，与完整目标fixture一致）。JVM尚未执行：旧TopLevelNavigationTest仍引用已退役navigateTopLevel扩展、Activity测试Shadow.directlyOn泛型参数数量错误使测试编译失败。另出现3处导航Kotlin冗余空值警告，统一修正后重跑；不把本次编译失败称为测试RED或通过。设备TopLevelNavigationActivityTest尚待端口移植，本轮没有设备执行。
+
+独立源码审查：DB/CoreDI分项通过；完整生产接线未发现可操作正确性问题，要求修正旧TopLevelNavigationTest残留及SubscriptionScreenTest设备装置构造旧SettingsRepositoryImpl两处编译阻断。已纳入入口所有者的测试移植修复；仍需实际Gradle结果，不能以源审查代替运行证据。
+
+修正测试编译阻断并移植设备装置后，定向53项/6失败（2m31s，40 tasks：13 executed/27 up-to-date）。实际生产工厂6项、订阅VM29项、提醒激活12项全部通过；6项Activity仍未进入业务断言，自定义Application shadow未继承ShadowApplication，Robolectric在安装应用时ClassCastException。该失败仅计测试装置错误，不计业务RED，也不缩减真实Activity/Hilt验证范围。
+
+shadow继承修正后的首次全量：1122项/12失败（3m6s，99 tasks：28 executed/71 up-to-date）。Debug与androidTest已重新打包，设备测试Kotlin/Java编译通过，lint三个源分析已执行。恢复时核对最终lint XML时间仍为本批之前，说明失败命令未刷新最终报告；0 error/55 warning是历史报告，不能算本次lint完成证据，须等最终成功命令重新生成。JVM失败集中为Activity6项（首项切页后尚未出现目标控件，后五项WorkManager静态实例重复初始化）、生产工厂装置的DataGeneration5项native SQLite文件打开错误，以及既有PlanWorkspaceComposeTest旧回调用例在新列表发布前查找旧行的同步窗口。正在分别验证根因；不以构建/部分lint分析掩盖JVM失败，也不将1122与历史1400差值冒充新增数量。
+
+下一轮定向在Activity显式scenario.close清理中阻塞；jcmd线程栈证明SDK28主线程在ActivityScenario.waitForActivityToBecomeAnyOf等待自身生命周期关闭。核对PID为本任务GradleWorkerMain后只停止该测试JVM，未停止其他Java进程或删除文件；命令3m19s异常退出，仅12项已开始（5失败、1跳过），是中止诊断而非完整执行。后续改用外层RuleChain资源清理，让Compose规则先完成Activity生命周期，之后关闭WorkManager与实际Hilt数据库；真实Application.onCreate仍运行。
+
+诊断日志确认5项SQLite错误来自Windows测试临时路径：UUID库名47字符，失败项数据库路径252–263字符，journal路径260–271；成功项的journal路径238–256，所有父目录均存在。保留生产工厂及WAL行为，仅将测试临时库名缩短并移除诊断日志，不关闭WAL、不改生产路径/持久化策略。旧回调用例另以测试专用Flow闸门固定初始空快照/新行发布窗口，等待实际行为RED后补正确同步；不引入生产测试hook。
+
+第二次定向诊断表明RuleChain不能解决关闭阻塞：jcmd再次定位SDK28主线程经ActivityScenarioRule.after进入ActivityScenario.close等待生命周期。核对PID37428确为本任务GradleWorkerMain后仅停止该测试进程；上下文恢复后旧PTY会话已不可用，不补造该中止命令的数量或耗时，也不计作通过。接下来先独立运行非Activity两套测试，再根据本地Robolectric API改用直接驱动生命周期的测试夹具；保留真实MainActivity/Application/Hilt/Room及全部业务断言，设备ActivityScenario测试不变。
+
+非Activity定向15项/1失败（2m25s，40 tasks：1 executed/39 up-to-date）：DataGenerationRepositoryRoomTest的10项全部通过，验证短文件名装置；PlanWorkspaceComposeTest的5项仅闸门用例失败，实际为未发布的“旧数据”行不存在，得到预期同步RED。测试修正为放行后等待当前世代、非加载且指定ID/标题行真正发布，再捕获原回调；全部过期回调断言保留，独立只读复审无可操作问题。该GREEN源的立即放行不单独证明延迟，确定性窗口证据来自前述实际RED。
+
+Activity JVM装置在核对本地Robolectric API后改为createEmptyComposeRule和ActivityController直接setup/recreate/close，Compose环境存活至Activity销毁，外层资源规则随后清理WorkManager和实际Hilt Room。六项业务用例、九个真实VM保留断言、真实Application.onCreate和设备ActivityScenario测试均保留，不改变生产生命周期或方法可见性。正在执行组合验证，尚不据源码声称通过。
+
+直接生命周期装置组合58项/3失败（4m15s，40 tasks：7 executed/33 up-to-date），完整结束且无关闭阻塞。DataGeneration10、PlanWorkspace5及三套导航37项全部通过；Activity6项有3项通过，余下两项对尚未组合的LazyColumn“保存计划/返回计划”调用performScrollTo找不到节点，一项首次草稿就绪等待未驱动暂停主线程而超时（实际栈在切页循环之前，不是切页后断言）。核对已通过装置的滚动/等待方式后，改为懒列表容器滚至节点、VM等待时调用waitForIdle，并复用已有目的地等待；不据此改业务草稿/导航保护。
+
+修正后同一组合58项/1失败（2m40s，40 tasks：5 executed/35 up-to-date），九VM保留/草稿通知重建均通过。剩余真实Activity保存闭环已经成功写入并完成，失败位于返回列表、点击已完成筛选后的指定行等待；不把helper行号当作保存失败。继续采集列表状态和真实行诊断，确认点击/列表发布边界后再修改，尚未提交。
+
+单项诊断1项/1失败（1m54s，40 tasks：5 executed/35 up-to-date）确认并非数据库或列表读取错误：点击前后列表available=true、loading=false、status=UNFINISHED，真实Room行的ID/标题/完成值均正确。语义树显示被hasText("已完成")选中的是编辑器回执纯文本（无OnClick），实际状态筛选Chip尚未滚入；文字重复造成测试误点，并非筛选不生效。修正测试匹配为同文字且hasClickAction的真实筛选控件，断言enabled后点击并等待COMPLETED及指定行；去除临时状态/语义/数据库诊断，不添加生产hook或修改查询/保护规则。
+
+### 实现边界
+
+- 生产工厂继续打开同名life-manager.db，注册完整1→6迁移与新建默认值；历史1→5保留独立数组和旧列初始化，5→6复用既有事务迁移。坏源/溢出/转换失败明确拒绝，不清库或重置本机世代。新建世代0；升级推进一次。生产schema6为KAPT生成的13实体，identityHash与目标装置一致，历史2–5资产不改。
+- 统一计划、打卡、订阅、新偏好、V2快照/原子维护与提醒共享Hilt生产数据库单例和维护协调器；维护专用DAO不依赖设置DAO，本机世代严格检查唯一id=1、INTEGER且非负，异常不修复。V2是唯一新导出，V1先原hash/原始字段严格验证再转换，不将旧payload写入新表。
+- MainActivity保留七个新版VM和两个既有Hilt模块VM，四入口为计划/打卡/订阅/设置。订阅默认值读新版偏好；计划/订阅通知均核对原世代和消费身份，混杂的无效计划信封不能降级套用订阅元数据，旧ID只安全回首页。草稿、备份busy、维护和过期确认保护继续有效。
+- Application注册通知渠道、统一周期/即时校准与私有暂存初始化；Boot只提交原因，后台重新读取当前事实。旧持久Worker可反射创建并安全排空；旧Todo/ScheduleReceiver保留组件身份但拒绝访问退役表，精确旧闹钟清理仍保留，不保留第二条旧业务写入/通知投递路径。
+- 旧正常CRUD/仓库/VM/页面、旧设置与旧备份维护所有者退役，保留迁移/原V1 wire/hash/枚举/通知兼容必要类型。测试移植及退役保证见[覆盖映射](e6-test-coverage-mapping.md)；不声称每个旧所有者的协程交错逐项等价，也不为维持历史条数保留第二套产品。
+
+### 最终验证与结论
+
+最后匹配修正和三处过时源码注释更新后，冻结所有测试/生产源，串行执行：
+
+```powershell
+$env:JAVA_HOME='D:\jdk'
+.\.tools\gradle-9.4.1\bin\gradle.bat -I .\.tools\phase5-test-network.gradle :app:testDebugUnitTest --rerun :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --console=plain
+git diff --check
+```
+
+BUILD SUCCESSFUL，8m47s，101 tasks（23 executed/78 up-to-date）。实际最终XML汇总1122项/92 suites，failure/error/skipped均0；生产工厂6项、提醒激活12项、真实Activity6项、PlanWorkspace5项在全量中全部通过。相比前置基线1400项/120 suites的差异来自旧正常所有者用例退役、移植与新增，详见覆盖映射，不冒充新增数量或声称所有协程交错等价。JVM强制重跑，不使用定向结果或编译成功代替全量。
+
+Debug重新打包；androidTest本轮KAPT执行，Kotlin/Java与包均UP-TO-DATE构建检查，首次E6集成时已重新编译/打包，但本批没有设备执行。lint三类源重新分析且最终报告成功生成；实际XML更新时间2026-10-15 15:11:23，0 error/47 warning，不使用11:02旧报告的55数字。警告包括依赖/AGP/KAPT建议、兼容API/旧用法、图标与未使用资源，不声称零警告；既有AGP/KAPT和测试deprecated编译提示仍保留。资源CloseGuard日志仍可在测试XML中观察到，不由日志所在测试名推断资源归属，不宣称消除泄漏。
+
+独立只读审查覆盖DB/CoreDI、生产整体接线、设备装置移植、测试库路径/Flow同步及真实Activity生命周期/最后控件匹配，最终无可操作遗留问题。审查不能替代运行；前述源码修改后已执行本次全量。没有放宽世代/草稿/备份边界、删除六项Activity业务断言或增加生产测试hook。README、CHANGELOG未发布区、计划、schema/备份格式与覆盖映射同步，git diff --check通过；仅按既有授权提交推送当前功能分支，不能据此称F完成或V1已发布。
+
+最终文档复审另独立核对实际XML、lint更新时间、schema实体/指纹及历史结果边界，无阻断问题；README备份章节一处“正在接入”遗留描述已改为“已接入（源码验收通过，未发布）”。这一步仅修改文档，不改变已验证生产/测试源。提交前路径范围、禁止提交产物/常见密钥模式扫描未发现问题；这不是对所有潜在敏感内容的绝对保证。
+
+### 本批不包含
+
+应用版本仍0.1.1/code2，本分支源码schema6不等于已发布0.1.1/schema5。没有main合并、APK发布/安装、个人数据操作、connectedAndroidTest、实际设备旋转/进程死亡、生产覆盖升级、真实SAF/Downloads/云提供方或Release/正式签名/性能验收；这些留F。JVM直接驱动生命周期不是设备证明，v1缺失原始schema asset仍是历史限制；不同URI文件别名、受限内存编解码和资源CloseGuard警告等既有边界不因本批消除。已升级库不允许安装V0降级，恢复/前向修复不使用destructive migration。
+
 ## E6 前置：统计工作区测试同步修复（2026-10-15，验证通过）
 
 E6已获用户确认；初始工作区干净、HEAD5b24435。开始前1400项JVM全量强制重跑失败1项（1m44s，40 tasks：1 executed/39 up-to-date）：PlanOverviewWorkspaceTest的统计口径/返回保留筛选用例，在统计页面切换后立即查找完成率文本；该时刻页面只渲染加载状态。按基线要求暂停生产切换，用户同意先定位修复再继续E6。没有数据库/入口/提醒/版本改动。

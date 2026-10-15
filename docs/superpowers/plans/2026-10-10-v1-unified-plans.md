@@ -299,7 +299,20 @@ C2c2五项任务于2026-10-13局部验收通过：53项新增测试，119项定�
 
 五任务局部验收完成：新增32项/4新suites（VM17/Dialog4/Picker2/完整Room3，既有导航suite新增6项），最终1400项JVM/120 suites强制重跑通过，0 failure/error/skipped；Debug重新打包、androidTest编译/包构建检查、lint0 error/55既有warning。独立审查3处时序问题均有实质RED/GREEN并复审关闭；早期测试接收者/接口编译问题、通知阻塞错误位置超时及后续正确复现均保留验收记录。真实文件提供方/设备进程死亡/生产覆盖升级/Release/性能不由Robolectric替代；完整E生产激活和F仍后续。
 
-### E 后续总纲（不是 E3 的生产激活承诺）
+### E6 · 第十九批：生产整体接线（2026-10-15，源码验收通过）
+
+用户确认原子切换范围，原基线5b24435；统计工作区基线同步修复已独立验证/提交3ddbef6，功能分支继续原地开发。Buddy项目状态脚本缺失，沿用Gradle/TDD、原计划和独立审查记录；不创建新工作树、PR或更改版本。E6任务：
+
+1. 生产LifeManagerDatabase注册13个v6实体、PlanConverters、统一DAO和维护专用DAO，工厂注册完整迁移链；分离历史v5初始化与新建v6默认值，生成真实生产6.json。先用现有工厂API验证新库/完整v5与v4升级链，再切实现，不清库、不提供破坏性降级、不重置世代。
+2. Core DI绑定同一生产实例上的PlanRepository/UseCases、V1Settings、V2快照/原子恢复/文件/维护；提醒DI、Application、Manifest/Boot/Worker和订阅当前设置读取同批切换。旧排程任务保留安全兼容处理、旧Todo/ScheduleReceiver拒绝旧记录身份，不能访问已退役表。
+3. MainActivity保留真实模块VM，四入口统一导航，计划和订阅通知都使用原世代/可消费事件，继续草稿/维护/backup-busy保护；订阅默认值迁移到V1设置。
+4. 移除旧Todo/Schedule正常CRUD/仓库/VM/页面及旧设置/备份生产路径，只保留旧文件/迁移/通知身份兼容所必需的DTO、枚举、校验和清理类型。旧CRUD/UI/成功旧通知投递测试按新统一链路移植或明确退役映射，不为维持1400数字而留第二套业务；保持旧schema、迁移回滚和v1原hash/字段契约测试。
+5. 新增实际生产工厂与绑定/入口整链路测试，同步全部仍有效的JVM/androidTest装置；独立源审查后串行全量JVM/Debug/androidTest/lint。设备覆盖升级、Release/性能及1.0.0-code3交付仍F，不在本批操作个人设备。
+6. README/CHANGELOG/本计划/验收与schema说明同步，核对当前feature分支、已完成/未完成和测试数量变化，完整接线验证前不提交/推送半切换状态。最终仅提交推送功能分支，不合并main、不发布APK、不更改origin。
+
+六项任务在本批范围完成：生产13实体schema6、同库Hilt/备份/设置/统一提醒、保留九VM的真实四入口及旧正常业务退役完成接线；历史迁移/wire/hash证据和兼容组件保留。最终1122项JVM/92 suites强制重跑通过（0 failure/error/skipped），Debug重新打包、androidTest构建检查和fresh lint报告通过（0 error/47 warning）；独立源复审无遗留问题。测试数量变化见覆盖映射，RED/失败诊断与最终命令见验收。应用版本仍0.1.1/code2，不合并main或发布APK，F仍未完成。
+
+### E 生产接线总纲（E1–E6范围，非E3单批承诺）
 
 - 新建 `ui/plan/PlanViewModel.kt` / PlanUiState / PlanScreen / PlanList，`PlanEditorViewModel.kt` / editor state / PlanEditor / PlanDetail，`PlanStatisticsViewModel.kt` / PlanStatisticsScreen，日历分拆组件。StateFlow、维护准入和原世代结果发布沿用 GenerationAccess。
 - 共用新增/编辑，时间模式与隐藏参数保留、移除重复区间明确确认；长文本、保存错误 / 提醒错误分开，同一草稿不可重复创建。分类转换保留筛选并提示去向，不隐式退出未保存页。
@@ -333,7 +346,7 @@ git diff --check
 ## 风险与撤回
 
 - 非活动字段 / 原文本在 domain 集合表示中损失：迁移/备份保存 raw DTO，领域计算另行解析，禁止 trim 或清空隐藏参数。
-- 中间 schema 断开旧消费者：激活关口 E；新数据装置隔离于生产 v5。
+- 中间 schema 断开旧消费者：通过E6原子接线避免；此前新数据装置隔离于生产v5，不将中间状态当作可发布版本。
 - 跨设备时区 / DST：旧待办注入 ZoneId 并说明来源；date-only 保留 LocalDate，固定 Clock 测边界。
 - 超大主键 / 世代：新顺序 ID，checked increment，溢出拒绝；SQL 事务失败不修复源库。
 - SQL 与 AlarmManager 非原子：世代 / 资格复核、可重试校准、保存结果分离，旧广播不可写新身份。
@@ -361,4 +374,5 @@ git diff --check
 - E3于2026-10-14局部验收完成：日历/独立全库统计和准备工作区接线，新增42项/5 suites，最终1317项 JVM/111 suites强制重跑、Debug/androidTest构建检查及lint0 error/55既有warning；计划/代码复审关闭，失败过程和限制见验收记录。
 - E4于2026-10-14局部验收完成：统一四入口/草稿与通知所有者、新版领域设置/Room事务/独立状态及共享展示控件；新增51项/5 suites，最终1368项 JVM/116 suites强制重跑、Debug/androidTest构建检查、lint0 error/55既有warning，独立复审无遗留问题。
 - E5于2026-10-15局部验收完成：新版备份设置、独立StateFlow所有者及导航/偏好/文件回调保护；新增32项/4新suites，最终1400项JVM/120 suites强制重跑、Debug/androidTest构建检查及lint0 error/55既有warning通过，独立复审关闭。
-- 后续实际生产数据库/备份/提醒/Hilt/MainActivity接线在最终E激活关口一并完成。F版本和覆盖升级交付仍未完成，完整E–F未完成，生产仍为0.1.1/schema5、已发布APK未改，不等于整个V1已完成。
+- E6于2026-10-15完成生产源码原子接线验收：同一Room6/Hilt数据库上的计划/打卡/订阅/设置、V2备份及统一提醒；旧正常双入口业务退役，历史兼容保留。最终1122项JVM/92 suites强制重跑、Debug重新打包、androidTest构建检查及新lint报告通过（0 error/47 warning），独立源码复审无遗留问题。测试退役/移植有映射，不把1400→1122当作新增数量。
+- F版本和设备/覆盖升级/Release/性能交付仍未完成；分支源码schema6、应用版本暂留0.1.1/code2，main和已发布APK仍旧schema5，不等于整个V1已发布。

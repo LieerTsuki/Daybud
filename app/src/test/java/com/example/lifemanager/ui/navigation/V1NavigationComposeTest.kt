@@ -57,10 +57,7 @@ class V1NavigationComposeTest {
     private val habit=HabitViewModel(EmptyHabits(),Dispatchers.IO,access)
     private val subscription=SubscriptionViewModel(EmptySubscriptions(),object:SubscriptionReminderSchedulerContract {
         override fun cancel(subscriptionId:Long,reminderDays:Set<Int>) {};override fun cancelAll(subscriptionId:Long) {}
-    },object:SettingsRepository {
-        override fun observeSettings()=flowOf(AppSettings());override suspend fun getSettings()=AppSettings()
-        override suspend fun updateSettings(transform:(AppSettings)->AppSettings) { error("not a production V1 settings binding") }
-    },Dispatchers.IO,access)
+    },prefs,Dispatchers.IO,access)
     @After fun cleanup() { listOf(f.model,list,calendar,stats,settings,nav,habit,subscription,backup).forEach { it.viewModelScope.cancel() } }
     private fun waitFor(predicate:()->Boolean) { compose.waitUntil(5000) { compose.waitForIdle();predicate() } }
     private fun show() {
@@ -80,6 +77,69 @@ class V1NavigationComposeTest {
         compose.onNodeWithContentDescription("添加订阅").assertExists()
         compose.onNodeWithContentDescription("计划入口").performClick();waitFor { nav.uiState.value.destination==V1Destination.PLAN }
         compose.onNodeWithText("新建计划").assertExists()
+    }
+    @Test fun `subscription notification reaches actual page once and closing detail does not replay it`() {
+        show()
+        compose.runOnIdle { nav.receive(PlanNotificationClick.Subscription(42,f.token)) }
+        waitFor { nav.uiState.value.destination==V1Destination.SUBSCRIPTION && subscription.uiState.value.detailId==42L }
+        compose.onNodeWithText("订阅不存在或已删除").assertExists()
+        assertEquals(null,nav.uiState.value.pending)
+        compose.onNodeWithText("关闭").performClick()
+        compose.onNodeWithContentDescription("设置入口").performClick();waitFor { nav.uiState.value.destination==V1Destination.SETTINGS }
+        compose.onNodeWithContentDescription("订阅入口").performClick();waitFor { nav.uiState.value.destination==V1Destination.SUBSCRIPTION }
+        assertEquals(null,subscription.uiState.value.detailId)
+    }
+    @Test fun `subscription notification keeps dirty plan until user closes the original draft`() {
+        show();compose.runOnIdle { f.model.openNew(f.token) };waitFor { f.model.uiState.value.draft!=null && f.model.uiState.value.isAvailable }
+        compose.onNodeWithContentDescription("计划标题").performTextReplacement("保留计划输入")
+        compose.runOnIdle { nav.receive(PlanNotificationClick.Subscription(42,f.token)) }
+        waitFor { nav.uiState.value.confirmation!=null }
+        compose.onNodeWithText("继续编辑").performClick()
+        assertEquals("保留计划输入",f.model.uiState.value.draft!!.title)
+        assertEquals(V1Destination.PLAN,nav.uiState.value.destination)
+        compose.runOnIdle { f.model.requestClose(f.model.uiState.value.stamp);f.model.confirmClose(f.model.uiState.value.stamp) }
+        waitFor { nav.uiState.value.destination==V1Destination.SUBSCRIPTION && subscription.uiState.value.detailId==42L }
+        assertEquals(0,f.repo.writes)
+    }
+    @Test fun `subscription notification retains subscription draft and opens only after explicit close`() {
+        show();compose.onNodeWithContentDescription("订阅入口").performClick()
+        waitFor { nav.uiState.value.destination==V1Destination.SUBSCRIPTION && subscription.uiState.value.isAvailable }
+        compose.runOnIdle { subscription.openEditor();subscription.updateEditor { it.copy(name="保留订阅输入") } }
+        waitFor { !subscription.uiState.value.editor.isLoadingReminders }
+        compose.runOnIdle { nav.receive(PlanNotificationClick.Subscription(42,f.token)) }
+        waitFor { subscription.uiState.value.pendingNotificationId==42L }
+        assertEquals("保留订阅输入",subscription.uiState.value.editor.name)
+        compose.onNodeWithText("保存或关闭当前编辑后查看").assertExists()
+        compose.runOnIdle { subscription.closeEditor(f.token) }
+        waitFor { subscription.uiState.value.detailId==42L }
+        assertEquals(null,nav.uiState.value.pending)
+    }
+    @Test fun `plan notification cannot silently discard subscription draft and stale consent cannot close new input`() {
+        show();compose.onNodeWithContentDescription("订阅入口").performClick()
+        waitFor { nav.uiState.value.destination==V1Destination.SUBSCRIPTION && subscription.uiState.value.isAvailable }
+        compose.runOnIdle { subscription.openEditor();subscription.updateEditor { it.copy(name="原订阅输入") } }
+        waitFor { !subscription.uiState.value.editor.isLoadingReminders }
+        compose.runOnIdle { nav.receive(PlanNotificationClick.Legacy) }
+        waitFor { nav.uiState.value.confirmation!=null }
+        val old=assertNotNull(nav.uiState.value.confirmation)
+        val oldConfirm=compose.onNodeWithText("放弃草稿并继续").fetchSemanticsNode().config[SemanticsActions.OnClick].action!!
+        compose.runOnIdle { subscription.updateEditor { it.copy(name="后来订阅输入") };oldConfirm() }
+        assertEquals("后来订阅输入",subscription.uiState.value.editor.name)
+        assertEquals(V1Destination.SUBSCRIPTION,nav.uiState.value.destination)
+        waitFor { nav.uiState.value.confirmation!=old }
+        compose.onNodeWithText("继续编辑").performClick()
+        assertTrue(subscription.uiState.value.editor.isOpen)
+        compose.runOnIdle { subscription.closeEditor(f.token) }
+        waitFor { nav.uiState.value.destination==V1Destination.PLAN }
+        assertTrue(nav.uiState.value.message!!.contains("失效"))
+    }
+    @Test fun `old generation subscription notification and busy arrival cannot route after maintenance`() {
+        show()
+        compose.runOnIdle { nav.receive(PlanNotificationClick.Subscription(42,DataGeneration(3))) }
+        compose.waitForIdle();assertEquals(V1Destination.PLAN,nav.uiState.value.destination)
+        frozen { compose.runOnIdle { nav.receive(PlanNotificationClick.Subscription(42,f.token)) } }
+        compose.waitForIdle();assertEquals(V1Destination.PLAN,nav.uiState.value.destination)
+        assertEquals(null,nav.uiState.value.pending);assertEquals(null,subscription.uiState.value.detailId)
     }
     @Test fun `unified settings exposes actual backup controls`() {
         show();compose.onNodeWithContentDescription("设置入口").performClick();waitFor { nav.uiState.value.destination==V1Destination.SETTINGS }

@@ -13,8 +13,7 @@ import java.time.DateTimeException
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 
 class SubscriptionReminderReceiver(
     private val repositoryProvider: (Context) -> SubscriptionRepository = {
@@ -25,12 +24,11 @@ class SubscriptionReminderReceiver(
         EntryPointAccessors.fromApplication(it.applicationContext, SubscriptionReminderEntryPoint::class.java)
             .subscriptionReminderScheduler()
     },
-    private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val runnerProvider: (Context) -> ReminderBroadcastRunner = {
-        ReminderBroadcastRunner.fromApplication(it, dispatcher)
+        ReminderBroadcastRunner.fromApplication(it)
     },
-    private val onBusy: (Context) -> Unit = { ReminderReconciliationWorker.enqueueImmediate(it) },
-    private val settingsProvider: (Context) -> com.example.lifemanager.domain.repository.SettingsRepository = ::reminderSettings,
+    private val onBusy: (Context) -> Unit = { UnifiedReminderReconciliationWorker.enqueueImmediate(it) },
+    private val settingsProvider: (Context) -> com.example.lifemanager.domain.repository.V1SettingsRepository = ::reminderSettings,
 ) : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val subscriptionId = intent.getLongExtra(EXTRA_SUBSCRIPTION_ID, 0L)
@@ -57,7 +55,7 @@ class SubscriptionReminderReceiver(
                 SubscriptionOperationCoordinator.run {
                     if (SubscriptionReminderScheduler.wasDelivered(context, subscriptionId, daysBefore, dueDate,
                             requireNotNull(generation))) return@run
-                    if (!settingsProvider(context).getSettings().subscriptionReminders) {
+                    if (!settingsProvider(context).observe().first().subscriptionReminders) {
                         schedulerProvider(context).cancelAll(subscriptionId)
                         return@run
                     }
@@ -69,7 +67,7 @@ class SubscriptionReminderReceiver(
                         subscriptionId, subscription, selectedDays, daysBefore, dueDate,
                         Instant.now(), ZoneId.systemDefault(), schedulerProvider(context),
                     ) { current ->
-                        if (settingsProvider(context).getSettings().subscriptionReminders) {
+                        if (settingsProvider(context).observe().first().subscriptionReminders) {
                             SubscriptionNotificationHelper.showReminder(context, current, daysBefore, dueDate, requireNotNull(generation))
                             SubscriptionReminderScheduler.recordDelivery(context, subscriptionId, daysBefore, dueDate, generation)
                         }

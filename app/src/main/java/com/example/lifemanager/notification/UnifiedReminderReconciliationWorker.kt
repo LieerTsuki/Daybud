@@ -35,9 +35,12 @@ class UnifiedReminderReconciliationWorker @JvmOverloads constructor(
                 OneTimeWorkRequestBuilder<UnifiedReminderReconciliationWorker>()
                     .setInputData(workDataOf(RESET to resetSystem)).build())
         }
-        /** E supplies dependencies and opts in; no automatic scheduling or legacy replacement here. */
+        /** Retire persisted legacy queues before activating the sole daily calibration path. */
         fun schedule(context: Context) {
-            WorkManager.getInstance(context).enqueueUniquePeriodicWork(PERIODIC, ExistingPeriodicWorkPolicy.KEEP,
+            val manager = WorkManager.getInstance(context)
+            manager.cancelUniqueWork("todo_reminder_reconciliation")
+            manager.cancelUniqueWork("reminder_reconciliation_immediate")
+            manager.enqueueUniquePeriodicWork(PERIODIC, ExistingPeriodicWorkPolicy.KEEP,
                 PeriodicWorkRequestBuilder<UnifiedReminderReconciliationWorker>(1, TimeUnit.DAYS).build())
         }
     }

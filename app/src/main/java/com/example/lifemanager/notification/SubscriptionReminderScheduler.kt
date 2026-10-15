@@ -29,8 +29,7 @@ class SubscriptionReminderScheduler(
         val (generation, enabled) = unifiedState?.read() ?: stateProvider().read().let { it.first to it.second.subscriptionReminders }
         if (!enabled) {
             cancelAll(subscription.id)
-            if (unifiedState == null) ReminderNotifications(context).clearModule("subscription")
-            else SubscriptionNotificationHelper.clearOwned(context, generation, emptySet(), true)
+            SubscriptionNotificationHelper.clearOwned(context, generation, emptySet(), true)
             return
         }
         synchronized(lock) {
@@ -97,8 +96,7 @@ class SubscriptionReminderScheduler(
 
     override fun cancelAll(subscriptionId: Long) = synchronized(lock) {
         cancel(subscriptionId, SubscriptionReminderRules.supportedDays)
-        if (unifiedState == null) SubscriptionNotificationHelper.cancelAll(context, subscriptionId)
-        else SubscriptionNotificationHelper.cancelOwnedForId(context, subscriptionId)
+        SubscriptionNotificationHelper.cancelOwnedForId(context, subscriptionId)
     }
 
     override fun cancelObsolete(currentIds: Set<Long>) = synchronized(lock) {
@@ -150,7 +148,7 @@ class SubscriptionReminderScheduler(
     }
 
     companion object {
-        /** Explicit target-only seam; original constructor/Hilt/legacy defaults stay unchanged. */
+        /** Supply the same fresh unified reader to tests and the production module. */
         internal fun forUnified(context: Context, reader: SubscriptionReminderStateReader): SubscriptionReminderScheduler =
             SubscriptionReminderScheduler(context).apply { unifiedState = reader }
         // The worker and Hilt can create different instances; serialize their cancel/replace operations.

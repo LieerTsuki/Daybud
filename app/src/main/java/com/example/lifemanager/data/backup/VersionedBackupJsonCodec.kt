@@ -6,7 +6,7 @@ import java.nio.charset.CharacterCodingException
 import java.nio.charset.CodingErrorAction
 import java.time.ZoneId
 
-/** Isolated compatibility entry point; does not replace the production v1 Hilt binding. */
+/** Production compatibility entry point: strict v1 import conversion and v2-only export. */
 class VersionedBackupJsonCodec(private val limits: BackupLimits = BackupLimits()) : VersionedBackupCodec {
     override fun encode(document: V2BackupDocument): ByteArray = V2BackupJsonCodec(limits).encode(document)
 

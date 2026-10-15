@@ -13,7 +13,7 @@ import java.time.DayOfWeek
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
-/** Prepared workspace owner; production Hilt activation remains later in E. */
+/** Unified editor owner; retained across Activity recreation by the production factory. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class PlanEditorViewModel(private val repository:PlanRepository,private val cases:PlanUseCases,
     private val access:GenerationAccess,private val sources:PlanReminderSources,

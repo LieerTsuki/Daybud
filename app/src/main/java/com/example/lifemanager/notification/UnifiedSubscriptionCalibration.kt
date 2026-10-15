@@ -4,8 +4,6 @@ import android.content.Context
 import com.example.lifemanager.domain.maintenance.*
 import com.example.lifemanager.domain.plan.PlanReminderSources
 import com.example.lifemanager.domain.repository.SubscriptionRepository
-import java.time.Clock
-import java.time.ZoneId
 import com.example.lifemanager.domain.usecase.SubscriptionOperationCoordinator
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.currentCoroutineContext
@@ -13,7 +11,7 @@ import kotlinx.coroutines.ensureActive
 
 class UnifiedSubscriptionCalibration(private val context: Context, private val repository: SubscriptionRepository,
     private val generations: DataGenerationRepository, private val sources: PlanReminderSources,
-    private val clock: Clock = Clock.systemUTC(), private val zone: () -> ZoneId = ZoneId::systemDefault) : SubscriptionCalibration {
+    private val scheduler: SubscriptionReminderSchedulerContract) : SubscriptionCalibration {
     override suspend fun reconcile(expected: DataGeneration, resetSystem: Boolean): Unit = SubscriptionOperationCoordinator.run {
         val reader = SubscriptionReminderStateReader {
             val actual = generations.current()
@@ -23,9 +21,6 @@ class UnifiedSubscriptionCalibration(private val context: Context, private val r
         val (_, enabled) = reader.read()
         val current = repository.getSubscriptions()
         val offsets = current.associate { it.id to repository.getReminderDays(it.id) }
-        val scheduler = SubscriptionReminderScheduler.forUnified(context, reader).apply {
-            nowProvider = clock::instant; zoneProvider = zone
-        }
         var failure: Exception? = null
         suspend fun attempt(action: suspend () -> Unit) {
             currentCoroutineContext().ensureActive()

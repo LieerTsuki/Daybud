@@ -15,6 +15,7 @@ import com.example.lifemanager.MainActivity
 import com.example.lifemanager.domain.plan.PlanReminderToken
 import com.example.lifemanager.domain.maintenance.DataGeneration
 import android.service.notification.StatusBarNotification
+import com.example.lifemanager.domain.backup.BackupPlanNotificationSource
 
 interface PlanReminderNotifier {
     fun permitted(): Boolean
@@ -22,7 +23,7 @@ interface PlanReminderNotifier {
     fun show(token: PlanReminderToken, title: String): Boolean
     fun clear(planId: Long, keep: PlanReminderToken? = null)
 }
-class PlanNotificationHelper(private val context: Context) : PlanReminderNotifier, PlanNotificationInventory {
+class PlanNotificationHelper(private val context: Context) : PlanReminderNotifier, PlanNotificationInventory, BackupPlanNotificationSource {
     override fun tokens(): List<PlanReminderToken> = manager.activeNotifications.mapNotNull(::ownedToken).distinct()
     override fun cancelCaptured(token: PlanReminderToken) {
         manager.activeNotifications.filter { ownedToken(it) == token }.forEach { manager.cancel(it.tag, it.id) }
@@ -39,6 +40,9 @@ class PlanNotificationHelper(private val context: Context) : PlanReminderNotifie
         return token.takeIf { PlanReminderIntents.matchesMetadata(active.notification.extras, it) }
     }
     private val manager get() = context.getSystemService(NotificationManager::class.java)
+    fun createChannel() {
+        manager.createNotificationChannel(NotificationChannel(CHANNEL, "计划提醒", NotificationManager.IMPORTANCE_DEFAULT))
+    }
     override fun permitted(): Boolean = manager.areNotificationsEnabled() &&
         (Build.VERSION.SDK_INT < 33 || ContextCompat.checkSelfPermission(context,
             Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) &&
@@ -46,7 +50,7 @@ class PlanNotificationHelper(private val context: Context) : PlanReminderNotifie
 
     override fun show(token: PlanReminderToken, title: String): Boolean {
         if (!permitted()) return false
-        manager.createNotificationChannel(NotificationChannel(CHANNEL, "计划提醒", NotificationManager.IMPORTANCE_DEFAULT))
+        createChannel()
         val intent = PlanReminderIntents.metadata(Intent(context, MainActivity::class.java)
             .setAction(OPEN_ACTION).setData(PlanReminderIdentity.data(token).toUri())
             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP), token)

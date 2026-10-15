@@ -2,52 +2,39 @@ package com.example.lifemanager
 
 import android.os.Bundle
 import android.content.Intent
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.CompositionLocalProvider
-import com.example.lifemanager.ui.settings.LocalDateFormat
-import com.example.lifemanager.domain.model.DateFormat
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
 import androidx.activity.compose.setContent
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
-import com.example.lifemanager.ui.navigation.NavGraph
-import com.example.lifemanager.ui.navigation.SubscriptionNavigationViewModel
-import com.example.lifemanager.ui.navigation.TodoNavigationViewModel
-import com.example.lifemanager.ui.navigation.ScheduleNavigationViewModel
-import com.example.lifemanager.ui.schedule.ScheduleViewModel
-import com.example.lifemanager.ui.todo.TodoViewModel
-import com.example.lifemanager.ui.theme.LifeManagerTheme
-import com.example.lifemanager.ui.settings.SettingsViewModel
+import com.example.lifemanager.ui.navigation.*
+import com.example.lifemanager.ui.plan.*
+import com.example.lifemanager.ui.habit.HabitViewModel
+import com.example.lifemanager.ui.subscription.SubscriptionViewModel
+import com.example.lifemanager.ui.settings.V1SettingsViewModel
+import com.example.lifemanager.ui.settings.V1BackupSettingsViewModel
+import com.example.lifemanager.notification.ReminderGeneration
+import com.example.lifemanager.notification.PlanNotificationHelper
+import com.example.lifemanager.notification.PlanReminderIntents
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private val subscriptionNavigation: SubscriptionNavigationViewModel by viewModels()
-    private val todoNavigation: TodoNavigationViewModel by viewModels()
-    private val scheduleNavigation: ScheduleNavigationViewModel by viewModels()
-    // One module owner, retained across navigation entries and configuration changes.
-    private val todoViewModel: TodoViewModel by viewModels()
-    private val scheduleViewModel: ScheduleViewModel by viewModels()
-    private val settingsViewModel: SettingsViewModel by viewModels()
-    private val backupViewModel: com.example.lifemanager.ui.settings.BackupSettingsViewModel by viewModels()
+    @Inject lateinit var v1Factory: V1ViewModelFactory
+    // The Activity ViewModelStore retains every real owner across destinations and rotation.
+    private val navigation: PlanNavigationViewModel by viewModels { v1Factory }
+    private val plans: PlanViewModel by viewModels { v1Factory }
+    private val editor: PlanEditorViewModel by viewModels { v1Factory }
+    private val calendar: PlanCalendarViewModel by viewModels { v1Factory }
+    private val statistics: PlanStatisticsViewModel by viewModels { v1Factory }
+    private val settings: V1SettingsViewModel by viewModels { v1Factory }
+    private val backup: V1BackupSettingsViewModel by viewModels { v1Factory }
+    private val habits: HabitViewModel by viewModels()
+    private val subscriptions: SubscriptionViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (savedInstanceState == null) receiveNotificationIntent(intent)
         setContent {
-            val subscriptionRequest by subscriptionNavigation.pending.collectAsStateWithLifecycle()
-            val todoRequest by todoNavigation.pending.collectAsStateWithLifecycle()
-            val scheduleRequest by scheduleNavigation.pending.collectAsStateWithLifecycle()
-            val settings by settingsViewModel.uiState.collectAsStateWithLifecycle()
-            LifeManagerTheme(themeMode = settings.settings?.theme) {
-                CompositionLocalProvider(LocalDateFormat provides (settings.settings?.dateFormat ?: DateFormat.YMD)) {
-                    NavGraph(todoViewModel = todoViewModel, settingsViewModel = settingsViewModel, backupViewModel = backupViewModel,
-                        todoNavigation = todoNavigation, scheduleNavigation = scheduleNavigation,
-                        subscriptionNavigation = subscriptionNavigation,
-                        todoRequest = todoRequest, onTodoConsumed = todoNavigation::consume,
-                        scheduleViewModel = scheduleViewModel, scheduleRequest = scheduleRequest, onScheduleConsumed = scheduleNavigation::consume,
-                        subscriptionRequest = subscriptionRequest, onSubscriptionConsumed = subscriptionNavigation::consume)
-                }
-            }
+            V1NavGraph(navigation, plans, editor, calendar, statistics, settings, habits, subscriptions, backup)
         }
     }
 
@@ -58,15 +45,19 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun receiveNotificationIntent(intent: Intent) {
-        val sourceGeneration = com.example.lifemanager.notification.ReminderGeneration.read(intent)
-        todoNavigation.openFromNotification(intent.getLongExtra(EXTRA_TODO_ID, 0L), sourceGeneration)
-        scheduleNavigation.openFromNotification(intent.getLongExtra(EXTRA_SCHEDULE_ID, 0L), sourceGeneration)
-        subscriptionNavigation.openFromNotification(intent.getLongExtra(EXTRA_SUBSCRIPTION_ID, 0L), sourceGeneration)
-        // The event is retained by the Activity ViewModel, never replayed from a stale Intent.
+        val planEnvelope = intent.hasExtra(EXTRA_TODO_ID) || intent.hasExtra(EXTRA_SCHEDULE_ID) ||
+            intent.hasExtra(PlanReminderIntents.EXTRA_ID) || intent.action == PlanNotificationHelper.OPEN_ACTION ||
+            intent.dataString?.startsWith("lifemanager://plan-reminder/") == true
+        val planClick = PlanNotificationClicks.take(intent)
+        @Suppress("DEPRECATION")
+        val subscriptionId = intent.extras?.get(EXTRA_SUBSCRIPTION_ID) as? Long
+        val original = ReminderGeneration.read(intent)
+        if (planClick != null) navigation.receive(planClick)
+        else if (!planEnvelope && subscriptionId != null && subscriptionId > 0 && original != null)
+            navigation.receive(PlanNotificationClick.Subscription(subscriptionId, original))
+        // The event belongs to the retained navigation owner, never a replayed Activity Intent.
         intent.removeExtra(EXTRA_SUBSCRIPTION_ID)
-        intent.removeExtra(EXTRA_TODO_ID)
-        intent.removeExtra(EXTRA_SCHEDULE_ID)
-        intent.removeExtra(com.example.lifemanager.notification.ReminderGeneration.EXTRA)
+        intent.removeExtra(ReminderGeneration.EXTRA)
     }
 
     companion object {

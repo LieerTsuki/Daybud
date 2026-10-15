@@ -325,7 +325,7 @@ class UnifiedPlanCalibrationTest {
         appName = "合成订阅", amountMinor = 100, billingCycle = BillingCycle.MONTHLY, nextBillingDate = LocalDate.parse("2026-01-04"),
         startDate = LocalDate.parse("2025-01-04"), createdAt = f.clock.instant(), updatedAt = f.clock.instant()), setOf(3))
     private fun legacyAlarm(f: UnifiedReminderTestFixture, id: Long) {
-        ReminderAlarmInventory(f.context, "todo").remember(id)
+        rememberLegacyAlarm(f.context, id)
         val operation = PendingIntent.getBroadcast(f.context, ReminderKey.forTodo(id), Intent(f.context, TodoReminderReceiver::class.java)
             .setData("lifemanager://todo-reminder/$id".toUri()), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         f.context.getSystemService(AlarmManager::class.java).setExact(AlarmManager.RTC_WAKEUP, 1767260700000, operation)

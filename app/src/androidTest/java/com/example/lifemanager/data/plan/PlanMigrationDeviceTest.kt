@@ -210,7 +210,7 @@ class PlanMigrationDeviceTest {
 
     private fun target(name: String, last: Migration = migration) =
         Room.databaseBuilder(context, PlanMigrationDeviceDatabase::class.java, name)
-            .addMigrations(*LifeManagerDatabase.MIGRATIONS, last).allowMainThreadQueries().build()
+            .addMigrations(*LifeManagerDatabase.LEGACY_MIGRATIONS, last).allowMainThreadQueries().build()
 
     private fun fixture(version: Int, faults: List<String> = emptyList(), block: (String, Map<String,List<List<String?>>>) -> Unit) {
         val name = "v1-plan-device-${System.nanoTime()}.db"

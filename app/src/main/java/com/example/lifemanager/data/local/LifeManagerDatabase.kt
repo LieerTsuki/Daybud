@@ -5,67 +5,69 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import com.example.lifemanager.data.local.dao.HabitDao
-import com.example.lifemanager.data.local.dao.ScheduleDao
 import com.example.lifemanager.data.local.dao.TagDao
-import com.example.lifemanager.data.local.dao.TodoDao
-import com.example.lifemanager.data.local.dao.TodoTagDao
 import com.example.lifemanager.data.local.entity.HabitEntity
 import com.example.lifemanager.data.local.entity.HabitRecordEntity
-import com.example.lifemanager.data.local.entity.ScheduleEntity
-import com.example.lifemanager.data.local.entity.ScheduleExceptionEntity
 import com.example.lifemanager.data.local.entity.TagEntity
-import com.example.lifemanager.data.local.entity.TodoEntity
-import com.example.lifemanager.data.local.entity.TodoTagCrossRef
 import com.example.lifemanager.data.local.dao.SubscriptionDao
 import com.example.lifemanager.data.local.entity.SubscriptionEntity
 import com.example.lifemanager.data.local.entity.SubscriptionPaymentEntity
 import com.example.lifemanager.data.local.entity.SubscriptionReminderEntity
-import com.example.lifemanager.data.local.entity.AppSettingsEntity
 import com.example.lifemanager.data.local.entity.MaintenanceEntity
-import com.example.lifemanager.data.local.dao.SettingsDao
+import com.example.lifemanager.data.local.dao.MaintenanceDao
 import com.example.lifemanager.data.local.dao.BackupSnapshotDao
+import com.example.lifemanager.data.plan.PlanEntity
+import com.example.lifemanager.data.plan.PlanTagCrossRef
+import com.example.lifemanager.data.plan.PlanExceptionEntity
+import com.example.lifemanager.data.plan.PlanLegacyRefEntity
+import com.example.lifemanager.data.plan.PlanSettingsEntity
+import com.example.lifemanager.data.plan.PlanReminderStateEntity
+import com.example.lifemanager.data.local.migration.PlanMigration
+import com.example.lifemanager.data.local.migration.PlanV6Schema
+import com.example.lifemanager.data.plan.PlanConverters
+import com.example.lifemanager.data.plan.PlanDao
+import com.example.lifemanager.data.plan.PlanReminderStateDao
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [
-        TodoEntity::class,
+        PlanEntity::class,
         TagEntity::class,
-        TodoTagCrossRef::class,
-        ScheduleEntity::class,
-        ScheduleExceptionEntity::class,
+        PlanTagCrossRef::class,
+        PlanExceptionEntity::class,
+        PlanLegacyRefEntity::class,
         HabitEntity::class,
         HabitRecordEntity::class,
         SubscriptionEntity::class,
         SubscriptionPaymentEntity::class,
         SubscriptionReminderEntity::class,
-        AppSettingsEntity::class,
+        PlanSettingsEntity::class,
         MaintenanceEntity::class,
+        PlanReminderStateEntity::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = true,
 )
-@TypeConverters(Converters::class)
+@TypeConverters(Converters::class, PlanConverters::class)
 abstract class LifeManagerDatabase : RoomDatabase() {
-    abstract fun todoDao(): TodoDao
+    abstract fun planDao(): PlanDao
+    abstract fun planReminderStateDao(): PlanReminderStateDao
     abstract fun tagDao(): TagDao
-    abstract fun todoTagDao(): TodoTagDao
-    abstract fun scheduleDao(): ScheduleDao
     abstract fun habitDao(): HabitDao
     abstract fun subscriptionDao(): SubscriptionDao
-    abstract fun settingsDao(): SettingsDao
+    abstract fun maintenanceDao(): MaintenanceDao
     abstract fun backupSnapshotDao(): BackupSnapshotDao
 
     companion object {
-        val INITIALIZE = object : Callback() {
-            override fun onCreate(db: SupportSQLiteDatabase) { initializeDefaults(db) }
-        }
+        val INITIALIZE = PlanV6Schema.INITIALIZE
 
-        private fun initializeDefaults(db: SupportSQLiteDatabase) {
+        // Historical 4→5 must retain the v5 columns before PlanMigration reads them.
+        private fun initializeLegacyDefaults(db: SupportSQLiteDatabase) {
             db.execSQL("INSERT OR IGNORE INTO app_settings (id, theme, dateFormat, defaultCurrency, todoReminders, scheduleReminders, subscriptionReminders, defaultReminderMask) VALUES (1, 'SYSTEM', 'YMD', 'CNY', 1, 1, 1, 0)")
             db.execSQL("INSERT OR IGNORE INTO app_maintenance (id, generation) VALUES (1, 0)")
         }
 
-        val MIGRATIONS: Array<Migration> = arrayOf(
+        val LEGACY_MIGRATIONS: Array<Migration> = arrayOf(
             object : Migration(1, 2) {
                 override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
                     db.execSQL("""
@@ -153,9 +155,11 @@ abstract class LifeManagerDatabase : RoomDatabase() {
                 override fun migrate(db: SupportSQLiteDatabase) {
                     db.execSQL("CREATE TABLE IF NOT EXISTS app_settings (id INTEGER NOT NULL, theme TEXT NOT NULL, dateFormat TEXT NOT NULL, defaultCurrency TEXT NOT NULL, todoReminders INTEGER NOT NULL, scheduleReminders INTEGER NOT NULL, subscriptionReminders INTEGER NOT NULL, defaultReminderMask INTEGER NOT NULL, PRIMARY KEY(id))")
                     db.execSQL("CREATE TABLE IF NOT EXISTS app_maintenance (id INTEGER NOT NULL, generation INTEGER NOT NULL, PRIMARY KEY(id))")
-                    initializeDefaults(db)
+                    initializeLegacyDefaults(db)
                 }
             },
         )
+
+        val MIGRATIONS: Array<Migration> = LEGACY_MIGRATIONS + PlanMigration()
     }
 }

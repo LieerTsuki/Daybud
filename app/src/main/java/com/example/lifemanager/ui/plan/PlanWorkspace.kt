@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.activity.compose.BackHandler
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
-/** Prepared E workspace; production navigation activation is deliberately separate. */
+/** Shared list/detail/editor/calendar/statistics workspace over retained module owners. */
 @Composable
 fun PlanWorkspace(list: PlanViewModel, editor: PlanEditorViewModel, calendar:PlanCalendarViewModel?=null,statistics:PlanStatisticsViewModel?=null) {
     val state = editor.uiState.collectAsStateWithLifecycle().value

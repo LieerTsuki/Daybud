@@ -7,10 +7,11 @@ import com.example.lifemanager.domain.maintenance.MaintenanceBusyException
 import com.example.lifemanager.domain.maintenance.MaintenanceCoordinator
 import com.example.lifemanager.domain.maintenance.MaintenanceState
 import com.example.lifemanager.domain.model.AppSettings
+import com.example.lifemanager.domain.model.V1AppSettings
 import com.example.lifemanager.domain.model.BillingCycle
 import com.example.lifemanager.domain.model.Subscription
 import com.example.lifemanager.domain.model.SubscriptionPayment
-import com.example.lifemanager.domain.repository.SettingsRepository
+import com.example.lifemanager.domain.repository.V1SettingsRepository
 import com.example.lifemanager.domain.repository.SubscriptionRepository
 import com.example.lifemanager.domain.usecase.SubscriptionOperationCoordinator
 import com.example.lifemanager.notification.SubscriptionReminderSchedulerContract
@@ -731,13 +732,16 @@ class SubscriptionMaintenanceTest {
         }
     }
 
-    private class Preferences : SettingsRepository {
+    private class Preferences : V1SettingsRepository {
         private val settings = MutableStateFlow(AppSettings())
         var reads = 0
         var read: (suspend () -> AppSettings)? = null
-        override fun observeSettings() = settings
-        override suspend fun getSettings(): AppSettings { reads++; return read?.invoke() ?: settings.value }
-        override suspend fun updateSettings(transform: (AppSettings) -> AppSettings) { settings.value = transform(settings.value) }
+        override fun observe(): Flow<V1AppSettings> = flow {
+            reads++
+            val defaults = read?.invoke() ?: settings.value
+            emit(V1AppSettings(defaultCurrency = defaults.defaultCurrency, defaultReminderDays = defaults.defaultReminderDays))
+        }
+        override suspend fun update(expected: DataGeneration, transform: (V1AppSettings) -> V1AppSettings): V1AppSettings = error("not used")
     }
 
     private class Scheduler : SubscriptionReminderSchedulerContract {

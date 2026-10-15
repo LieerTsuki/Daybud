@@ -21,8 +21,3 @@ interface BackupFileStore {
         operation: suspend (ByteArray) -> T,
     ): T
 }
-
-data class BackupPreview(val document: BackupDocument) {
-    val rowCounts: Map<String, Int> = document.payload.tables.mapValues { it.value.size }
-    val totalRows: Int = rowCounts.values.sum()
-}

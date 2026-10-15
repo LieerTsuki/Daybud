@@ -10,7 +10,7 @@ import com.example.lifemanager.domain.maintenance.StaleGenerationException
 import com.example.lifemanager.domain.model.BillingCycle
 import com.example.lifemanager.domain.model.Subscription
 import com.example.lifemanager.domain.model.SubscriptionPayment
-import com.example.lifemanager.domain.repository.SettingsRepository
+import com.example.lifemanager.domain.repository.V1SettingsRepository
 import com.example.lifemanager.domain.repository.SubscriptionRepository
 import com.example.lifemanager.domain.usecase.SubscriptionOperationCoordinator
 import com.example.lifemanager.domain.usecase.SubscriptionRules
@@ -35,7 +35,7 @@ import kotlinx.coroutines.yield
 class SubscriptionViewModel @Inject constructor(
     private val repository: SubscriptionRepository,
     private val scheduler: SubscriptionReminderSchedulerContract,
-    private val settingsRepository: SettingsRepository,
+    private val settingsRepository: V1SettingsRepository,
     @param:IoDispatcher private val dispatcher: CoroutineDispatcher,
     private val access: GenerationAccess,
 ) : ViewModel() {
@@ -270,8 +270,8 @@ class SubscriptionViewModel @Inject constructor(
         viewModelScope.launch(dispatcher) {
             try {
                 access.run(token) {
-                    // Strict getSettings never initializes missing rows; read defaults under this draft's permit.
-                    val defaults = if (subscription == null) settingsRepository.getSettings() else null
+                    // Fresh strict V1 read under this draft's original generation permit.
+                    val defaults = if (subscription == null) settingsRepository.observe().first() else null
                     val days = defaults?.defaultReminderDays ?: repository.getReminderDays(subscription!!.id)
                     withContext(Dispatchers.Main.immediate) {
                         controls.update { state ->

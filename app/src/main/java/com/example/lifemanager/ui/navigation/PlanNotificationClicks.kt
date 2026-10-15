@@ -4,7 +4,7 @@ import android.content.Intent
 import com.example.lifemanager.MainActivity
 import com.example.lifemanager.notification.*
 
-/** Activity adapter for the prepared V1 owner, not installed into MainActivity yet. */
+/** Strict, consumable Activity adapter for the active unified navigation owner. */
 object PlanNotificationClicks {
     fun take(intent:Intent):PlanNotificationClick? {
         val legacy=intent.hasExtra(MainActivity.EXTRA_TODO_ID) || intent.hasExtra(MainActivity.EXTRA_SCHEDULE_ID)

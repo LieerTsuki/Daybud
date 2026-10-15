@@ -58,7 +58,12 @@ internal class UnifiedReminderTestFixture(onFile: Boolean = false, private val a
     val delivery get() = PlanReminderDelivery(repo, generations, sources, store, notifier, scheduler, clock)
     fun reconciler(source: PlanReminderSources = sources, subscription: SubscriptionCalibration = subscriptionCalibration) =
         UnifiedReminderReconciler(coordinator, repo, source, store, LegacyPlanReminderCleaner(context), scheduler, notifier, subscription)
-    val subscriptionCalibration get() = UnifiedSubscriptionCalibration(context, subscriptions, generations, sources, clock) { ZoneOffset.UTC }
+    val subscriptionScheduler by lazy {
+        SubscriptionReminderScheduler.forUnified(context, SubscriptionReminderStateReader {
+            generations.current() to sources.configuration().subscriptionReminders
+        }).apply { nowProvider = clock::instant; zoneProvider = { ZoneOffset.UTC } }
+    }
+    val subscriptionCalibration get() = UnifiedSubscriptionCalibration(context, subscriptions, generations, sources, subscriptionScheduler)
     val alarms get() = shadowOf(context.getSystemService(AlarmManager::class.java))
     val notifications get() = context.getSystemService(NotificationManager::class.java)
     fun plan(title: String = "当前计划") = Plan(title = title, timeZone = "UTC", timeMode = PlanTimeMode.DEADLINE,
@@ -90,6 +95,18 @@ internal class UnifiedTestClock : Clock() {
     override fun instant() = at
     override fun getZone(): ZoneId = ZoneOffset.UTC
     override fun withZone(zone: ZoneId): Clock = Clock.fixed(at, zone)
+}
+
+/** Legacy operational data is seeded by tests; retired production schedulers cannot write it. */
+internal fun rememberLegacyAlarm(context: Context, id: Long) {
+    check(context.getSharedPreferences("reminder_alarm_ids", Context.MODE_PRIVATE).edit().putBoolean("todo/$id", true).commit())
+}
+internal fun legacyAlarmIds(context: Context): Set<Long> =
+    context.getSharedPreferences("reminder_alarm_ids", Context.MODE_PRIVATE).all.keys
+        .filter { it.startsWith("todo/") }.map { it.substringAfter('/').toLong() }.toSet()
+internal fun rememberLegacyScheduleOccurrence(context: Context, id: Long, start: Long, generation: DataGeneration) {
+    check(context.getSharedPreferences("schedule_alarm_occurrences", Context.MODE_PRIVATE).edit()
+        .putLong("$id/start", start).putLong("$id/generation", generation.value).commit())
 }
 
 @Implements(AlarmManager::class)

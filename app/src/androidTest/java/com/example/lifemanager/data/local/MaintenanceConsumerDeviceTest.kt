@@ -2,20 +2,21 @@ package com.example.lifemanager.data.local
 
 import android.content.Context
 import androidx.lifecycle.viewModelScope
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.lifemanager.data.local.entity.HabitEntity
 import com.example.lifemanager.data.repository.DataGenerationRepositoryImpl
 import com.example.lifemanager.data.repository.HabitRepositoryImpl
-import com.example.lifemanager.data.repository.SettingsRepositoryImpl
+import com.example.lifemanager.data.plan.RoomV1SettingsRepository
+import com.example.lifemanager.domain.maintenance.MaintenanceReminderEffects
+import com.example.lifemanager.domain.maintenance.ReminderIdentities
 import com.example.lifemanager.domain.maintenance.DataGeneration
 import com.example.lifemanager.domain.maintenance.MaintenanceCoordinator
 import com.example.lifemanager.domain.model.Habit
 import com.example.lifemanager.domain.model.ThemeMode
 import com.example.lifemanager.ui.common.GenerationAccess
 import com.example.lifemanager.ui.habit.HabitViewModel
-import com.example.lifemanager.ui.settings.SettingsViewModel
+import com.example.lifemanager.ui.settings.V1SettingsViewModel
 import java.time.LocalDate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancelAndJoin
@@ -34,7 +35,8 @@ import kotlin.test.assertTrue
 @RunWith(AndroidJUnit4::class)
 class MaintenanceConsumerDeviceTest {
     @Test fun habitDraftSurvivesCancelAndOldRenderedActionsCannotTouchRestoredSameId(): Unit = runBlocking {
-        val database = database()
+        val fixture = V6DeviceFixture()
+        val database = fixture.database
         val generations = DataGenerationRepositoryImpl(database)
         val coordinator = MaintenanceCoordinator(generations)
         val repository = HabitRepositoryImpl(database)
@@ -67,35 +69,38 @@ class MaintenanceConsumerDeviceTest {
             assertTrue(repository.observeRecords(LocalDate.now(), LocalDate.now()).first().isEmpty())
         } finally {
             model.viewModelScope.coroutineContext.job.cancelAndJoin()
-            database.close()
+            fixture.close()
         }
     }
 
     @Test fun settingsRestorePublishesFreshPreferencesAndRejectsOldRenderedTheme(): Unit = runBlocking {
-        val database = database()
+        val fixture = V6DeviceFixture()
+        val database = fixture.database
         val generations = DataGenerationRepositoryImpl(database)
         val coordinator = MaintenanceCoordinator(generations)
-        val repository = SettingsRepositoryImpl(database)
-        val model = SettingsViewModel(repository, Dispatchers.IO, GenerationAccess(generations, coordinator))
+        val repository = RoomV1SettingsRepository(database)
+        val model = V1SettingsViewModel(repository, GenerationAccess(generations, coordinator), NoReminderEffects(), Dispatchers.IO)
         try {
             val loaded = withTimeout(10_000) { model.uiState.first { it.isAvailable } }
             coordinator.withSession { session -> coordinator.withMaintenance(session) {
-                generations.commit(session.generation) { repository.updateSettings { it.copy(theme = ThemeMode.LIGHT) } }
+                generations.commit(session.generation) { repository.update(session.generation) { it.copy(theme = ThemeMode.LIGHT) } }
             } }
             withTimeout(10_000) { model.uiState.first { it.generation == DataGeneration(1) && it.isAvailable && !it.isMaintaining } }
             withContext(Dispatchers.Main.immediate) { model.setTheme(ThemeMode.DARK, loaded.generation) }
-            assertEquals(ThemeMode.LIGHT, repository.getSettings().theme)
+            assertEquals(ThemeMode.LIGHT, repository.observe().first().theme)
             assertEquals(ThemeMode.LIGHT, model.uiState.value.settings!!.theme)
             assertFalse(model.uiState.value.isSaving)
         } finally {
             model.viewModelScope.coroutineContext.job.cancelAndJoin()
-            database.close()
+            fixture.close()
         }
     }
 
-    private fun database() = Room.inMemoryDatabaseBuilder(
-        ApplicationProvider.getApplicationContext<Context>(), LifeManagerDatabase::class.java,
-    ).addCallback(LifeManagerDatabase.INITIALIZE).build()
+    private class NoReminderEffects : MaintenanceReminderEffects {
+        override suspend fun clearPrevious(identities: ReminderIdentities) = Unit
+        override suspend fun reconcile() = Unit
+        override fun requestReconciliation() = Unit
+    }
 
     // Fixed IDs belong to synthetic fixture/replacement insertion, not the ordinary edit API.
     private suspend fun insertHabit(database: LifeManagerDatabase, habit: Habit) {

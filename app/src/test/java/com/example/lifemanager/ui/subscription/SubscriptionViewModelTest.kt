@@ -3,7 +3,8 @@ package com.example.lifemanager.ui.subscription
 import androidx.lifecycle.viewModelScope
 import com.example.lifemanager.domain.model.*
 import com.example.lifemanager.domain.repository.SubscriptionRepository
-import com.example.lifemanager.domain.repository.SettingsRepository
+import com.example.lifemanager.domain.repository.V1SettingsRepository
+import com.example.lifemanager.domain.maintenance.DataGeneration
 import com.example.lifemanager.notification.SubscriptionReminderSchedulerContract
 import com.example.lifemanager.ui.common.testGenerationAccess
 import java.time.Instant
@@ -15,6 +16,44 @@ import kotlin.test.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SubscriptionViewModelTest {
+    @Test fun newSubscriptionReadsUnifiedPreferencesInsteadOfLegacyDefaults() {
+        val preferences = Preferences(AppSettings(defaultCurrency = "USD", defaultReminderDays = setOf(3))).apply {
+            unified = V1AppSettings(defaultCurrency = "EUR", defaultReminderDays = setOf(1, 7))
+        }
+        scenario(preferences = preferences) { model, repository, _ ->
+            model.openEditor(); advanceUntilIdle()
+            assertEquals("EUR", model.uiState.value.editor.currency)
+            assertEquals(setOf(1, 7), model.uiState.value.editor.reminderDays)
+            model.updateEditor { it.copy(name = "统一偏好订阅", amount = "12.50") }
+            model.saveSubscription(); advanceUntilIdle()
+            assertEquals("EUR", repository.subscriptions.value.single().currency)
+        }
+    }
+
+    @Test fun eachNewSubscriptionReadsFreshUnifiedDefaultsWithoutChangingAnOpenDraft() {
+        val preferences = Preferences().apply { unified = V1AppSettings(defaultCurrency = "EUR", defaultReminderDays = setOf(7)) }
+        scenario(preferences = preferences) { model, _, _ ->
+            model.openEditor(); advanceUntilIdle()
+            preferences.unified = V1AppSettings(defaultCurrency = "JPY", defaultReminderDays = setOf(1))
+            assertEquals("EUR", model.uiState.value.editor.currency)
+            model.closeEditor(); model.openEditor(); advanceUntilIdle()
+            assertEquals("JPY", model.uiState.value.editor.currency)
+            assertEquals(setOf(1), model.uiState.value.editor.reminderDays)
+        }
+    }
+
+    @Test fun unreadableUnifiedDefaultsKeepDraftAndPreventSaveDespiteReadableLegacySettings() {
+        val preferences = Preferences().apply { unifiedRead = { error("strict V1 read failed") } }
+        scenario(preferences = preferences) { model, repository, _ ->
+            model.openEditor(); model.updateEditor { it.copy(name = "保留统一偏好失败草稿", amount = "12.50") }
+            advanceUntilIdle()
+            assertNotNull(model.uiState.value.editor.preferencesError)
+            model.saveSubscription(); advanceUntilIdle()
+            assertTrue(repository.subscriptions.value.isEmpty())
+            assertEquals("保留统一偏好失败草稿", model.uiState.value.editor.name)
+        }
+    }
+
     @Test fun newSubscriptionUsesSavedCurrencyAndReminderCombination() {
         val preferences = Preferences(AppSettings(defaultCurrency = "EUR", defaultReminderDays = setOf(1, 7)))
         scenario(preferences = preferences) { model, repository, _ ->
@@ -464,12 +503,19 @@ class SubscriptionViewModelTest {
         override fun cancel(subscriptionId: Long, reminderDays: Set<Int>) { cancelled += subscriptionId; days = emptySet() }
         override fun cancelAll(subscriptionId: Long) { cancelled += subscriptionId; days = emptySet() }
     }
-    private class Preferences(initial: AppSettings = AppSettings()) : SettingsRepository {
+    // AppSettings is only a convenient historical fixture DTO; the consumer uses the V1 port.
+    private class Preferences(initial: AppSettings = AppSettings()) : V1SettingsRepository {
         private val values = MutableStateFlow(initial)
         var read: (suspend () -> AppSettings)? = null
-        override fun observeSettings() = values
-        override suspend fun getSettings() = read?.invoke() ?: values.value
-        override suspend fun updateSettings(transform: (AppSettings) -> AppSettings) { values.value = transform(values.value) }
+        var unified: V1AppSettings? = null
+        var unifiedRead: (suspend () -> V1AppSettings)? = null
+        override fun observe(): Flow<V1AppSettings> = flow {
+            emit(unifiedRead?.invoke() ?: unified ?: (read?.invoke() ?: values.value).let {
+                V1AppSettings(defaultCurrency = it.defaultCurrency, defaultReminderDays = it.defaultReminderDays)
+            })
+        }
+        override suspend fun update(expected: DataGeneration, transform: (V1AppSettings) -> V1AppSettings): V1AppSettings =
+            error("Subscription defaults must be read only")
     }
     private class FakeRepository : SubscriptionRepository {
         val subscriptions = MutableStateFlow<List<Subscription>>(emptyList())

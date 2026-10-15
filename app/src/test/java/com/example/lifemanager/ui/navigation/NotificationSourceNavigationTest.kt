@@ -1,126 +1,87 @@
 package com.example.lifemanager.ui.navigation
 
 import androidx.lifecycle.viewModelScope
-import com.example.lifemanager.domain.maintenance.DataGeneration
-import com.example.lifemanager.domain.maintenance.MaintenanceCoordinator
+import com.example.lifemanager.domain.maintenance.*
+import com.example.lifemanager.domain.plan.*
 import com.example.lifemanager.ui.common.GenerationAccess
-import com.example.lifemanager.ui.common.TestGenerations
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.async
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.runCurrent
-import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
-import kotlinx.coroutines.test.resetMain
+import com.example.lifemanager.ui.plan.*
+import java.time.LocalDate
+import kotlinx.coroutines.*
+import kotlinx.coroutines.test.*
 import org.junit.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
-import kotlin.test.assertSame
+import kotlin.test.*
 
-@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 class NotificationSourceNavigationTest {
-    // A live gate veto must retry even when Compose never renders the brief busy state.
-    @Test fun lateUiLockWaitsOutsidePermitAndRetriesTheSameRequestWithoutAnotherDeliveryCall() = runTest {
-        val dispatcher = StandardTestDispatcher(testScheduler)
-        Dispatchers.setMain(dispatcher)
-        val generations = TestGenerations(37)
-        val coordinator = MaintenanceCoordinator(generations)
-        val owner = TodoNavigationViewModel(GenerationAccess(generations, coordinator), dispatcher)
-        val graphEntered = CompletableDeferred<Unit>()
-        val graphReady = CompletableDeferred<Unit>()
-        val waitingForUi = CompletableDeferred<Unit>()
-        val uiReady = MutableStateFlow(true)
-        val destinations = mutableListOf<Long>()
-        try {
-            owner.openFromNotification(42, DataGeneration(37))
-            runCurrent()
-            val request = requireNotNull(owner.pending.value)
-            val delivery = async {
-                owner.deliverIfAllowed(request,
-                    awaitGraph = { graphEntered.complete(Unit); graphReady.await() },
-                    awaitUiReady = { waitingForUi.complete(Unit); uiReady.first { it }; Unit },
-                    canNavigate = { uiReady.value }) { destinations += request.entityId }
-            }
-            runCurrent()
-            assertTrue(graphEntered.isCompleted)
-            uiReady.value = false
-            graphReady.complete(Unit)
-            runCurrent()
-            assertTrue(waitingForUi.isCompleted)
-            assertFalse(delivery.isCompleted)
-            assertTrue(destinations.isEmpty())
-            // A maintenance session can enter while delivery awaits UI: no data permit is held.
-            coordinator.withSession { assertSame(request, owner.pending.value) }
-            uiReady.value = true
-            runCurrent()
-            assertTrue(delivery.await())
-            assertEquals(listOf(42L), destinations)
-            assertEquals(DataGeneration(37), request.originalDataGeneration)
-        } finally {
-            owner.viewModelScope.cancel()
-            Dispatchers.resetMain()
-        }
+    @Test fun originalSubscriptionSourceIsNotRecapturedAfterReusedIdRestore() = scenario { f,n ->
+        f.generations.commit(f.token) {};advanceUntilIdle()
+        n.receive(PlanNotificationClick.Subscription(42,f.token));advanceUntilIdle()
+        assertNull(n.uiState.value.pending)
+        n.receive(PlanNotificationClick.Subscription(42,DataGeneration(5)));advanceUntilIdle()
+        assertEquals(DataGeneration(5),assertNotNull(n.uiState.value.pending).generation)
     }
-
-    // Removing the live UI gate would discard backup consent/cancellation UI despite locked tabs.
-    @Test fun busyUiKeepsAdmittedRequestWithoutNavigatingAndIdleUiDeliversItsOriginalSource() = runTest {
-        val dispatcher = StandardTestDispatcher(testScheduler)
-        Dispatchers.setMain(dispatcher)
-        val generations = TestGenerations(37)
-        val access = GenerationAccess(generations, MaintenanceCoordinator(generations))
-        val owners = listOf(TodoNavigationViewModel(access, dispatcher),
-            ScheduleNavigationViewModel(access, dispatcher), SubscriptionNavigationViewModel(access, dispatcher))
-        try {
-            owners.forEach { it.openFromNotification(42, DataGeneration(37)) }
-            runCurrent()
-            owners.forEach { owner -> verifyUiAdmission(owner) }
-        } finally {
-            owners.forEach { it.viewModelScope.cancel() }
-            Dispatchers.resetMain()
-        }
+    @Test fun coldArrivalWithUnreadableMetadataCannotSucceedAfterRecoveryBeforeDispatch() = scenario { f,n ->
+        f.generations.currentFailure=IllegalStateException("missing metadata")
+        n.receive(PlanNotificationClick.Subscription(42,f.token))
+        f.generations.currentFailure=null;advanceUntilIdle()
+        assertNull(n.uiState.value.pending)
+        n.receive(PlanNotificationClick.Subscription(43,f.token));advanceUntilIdle()
+        assertEquals(43L,assertNotNull(n.uiState.value.pending).subscriptionId)
     }
-
-    private suspend fun <R : GenerationNavigationRequest> verifyUiAdmission(owner: GenerationNavigationViewModel<R>) {
-        val request = requireNotNull(owner.pending.value)
-        val destinations = mutableListOf<Long>()
-        assertFalse(owner.deliverIfAllowed(request, canNavigate = { false }) { destinations += request.entityId })
-        assertTrue(destinations.isEmpty())
-        assertSame(request, owner.pending.value)
-        assertTrue(owner.deliverIfAllowed(request, canNavigate = { true }) { destinations += request.entityId })
-        assertEquals(listOf(42L), destinations)
-        assertEquals(DataGeneration(37), request.originalDataGeneration)
+    @Test fun invalidSubscriptionIdsDoNotDisplaceAdmittedEvent() = scenario { f,n ->
+        n.receive(PlanNotificationClick.Subscription(42,f.token));advanceUntilIdle()
+        val prior=assertNotNull(n.uiState.value.pending)
+        n.receive(PlanNotificationClick.Subscription(0,f.token))
+        n.receive(PlanNotificationClick.Subscription(-1,f.token));advanceUntilIdle()
+        assertEquals(prior,n.uiState.value.pending)
     }
-
-    @Test fun allOwnersRejectMissingAndOldClickSourcesAfterReusedIdRestore() = runTest {
-        val dispatcher = StandardTestDispatcher(testScheduler)
-        Dispatchers.setMain(dispatcher)
-        val generations = TestGenerations(37)
-        val coordinator = MaintenanceCoordinator(generations)
-        val access = GenerationAccess(generations, coordinator)
-        val owners = listOf(TodoNavigationViewModel(access, dispatcher),
-            ScheduleNavigationViewModel(access, dispatcher), SubscriptionNavigationViewModel(access, dispatcher))
-        try {
-            coordinator.withSession { session ->
-                coordinator.withMaintenance(session) { generations.commit(session.generation) {} }
-            }
-            owners.forEach { it.openFromNotification(42, null) }
-            runCurrent()
-            owners.forEach { assertNull(it.pending.value) }
-            owners.forEach { it.openFromNotification(42, DataGeneration(37)) }
-            runCurrent()
-            owners.forEach { assertNull(it.pending.value) }
-            owners.forEach { it.openFromNotification(42, DataGeneration(38)) }
-            runCurrent()
-            owners.forEach { assertEquals(DataGeneration(38), it.pending.value?.originalDataGeneration) }
-        } finally {
-            owners.forEach { it.viewModelScope.cancel() }
-            Dispatchers.resetMain()
+    @Test fun repeatedTapOwnsNewTicketAndOldDraftConsentCannotAcknowledgeIt() = scenario { f,n ->
+        f.model.openNew(f.token);advanceUntilIdle()
+        f.model.change(PlanField.TITLE,"保留输入",f.model.uiState.value.stamp)
+        val click=PlanNotificationClick.Detail(PlanReminderToken(42,f.token,LocalDate.parse("2026-10-14"),f.now))
+        n.receive(click);advanceUntilIdle();n.deliver(f.model)
+        val old=assertNotNull(n.uiState.value.confirmation)
+        n.receive(click);advanceUntilIdle();n.deliver(f.model)
+        val fresh=assertNotNull(n.uiState.value.confirmation)
+        assertNotEquals(old.ticket,fresh.ticket)
+        assertFalse(n.confirmLeave(old,f.model))
+        assertEquals(fresh,n.uiState.value.confirmation)
+        assertEquals("保留输入",f.model.uiState.value.draft!!.title)
+    }
+    @Test fun draftDecisionWaitDoesNotHoldPermitAndReplacementRejectsThePendingTarget() = scenario { f,n ->
+        f.model.openNew(f.token);advanceUntilIdle()
+        f.model.change(PlanField.TITLE,"等待决定",f.model.uiState.value.stamp)
+        n.receive(PlanNotificationClick.Subscription(42,f.token));advanceUntilIdle()
+        // A missing/unready subscription owner must leave the original event pending.
+        assertFalse(n.deliver(f.model));assertNotNull(n.uiState.value.pending)
+        f.coordinator.withSession { session ->
+            assertEquals(MaintenanceState.READY,f.coordinator.state.value)
+            f.coordinator.withMaintenance(session) { f.generations.commit(session.generation) {} }
         }
+        advanceUntilIdle()
+        assertNull(n.uiState.value.pending)
+        assertEquals(V1Destination.PLAN,n.uiState.value.destination)
+    }
+    @Test fun busyEditorRetainsNotificationUntilWriteCompletesWithoutLosingSource() = scenario { f,n ->
+        f.model.openNew(f.token);advanceUntilIdle()
+        f.model.change(PlanField.TITLE,"真实保存",f.model.uiState.value.stamp)
+        val release=CompletableDeferred<Unit>()
+        f.repo.beforeSave={ release.await() }
+        f.model.save(f.model.uiState.value.stamp);runCurrent()
+        try {
+            assertTrue(f.model.uiState.value.isBusy)
+            n.receive(PlanNotificationClick.Legacy);runCurrent()
+            assertFalse(n.deliver(f.model))
+            assertEquals(f.token,assertNotNull(n.uiState.value.pending).generation)
+        } finally { release.complete(Unit) }
+        advanceUntilIdle();assertTrue(n.deliver(f.model));advanceUntilIdle()
+        assertEquals(PlanPane.LIST,f.model.uiState.value.pane)
+        assertNull(n.uiState.value.pending);assertEquals(1,f.repo.writes)
+    }
+    private fun scenario(block:suspend TestScope.(EditorTestWorld,PlanNavigationViewModel)->Unit)=runTest {
+        val dispatcher=StandardTestDispatcher(testScheduler);Dispatchers.setMain(dispatcher)
+        val f=EditorTestWorld(dispatcher);val n=PlanNavigationViewModel(GenerationAccess(f.generations,f.coordinator),dispatcher)
+        try { advanceUntilIdle();block(f,n) }
+        finally { f.model.viewModelScope.cancel();n.viewModelScope.cancel();runCurrent();Dispatchers.resetMain() }
     }
 }

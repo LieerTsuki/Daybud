@@ -416,7 +416,7 @@ class PlanMigrationTest {
     }
     private fun target(name: String, last: Migration = conversion) =
         Room.databaseBuilder(RuntimeEnvironment.getApplication(), PlanMigrationTestDatabase::class.java, name)
-            .addMigrations(*LifeManagerDatabase.MIGRATIONS, last).allowMainThreadQueries().build()
+            .addMigrations(*LifeManagerDatabase.LEGACY_MIGRATIONS, last).allowMainThreadQueries().build()
     private fun snapshot(db: SupportSQLiteDatabase): Map<String, List<List<String?>>> =
         rows(db, "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name!='room_master_table' ORDER BY name")
             .associate { row -> row.single()!! to db.query("SELECT * FROM ${row.single()} ORDER BY ${if (row.single() == "android_metadata") "1" else "1,2"}").use(::typedRows) }

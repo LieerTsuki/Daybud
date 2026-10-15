@@ -14,7 +14,7 @@ data class BackupImportResult(
     val rowCounts: Map<String, Int> get() = document.payload.tables.mapValues { it.value.size }
 }
 
-/** Isolated until E: exports only v2, imports validated v1/v2 without file/database side effects. */
+/** Exports only v2, imports validated v1/v2 without file/database side effects. */
 interface VersionedBackupCodec {
     fun encode(document: V2BackupDocument): ByteArray
     fun decode(bytes: ByteArray, legacyTodoZone: ZoneId): BackupImportResult

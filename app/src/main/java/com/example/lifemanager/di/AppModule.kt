@@ -1,42 +1,33 @@
 package com.example.lifemanager.di
 
-import com.example.lifemanager.data.repository.TodoRepositoryImpl
-import com.example.lifemanager.data.repository.ScheduleRepositoryImpl
-import com.example.lifemanager.data.repository.HabitRepositoryImpl
-import com.example.lifemanager.domain.repository.ScheduleRepository
-import com.example.lifemanager.domain.repository.HabitRepository
-import com.example.lifemanager.domain.repository.TodoRepository
-import com.example.lifemanager.domain.repository.SubscriptionRepository
-import com.example.lifemanager.data.repository.SubscriptionRepositoryImpl
-import com.example.lifemanager.data.repository.SettingsRepositoryImpl
-import com.example.lifemanager.data.repository.DataGenerationRepositoryImpl
-import com.example.lifemanager.domain.maintenance.DataGenerationRepository
-import com.example.lifemanager.domain.repository.SettingsRepository
-import com.example.lifemanager.data.backup.BackupRepositoryImpl
-import com.example.lifemanager.domain.backup.BackupRepository
-import com.example.lifemanager.domain.backup.BackupCodec
-import com.example.lifemanager.data.backup.BackupJsonCodec
 import com.example.lifemanager.data.backup.AndroidBackupFileStore
-import com.example.lifemanager.domain.backup.BackupFileStore
-import com.example.lifemanager.domain.backup.BackupFileUseCases
-import com.example.lifemanager.domain.maintenance.MaintenanceCoordinator
-import com.example.lifemanager.notification.ReminderScheduler
-import com.example.lifemanager.notification.ReminderSchedulerContract
-import com.example.lifemanager.notification.ScheduleReminderScheduler
-import com.example.lifemanager.notification.ScheduleReminderSchedulerContract
-import com.example.lifemanager.notification.SubscriptionReminderScheduler
-import com.example.lifemanager.notification.SubscriptionReminderSchedulerContract
+import com.example.lifemanager.data.backup.V2BackupMutationRepositoryImpl
+import com.example.lifemanager.data.backup.V2BackupRepositoryImpl
+import com.example.lifemanager.data.backup.VersionedBackupJsonCodec
+import com.example.lifemanager.data.local.LifeManagerDatabase
+import com.example.lifemanager.data.plan.PlanRepositoryImpl
+import com.example.lifemanager.data.plan.RoomV1SettingsRepository
+import com.example.lifemanager.data.repository.DataGenerationRepositoryImpl
+import com.example.lifemanager.data.repository.HabitRepositoryImpl
+import com.example.lifemanager.data.repository.SubscriptionRepositoryImpl
+import com.example.lifemanager.domain.backup.*
+import com.example.lifemanager.domain.maintenance.*
+import com.example.lifemanager.domain.plan.PlanReminderEffects
+import com.example.lifemanager.domain.plan.PlanRepository
+import com.example.lifemanager.domain.plan.PlanUseCases
+import com.example.lifemanager.domain.repository.V1SettingsRepository
+import com.example.lifemanager.domain.repository.HabitRepository
+import com.example.lifemanager.domain.repository.SubscriptionRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import android.content.Context
-import dagger.hilt.android.qualifiers.ApplicationContext
+import java.time.Clock
+import javax.inject.Qualifier
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import javax.inject.Qualifier
 
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
@@ -45,91 +36,63 @@ annotation class IoDispatcher
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class AppModule {
-    @Binds
-    @Singleton
-    abstract fun bindTodoRepository(impl: TodoRepositoryImpl): TodoRepository
-
-    @Binds
-    @Singleton
-    abstract fun bindScheduleRepository(impl: ScheduleRepositoryImpl): ScheduleRepository
-
-    @Binds
-    @Singleton
+    @Binds @Singleton
     abstract fun bindHabitRepository(impl: HabitRepositoryImpl): HabitRepository
 
-    @Binds
-    @Singleton
+    @Binds @Singleton
     abstract fun bindSubscriptionRepository(impl: SubscriptionRepositoryImpl): SubscriptionRepository
 
-    @Binds
-    @Singleton
-    abstract fun bindSettingsRepository(impl: SettingsRepositoryImpl): SettingsRepository
-
-    @Binds
-    @Singleton
+    @Binds @Singleton
     abstract fun bindDataGenerationRepository(impl: DataGenerationRepositoryImpl): DataGenerationRepository
 
-    @Binds
-    @Singleton
-    abstract fun bindBackupRepository(impl: BackupRepositoryImpl): BackupRepository
-
-    @Binds
-    @Singleton
+    @Binds @Singleton
     abstract fun bindBackupFileStore(impl: AndroidBackupFileStore): BackupFileStore
-
-    @Binds
-    @Singleton
-    abstract fun bindBackupMutations(impl: com.example.lifemanager.data.backup.BackupMutationRepositoryImpl): com.example.lifemanager.domain.backup.BackupMutationRepository
-
-    @Binds
-    @Singleton
-    abstract fun bindMaintenanceEffects(impl: com.example.lifemanager.notification.AndroidMaintenanceReminderEffects): com.example.lifemanager.domain.maintenance.MaintenanceReminderEffects
-
 }
 
+/** Every business, preference and backup adapter shares DatabaseModule's single database. */
 @Module
 @InstallIn(SingletonComponent::class)
 object ProviderModule {
-    @Provides
-    fun provideBackupWorkflow(
-        snapshots: BackupRepository,
-        mutations: com.example.lifemanager.domain.backup.BackupMutationRepository,
-        files: BackupFileUseCases,
-        generations: DataGenerationRepository,
-        coordinator: MaintenanceCoordinator,
-        reminders: com.example.lifemanager.domain.maintenance.MaintenanceReminderEffects,
-        @IoDispatcher dispatcher: CoroutineDispatcher,
-    ) = com.example.lifemanager.domain.backup.BackupMaintenanceWorkflow(snapshots, mutations, files, generations, coordinator, reminders, dispatcher)
+    @Provides @Singleton
+    fun provideClock(): Clock = Clock.systemDefaultZone()
 
-    @Provides
-    @Singleton
-    fun provideBackupCodec(): BackupCodec = BackupJsonCodec()
+    @Provides @Singleton
+    fun providePlanRepository(database: LifeManagerDatabase, clock: Clock): PlanRepository =
+        PlanRepositoryImpl(database, database.planDao(), clock)
 
-    @Provides
-    fun provideBackupFileUseCases(
-        repository: BackupRepository,
-        codec: BackupCodec,
-        files: BackupFileStore,
-        maintenance: MaintenanceCoordinator,
-        @IoDispatcher dispatcher: CoroutineDispatcher,
-    ): BackupFileUseCases = BackupFileUseCases(repository, codec, files, maintenance, dispatcher)
+    @Provides @Singleton
+    fun provideSettingsRepository(database: LifeManagerDatabase): V1SettingsRepository =
+        RoomV1SettingsRepository(database)
 
-    @Provides
-    @Singleton
-    fun provideSubscriptionReminderScheduler(@ApplicationContext context: Context): SubscriptionReminderSchedulerContract =
-        SubscriptionReminderScheduler(context)
+    @Provides @Singleton
+    fun providePlanUseCases(repository: PlanRepository, maintenance: MaintenanceCoordinator,
+        reminders: PlanReminderEffects): PlanUseCases = PlanUseCases(repository, maintenance, reminders)
 
-    @Provides
-    @Singleton
-    fun provideReminderScheduler(@ApplicationContext context: Context): ReminderSchedulerContract =
-        ReminderScheduler(context)
+    @Provides @Singleton
+    fun provideBackupRepository(database: LifeManagerDatabase): V2BackupRepository =
+        V2BackupRepositoryImpl(database, database.backupSnapshotDao())
 
-    @Provides
-    @Singleton
-    fun provideScheduleReminderScheduler(@ApplicationContext context: Context): ScheduleReminderSchedulerContract =
-        ScheduleReminderScheduler(context)
+    @Provides @Singleton
+    fun provideBackupMutations(database: LifeManagerDatabase): V2BackupMutationRepository =
+        V2BackupMutationRepositoryImpl(database, database.backupSnapshotDao())
 
-    @Provides
-    @IoDispatcher
+    @Provides @Singleton
+    fun provideBackupCodec(): VersionedBackupCodec = VersionedBackupJsonCodec()
+
+    @Provides @Singleton
+    fun provideBackupFileUseCases(repository: V2BackupRepository, codec: VersionedBackupCodec,
+        files: BackupFileStore, maintenance: MaintenanceCoordinator,
+        @IoDispatcher dispatcher: CoroutineDispatcher): V2BackupFileUseCases =
+        V2BackupFileUseCases(repository, codec, files, maintenance, dispatcher)
+
+    @Provides @Singleton
+    fun provideBackupWorkflow(snapshots: V2BackupRepository, mutations: V2BackupMutationRepository,
+        files: V2BackupFileUseCases, generations: DataGenerationRepository,
+        coordinator: MaintenanceCoordinator, capture: BackupReminderCapture,
+        reminders: MaintenanceReminderEffects, @IoDispatcher dispatcher: CoroutineDispatcher): V2BackupMaintenanceWorkflow =
+        V2BackupMaintenanceWorkflow(snapshots, mutations, files, generations, coordinator,
+            capture, reminders, dispatcher)
+
+    @Provides @IoDispatcher
     fun provideIoDispatcher(): CoroutineDispatcher = Dispatchers.IO
 }

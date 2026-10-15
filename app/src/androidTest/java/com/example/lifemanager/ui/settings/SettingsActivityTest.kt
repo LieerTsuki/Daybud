@@ -14,18 +14,16 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import kotlin.test.assertEquals
 
-/** Run only on an isolated/readonly device: changes settings, never business data. */
+/** Isolated device only: changes preferences and restores them using the current recreated owner. */
 @RunWith(AndroidJUnit4::class)
 class SettingsActivityTest {
     @get:Rule val compose = createAndroidComposeRule<MainActivity>()
-    private lateinit var settingsModel: SettingsViewModel
 
     @Test fun preferencesRemainSelectedAfterActivityRecreation() {
-        compose.runOnIdle { settingsModel = ViewModelProvider(compose.activity)[SettingsViewModel::class.java] }
         compose.waitUntil(5000) { model().uiState.value.isAvailable }
         val original = model().uiState.value.settings!!
         try {
-            compose.onNode(hasText("设置") and SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Tab)).performClick()
+            compose.onNodeWithContentDescription("设置入口").performClick()
             compose.onNodeWithText("深色").performClick()
             compose.waitUntil(5000) { model().uiState.value.settings?.theme == ThemeMode.DARK && !model().uiState.value.isSaving }
             compose.onNodeWithText("DD-MM-YYYY").performScrollTo().performClick()
@@ -33,14 +31,15 @@ class SettingsActivityTest {
             compose.activityRule.scenario.recreate()
             compose.onNodeWithText("深色").performScrollTo().assertIsSelected()
             compose.onNodeWithText("DD-MM-YYYY").performScrollTo().assertIsSelected()
+            compose.waitUntil(5000) { model().uiState.value.isAvailable }
             assertEquals(ThemeMode.DARK, model().uiState.value.settings!!.theme)
         } finally {
-            compose.runOnIdle { model().setTheme(original.theme) }
+            compose.runOnIdle { model().setTheme(original.theme, model().uiState.value.generation) }
             compose.waitUntil(5000) { !model().uiState.value.isSaving }
-            compose.runOnIdle { model().setDateFormat(original.dateFormat) }
+            compose.runOnIdle { model().setDateFormat(original.dateFormat, model().uiState.value.generation) }
             compose.waitUntil(5000) { !model().uiState.value.isSaving }
         }
     }
 
-    private fun model() = settingsModel
+    private fun model() = ViewModelProvider(compose.activity)[V1SettingsViewModel::class.java]
 }

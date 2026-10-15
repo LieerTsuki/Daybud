@@ -89,12 +89,9 @@ class ReminderBroadcastRunner @Inject constructor(
     companion object {
         private const val TAG = "ReminderBroadcast"
 
-        fun fromApplication(context: Context, dispatcher: CoroutineDispatcher): ReminderBroadcastRunner {
-            val entryPoint = EntryPointAccessors.fromApplication(
-                context.applicationContext, TodoReminderEntryPoint::class.java,
-            )
-            return ReminderBroadcastRunner(entryPoint.maintenanceCoordinator(), dispatcher)
-        }
+        fun fromApplication(context: Context): ReminderBroadcastRunner =
+            EntryPointAccessors.fromApplication(context.applicationContext, ReminderSafetyEntryPoint::class.java)
+                .reminderBroadcastRunner()
     }
 }
 
