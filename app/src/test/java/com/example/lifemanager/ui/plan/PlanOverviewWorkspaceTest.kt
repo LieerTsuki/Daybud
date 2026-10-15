@@ -13,6 +13,7 @@ import com.example.lifemanager.domain.maintenance.*
 import com.example.lifemanager.ui.common.GenerationAccess
 import com.example.lifemanager.ui.theme.LifeManagerTheme
 import java.time.*
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.*
 import org.junit.After
 import org.junit.Rule
@@ -33,8 +34,9 @@ class PlanOverviewWorkspaceTest {
     private val day=LocalDate.now(clock)
     private val list=PlanViewModel(f.repo,f.cases,access,Dispatchers.IO,clock)
     private val calendar=PlanCalendarViewModel(f.repo,access,Dispatchers.IO,clock)
-    private val stats=PlanStatisticsViewModel(f.repo,access,Dispatchers.IO,clock)
-    @After fun cleanup() { listOf(list,calendar,stats,f.model).forEach { it.viewModelScope.cancel() } }
+    private val statsDispatcher=StatisticsDispatchGate()
+    private val stats=PlanStatisticsViewModel(f.repo,access,statsDispatcher,clock)
+    @After fun cleanup() { statsDispatcher.release();listOf(list,calendar,stats,f.model).forEach { it.viewModelScope.cancel() } }
     private fun waitFor(predicate:()->Boolean) { compose.waitUntil(5_000) { compose.waitForIdle();predicate() } }
     private fun scroll(matcher:SemanticsMatcher) { compose.onNode(SemanticsMatcher.keyIsDefined(SemanticsActions.ScrollToIndex)).performScrollToNode(matcher) }
     private fun show() {
@@ -61,7 +63,12 @@ class PlanOverviewWorkspaceTest {
         f.repo.rows.value=listOf(Plan(id=7,title="长期目标",timeZone=clock.zone.id,createdAt=f.now,updatedAt=f.now))
         show();compose.runOnIdle { list.onFilterChanged(PlanFilter(query="无结果",category=PlanCategory.TODO),f.token) }
         waitFor { !list.uiState.value.isLoading }
+        statsDispatcher.hold()
         scroll(hasText("统计"));compose.onNodeWithText("统计").performClick()
+        waitFor { stats.uiState.value.isLoading }
+        compose.onNodeWithContentDescription("正在读取统计").assertExists()
+        statsDispatcher.release()
+        waitFor { stats.uiState.value.isAvailable && !stats.uiState.value.isLoading }
         scroll(hasText("全库完成率：0%（0 / 1）"));compose.onNodeWithText("全库完成率：0%（0 / 1）").assertExists()
         scroll(hasText("列表"));compose.onNodeWithText("列表").performClick()
         assertEquals("无结果",list.uiState.value.filter.query);assertEquals(PlanCategory.TODO,list.uiState.value.filter.category)
@@ -87,5 +94,21 @@ class PlanOverviewWorkspaceTest {
             waitFor { calendar.uiState.value.generation==DataGeneration(5) && calendar.uiState.value.isAvailable && f.model.uiState.value.stamp.generation==DataGeneration(5) }
             compose.runOnIdle { old() };assertEquals(PlanPane.LIST,f.model.uiState.value.pane);assertNull(f.model.uiState.value.detail)
         } finally { compose.mainClock.autoAdvance=true }
+    }
+}
+
+/** Test-only delayed read scheduling. Never changes production clocks, queries or publication. */
+private class StatisticsDispatchGate:CoroutineDispatcher() {
+    private val gate=Any()
+    private var held=false
+    private val pending=ArrayDeque<Pair<CoroutineContext,Runnable>>()
+    fun hold()=synchronized(gate) { held=true }
+    override fun dispatch(context:CoroutineContext,block:Runnable) {
+        val queued=synchronized(gate) { if(held) { pending.addLast(context to block);true } else false }
+        if(!queued)Dispatchers.IO.dispatch(context,block)
+    }
+    fun release() {
+        val tasks=synchronized(gate) { held=false;pending.toList().also { pending.clear() } }
+        tasks.forEach { (context,block)->Dispatchers.IO.dispatch(context,block) }
     }
 }

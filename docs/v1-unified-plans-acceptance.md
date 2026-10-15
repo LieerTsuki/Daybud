@@ -1,5 +1,13 @@
 # V1 统一计划分批验收
 
+## E6 前置：统计工作区测试同步修复（2026-10-15，验证通过）
+
+E6已获用户确认；初始工作区干净、HEAD5b24435。开始前1400项JVM全量强制重跑失败1项（1m44s，40 tasks：1 executed/39 up-to-date）：PlanOverviewWorkspaceTest的统计口径/返回保留筛选用例，在统计页面切换后立即查找完成率文本；该时刻页面只渲染加载状态。按基线要求暂停生产切换，用户同意先定位修复再继续E6。没有数据库/入口/提醒/版本改动。
+
+根因验证：PlanStatisticsScreen显示时RefreshPlanOverview触发新鲜读取，refresh/retryRead同步设置isLoading，IO读取并非Compose空闲即可完成。添加仅测试使用、线程安全的StatisticsDispatchGate，初始就绪后暂停统计调度，切到真实统计页并验证加载指示可见；保持原来立即滚动结果的步骤，稳定得到4项/1失败RED（1m50s，40 tasks：5 executed/35 up-to-date），与原缺失文本一致。修复只在测试中放行调度后等待isAvailable&&!isLoading，保留原UI统计文本和列表筛选回归断言；不加固定sleep、不延长超时、不删除/弱化断言、不修改生产查询或页面时钟。闸门在After清理时释放以免失败遗留暂停任务。定向/全量和独立复审结果待补，不能把测试修复记成E6已接入。
+
+最终测试源定向4项/0失败（1m11s，40 tasks：4 executed/36 up-to-date），随后执行E5相同全量命令：testDebugUnitTest --rerun、assembleDebug、assembleDebugAndroidTest、lintDebug，BUILD SUCCESSFUL 2m57s，101 tasks：4 executed/97 up-to-date。实际XML1400项/120 suites，failure/error/skipped均0；本次没有增加测试条数，只加强现有统计工作区用例。Debug/androidTest全为缓存构建检查；lint仅测试源重新分析，报告为缓存检查，保持0 error/55既有warning，不称重新打包或设备执行。独立只读审查无可操作问题，确认闸门线程安全、失败后释放、实际状态同步、原断言保留及无生产hook。README和CHANGELOG同步，E6生产切换尚未开始。
+
 ## E5 · 第十八批：新版备份设置与导航保护（2026-10-15，局部验收通过）
 
 用户已确认本批范围，基线145ae17；继续当前功能分支。不切生产Room5/Hilt/MainActivity/默认备份或版本，不发布APK、不合并main、不接触个人数据。沿用已批准的V2文件/维护底座，新增独立备份设置所有者及真实准备页面；完整生产原子激活和F验收仍后续。
