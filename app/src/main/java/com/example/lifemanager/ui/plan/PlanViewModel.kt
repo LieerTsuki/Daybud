@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.*
 @OptIn(ExperimentalCoroutinesApi::class)
 class PlanViewModel(private val repository: PlanRepository, private val useCases: PlanUseCases,
     private val access: GenerationAccess, private val dispatcher: CoroutineDispatcher,
-    private val clock: Clock = Clock.systemDefaultZone()) : ViewModel() {
+    private val clock: Clock = Clock.system(ZoneId.of("Asia/Shanghai"))) : ViewModel() {
     private val state = MutableStateFlow(PlanUiState())
     val uiState = state.asStateFlow()
     private val filter = MutableStateFlow(PlanFilter(status = PlanStatus.ALL))

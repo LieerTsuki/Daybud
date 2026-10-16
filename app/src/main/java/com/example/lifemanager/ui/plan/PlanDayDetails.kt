@@ -72,10 +72,7 @@ internal fun PlanDayDetails(day: LocalDate, state: PlanCalendarState, onDismiss:
                                     Text(timeLabel(row, state.displayZone), style = MaterialTheme.typography.bodyMedium)
                                     Text(if (plan.isCompleted) "已完成" else "未完成", style = MaterialTheme.typography.labelMedium)
                                     if (!plan.description.isNullOrBlank()) Text(plan.description)
-                                    if (!plan.location.isNullOrBlank()) Text("地点：${plan.location}")
-                                    if (!plan.participants.isNullOrBlank()) Text("参与人：${plan.participants}")
-                                    if (plan.tagNames.isNotEmpty()) Text("标签：${plan.tagNames.joinToString(" · ")}")
-                                    if (plan.isRepeating) Text("重复系列 · 勾选完成将结束整个系列", style = MaterialTheme.typography.bodySmall)
+                                    Text(planRepeatSummary(plan), style = MaterialTheme.typography.bodySmall)
                                 }
                             }
                         }

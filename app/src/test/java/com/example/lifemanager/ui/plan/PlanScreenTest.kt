@@ -91,10 +91,16 @@ class PlanScreenTest {
         compose.onNodeWithText("日历").assertDoesNotExist()
         compose.onNodeWithText("统计").assertDoesNotExist()
     }
-    @Test fun `search stays interactive without obsolete filter controls`() {
-        show();compose.onNodeWithText("全部分类").assertDoesNotExist()
-        compose.onNode(hasSetTextAction()).performScrollTo().performTextReplacement("Kotlin")
-        assertEquals("Kotlin",state.value.filter.query)
+    @Test fun `board omits search and successful operation history`() {
+        state.value=state.value.copy(message="已完成，可在原象限展开已完成计划")
+        show()
+        compose.onNodeWithText("搜索计划").assertDoesNotExist()
+        compose.onNode(hasSetTextAction()).assertDoesNotExist()
+        compose.onNodeWithText("已完成，可在原象限展开已完成计划").assertDoesNotExist()
+    }
+    @Test fun `failed operation still exposes actionable feedback`() {
+        state.value=state.value.copy(message="操作失败，未保存；请检查后重试");show()
+        compose.onNodeWithText("操作失败，未保存；请检查后重试").assertExists()
     }
     @Test fun `saved reminder warning offers only the receipt retry`() {
         state.value=state.value.copy(reminderFailures=mapOf(1L to PlanWriteReceipt(1,DataGeneration(4))))

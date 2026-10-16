@@ -41,6 +41,7 @@ data class PlanDraft(
     val repeatEnd: String = base.repeatEndDate?.toString().orEmpty(),
     val reminderEnabled: Boolean = base.reminderEnabled,
     val reminderMinutes: String = base.reminderMinutes?.toString().orEmpty(),
+    val localTimeErrors: Set<PlanField> = emptySet(),
 )
 
 internal fun instantText(value: Instant?, zone: String): String = value?.atZone(ZoneId.of(zone))?.toOffsetDateTime()?.toString().orEmpty()
@@ -48,7 +49,10 @@ internal fun instantText(value: Instant?, zone: String): String = value?.atZone(
 object PlanDraftRules {
     fun build(draft: PlanDraft): Plan {
         require(draft.title.isNotBlank()) { "标题不能为空" }
-        require(draft.timeZone in ZoneId.getAvailableZoneIds()) { "请选择有效 IANA 时区，历史偏移值不能用于新编辑" }
+        require(draft.localTimeErrors.isEmpty()) { "请输入有效的日期与时间" }
+        require(draft.timeZone in ZoneId.getAvailableZoneIds() ||
+            (draft.base.id>0 && draft.timeZone==draft.base.timeZone &&
+                runCatching { ZoneId.of(draft.timeZone).rules.isFixedOffset }.getOrDefault(false))) { "请选择有效 IANA 时区" }
         val base=draft.base;val zone=ZoneId.of(draft.timeZone)
         fun time(text:String,old:Instant?):Instant? {
             if(text==instantText(old,base.timeZone)) return old
@@ -84,10 +88,10 @@ object PlanDraftRules {
             tagNames=(draft.tags+draft.newTag.trim().takeIf { it.isNotEmpty() }.let { if(it==null)emptyList()else listOf(it) }).distinct(),
             repeatRule=draft.repeatRule,repeatInterval=interval,repeatDaysOfWeek=draft.repeatDays.toSet(),repeatEndDate=date(draft.repeatEnd),
             reminderEnabled=draft.reminderEnabled,reminderMinutes=minute)
-        require(PlanRules.validate(plan)==null) { "有效日期/区间、重复间隔或提前分钟无效" }
+        require(PlanRules.validateEdit(plan,base)==null) { "有效日期/区间、重复间隔或提前分钟无效" }
         return plan
     }
-    fun edit(draft: PlanDraft, field: PlanField, value: String): PlanDraft = when(field) {
+    fun edit(draft: PlanDraft, field: PlanField, value: String): PlanDraft = (when(field) {
         PlanField.TITLE->draft.copy(title=value)
         PlanField.DESCRIPTION->draft.copy(description=value)
         PlanField.ZONE->draft.copy(timeZone=value)
@@ -104,5 +108,5 @@ object PlanDraftRules {
         PlanField.REPEAT_END->draft.copy(repeatEnd=value)
         PlanField.COLOR->draft.copy(color=value)
         PlanField.NEW_TAG->draft.copy(newTag=value)
-    }
+    }).copy(localTimeErrors=draft.localTimeErrors-field)
 }

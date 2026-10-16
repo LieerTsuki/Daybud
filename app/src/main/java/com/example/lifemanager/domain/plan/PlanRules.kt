@@ -21,6 +21,16 @@ object PlanRules {
         return validateConfiguration(plan)
     }
 
+    /** Existing fixed-offset history may keep its exact zone; new/changed zones stay strict. */
+    fun validateEdit(plan: Plan, original: Plan?): PlanValidationError? {
+        if (original != null && plan.id > 0 && plan.id == original.id && plan.timeZone == original.timeZone &&
+            runCatching { ZoneId.of(plan.timeZone).rules.isFixedOffset }.getOrDefault(false)) {
+            if (plan.title.isBlank()) return PlanValidationError.TITLE_REQUIRED
+            return validateForRead(plan)
+        }
+        return validate(plan)
+    }
+
     /** Legacy blank titles and valid fixed offsets remain readable, without normalization. */
     fun validateForRead(plan: Plan): PlanValidationError? {
         try {

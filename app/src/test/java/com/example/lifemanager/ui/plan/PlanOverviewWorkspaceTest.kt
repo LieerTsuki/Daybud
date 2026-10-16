@@ -81,10 +81,9 @@ class PlanOverviewWorkspaceTest {
         compose.onNodeWithTag("plan-calendar-date-$target").assertExists()
     }
 
-    @Test fun `month expands and collapses without changing search and has no obsolete sections`() {
+    @Test fun `month expands and collapses without search and has no obsolete sections`() {
         f.repo.rows.value = listOf(Plan(id = 7, title = "长期目标", timeZone = clock.zone.id, createdAt = f.now, updatedAt = f.now))
         show()
-        compose.runOnIdle { list.onFilterChanged(PlanFilter(query = "无结果", status = PlanStatus.ALL), f.token) }
         waitFor { !list.uiState.value.isLoading }
         expandMonth()
         scroll(hasTestTag("plan-calendar-date-$day"))
@@ -97,7 +96,8 @@ class PlanOverviewWorkspaceTest {
         compose.onNodeWithText("统计", useUnmergedTree = true).assertDoesNotExist()
         compose.onNodeWithText("周视图", useUnmergedTree = true).assertDoesNotExist()
         compose.onNodeWithText("日视图", useUnmergedTree = true).assertDoesNotExist()
-        assertEquals("无结果", list.uiState.value.filter.query)
+        assertEquals("", list.uiState.value.filter.query)
+        compose.onNodeWithText("搜索计划").assertDoesNotExist()
     }
 
     @Test fun `editor hides month dropdown and keeps dirty draft on cancel close`() {

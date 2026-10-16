@@ -126,6 +126,50 @@ class PlanRepositoryRoomTest {
         assertEquals(" \n", db.plans().findEntity(1)!!.title)
     }
 
+    @Test fun `ordinary title and note edits preserve historical fixed offsets and raw custom repeat fields`() = withDatabase { db, repo ->
+        for ((index, zone) in listOf("+05:30", "+08:00").withIndex()) {
+            val id = index.toLong() + 1
+            val original = entity(id).copy(timeZone = zone, description = "旧备注", timeMode = PlanTimeMode.TIMED,
+                startAt = 1_791_419_400_000L, endAt = 1_791_423_000_000L,
+                dueAt = 1_791_420_000_000L, dueDate = 20_740, allDayStartDate = 20_740, allDayEndDate = 20_741,
+                repeatRule = ScheduleRepeatRule.CUSTOM, repeatInterval = 3, repeatDaysOfWeek = "4,1,4",
+                repeatEndDate = 20_800, reminderMinutes = 25, location = "旧地点", participants = "旧参与人")
+            seed(db, original)
+            db.plans().insertException(PlanExceptionEntity(id, 20_740, true))
+            val loaded = assertNotNull(success { repo.get(id) })
+            assertEquals(zone, loaded.timeZone)
+            val edited = loaded.copy(title = "整理后的计划$id", description = "整理后的备注\n保留换行")
+            assertEquals(id, success { repo.save(edited, loaded.tagNames, token) })
+            assertEquals(original.copy(title = edited.title, description = edited.description,
+                updatedAt = now.toEpochMilli()), db.plans().findEntity(id))
+            val saved = assertNotNull(repo.get(id))
+            assertEquals(zone, saved.timeZone)
+            assertEquals(loaded.startAt, saved.startAt)
+            assertEquals(loaded.endAt, saved.endAt)
+            assertEquals(ScheduleRepeatRule.CUSTOM, saved.repeatRule)
+            assertEquals(setOf(DayOfWeek.MONDAY, DayOfWeek.THURSDAY), saved.repeatDaysOfWeek)
+            assertEquals(listOf(PlanException(id, LocalDate.ofEpochDay(20_740), true)), repo.getExceptions(id))
+        }
+    }
+
+    @Test fun `fixed offset edit compatibility cannot create or substitute a fixed offset zone`() = withDatabase { db, repo ->
+        assertFailsWith<IllegalArgumentException> {
+            repo.save(plan().copy(timeZone = "+05:30"), listOf("禁止创建"), token)
+        }
+        assertTrue(db.plans().allEntities().isEmpty())
+        for ((index, zones) in listOf("Asia/Shanghai" to "+08:00", "+05:30" to "+08:00", "+08:00" to "+05:30").withIndex()) {
+            val id = index.toLong() + 1
+            val original = entity(id).copy(timeZone = zones.first)
+            seed(db, original)
+            val loaded = assertNotNull(success { repo.get(id) })
+            assertFailsWith<IllegalArgumentException> {
+                repo.save(loaded.copy(title = "不应保存", timeZone = zones.second), listOf("禁止创建"), token)
+            }
+            assertEquals(original, db.plans().findEntity(id))
+        }
+        assertTrue(repo.observeTags().first().isEmpty())
+    }
+
     @Test fun `completion is idempotent and preserves series exceptions without completing child`() = withDatabase { db, repo ->
         seed(db, entity(1).copy(timeMode = PlanTimeMode.TIMED, startAt = 1, endAt = 2,
             repeatRule = ScheduleRepeatRule.DAILY, repeatDaysOfWeek = "2,1,2"))

@@ -14,6 +14,10 @@
 
 > 历史预览版本 `v1.0.0-rizhiya-preview-20261016`，于 2026-10-16T01:24:20+08:00 发布，对应已验收源码 [`4db24de`](https://github.com/LieerTsuki/Daybud/commit/4db24deb56d9562fede555d7d3aa7100f5013cee)。V1功能分支已合并到main；APK为1.0.0/code3/schema6，使用既有预览证书的非调试Release构建。历史0.1.1仍保留：[旧版下载](https://github.com/lieer-12/app/releases/tag/v0.1.1-rizhiya-preview-20261009)。发布/合并核对见[发布记录](docs/v1-publication.md)。
 
+## 计划界面精简 · 1.0.3候选已验收
+
+本轮移除搜索和成功操作记录，月历周日首列、任务统一字号并保留单行象限配色，修复同月选日短暂隐藏月历。详情/编辑改为分组卡片和日期、时间选择器，上海时间不显示时区，仅展示有效安排、备注、重复与编辑闹钟开关。候选1.0.3/code6/schema6已完成1161项JVM、70项API35设备与覆盖升级验收，本轮结果见[验收记录](docs/planner-polish-acceptance.md)，发布完成后更新顶部入口。
+
 ## 内嵌月历 · 1.0.2 预览版已发布
 
 1.0.2将月历收进四象限页的下拉区域，只保留月视图；移除独立日历和计划统计界面。日格每条任务严格单行并按四象限配色，先缩字再省略，双击日期查看当天完整计划详情。安装包版本1.0.2/code5，schema6与备份兼容保持；已公开发布并合并main，顶部下载已更新为1.0.2。本轮过程见[内嵌月历验收](docs/inline-month-acceptance.md)。

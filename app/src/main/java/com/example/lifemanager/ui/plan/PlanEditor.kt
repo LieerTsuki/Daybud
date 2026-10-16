@@ -4,8 +4,11 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -16,92 +19,123 @@ import com.example.lifemanager.domain.plan.PlanTimeMode
 import java.time.DayOfWeek
 
 @Composable
-@OptIn(ExperimentalLayoutApi::class)
 fun PlanEditor(state: PlanEditorState, model: PlanEditorViewModel) {
     val draft = state.draft ?: return
-    // Capture a value, never a delegated/live state getter, in every rendered callback.
+    // Every callback carries the immutable stamp of the form that rendered it.
     val stamp = state.stamp
     val enabled = state.isAvailable && !state.isMaintaining && !state.isBusy
-    Surface(color = MaterialTheme.colorScheme.background) {
-        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            item { PlanFormHeading(if (draft.base.id == 0L) "种下新计划" else "整理计划", "手动选择象限，添加日期后也会出现在日历中") }
-            item { PlanInput("计划标题", draft.title, enabled) { model.change(PlanField.TITLE, it, stamp) } }
-            item { PlanInput("计划备注", draft.description, enabled, singleLine = false) { model.change(PlanField.DESCRIPTION, it, stamp) } }
-            planFeedback(state, model)
-            item { PlanChoiceRow("时间类型") {
-                PlanTimeMode.entries.forEach { mode -> FilterChip(draft.mode == mode, { model.setMode(mode, stamp) }, enabled = enabled,
-                    label = { Text(modeLabel(mode)) }) }
-            } }
-            when (draft.mode) {
-                PlanTimeMode.NONE -> item { Text("长期目标不设日期。历史时间、重复和提醒参数保留，但不会生成日程或提醒。") }
-                PlanTimeMode.DEADLINE -> {
-                    item { Row { Checkbox(draft.dateOnly, { model.setDateOnly(it, stamp) }, enabled = enabled,
-                        modifier = Modifier.semantics { contentDescription = "仅日期截止" }); Text("仅日期截止（不转换为午夜时间）") } }
-                    item { if (draft.dateOnly) PlanInput("截止日期输入", draft.dueDate, enabled, "日期：2026-10-20") { model.change(PlanField.DUE_DATE, it, stamp) }
-                        else PlanInput("截止时间输入", draft.dueAt, enabled, "时间：2026-10-20T12:00+08:00") { model.change(PlanField.DUE_AT, it, stamp) } }
-                    item { Text("截止日期与时刻互斥，保存时仅保留所选截止字段。截止日程不生成重复；历史重复参数保留。") }
-                }
-                PlanTimeMode.TIMED -> {
-                    item { PlanInput("开始时间输入", draft.startAt, enabled, "时间：2026-10-20T12:00+08:00") { model.change(PlanField.START_AT, it, stamp) } }
-                    item { PlanInput("结束时间输入", draft.endAt, enabled, "时间：2026-10-20T13:00+08:00") { model.change(PlanField.END_AT, it, stamp) } }
-                }
-                PlanTimeMode.ALL_DAY -> {
-                    item { PlanInput("全天开始日期输入", draft.allDayStart, enabled, "日期：2026-10-20") { model.change(PlanField.ALL_DAY_START, it, stamp) } }
-                    item { PlanInput("全天结束日期输入", draft.allDayEnd, enabled, "日期：2026-10-20（含当天）") { model.change(PlanField.ALL_DAY_END, it, stamp) } }
-                }
-            }
-            item { PlanInput("IANA 时区", draft.timeZone, enabled, "如 Asia/Shanghai；更换时区保留未改动时间的实际时刻") { model.change(PlanField.ZONE, it, stamp) } }
-            item { Column {
-                Text("象限", style = MaterialTheme.typography.labelLarge)
-                FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf(TodoPriority.HIGH, TodoPriority.MEDIUM, TodoPriority.LOW, TodoPriority.NONE).forEach { priority ->
-                        FilterChip(draft.priority == priority, { model.setPriority(priority, stamp) }, enabled = enabled,
-                            modifier = Modifier.heightIn(min = 48.dp), label = { Text(priorityLabel(priority)) })
+    val reminderOn = draft.reminderEnabled && draft.reminderMinutes.toIntOrNull()?.let { it >= 0 } == true
+    key(stamp.generation, stamp.session) {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                item { PlanFormHeading(if (draft.base.id == 0L) "种下新计划" else "整理计划", "给想做的事，留一个位置") }
+                planFeedback(state, model)
+                item { PlanQuadrantMenu(draft.priority, enabled) { model.setPriority(it, stamp) } }
+                item { PlanSection("") {
+                    PlanInput("计划标题", draft.title, enabled, displayLabel = "计划名称") { model.change(PlanField.TITLE, it, stamp) }
+                    PlanInput("计划备注", draft.description, enabled, singleLine = false, displayLabel = "备注") { model.change(PlanField.DESCRIPTION, it, stamp) }
+                } }
+                item { PlanSection("时间安排") {
+                    PlanChoiceRow("") {
+                        PlanTimeMode.entries.forEach { mode -> FilterChip(draft.mode == mode, { model.setMode(mode, stamp) }, enabled = enabled,
+                            label = { Text(modeLabel(mode)) }) }
                     }
-                }
-                Text("象限由你决定，日期变化不会自动移动计划。", style = MaterialTheme.typography.bodySmall)
-            } }
-            item { PlanInput("地点", draft.location, enabled) { model.change(PlanField.LOCATION, it, stamp) } }
-            item { PlanInput("参与人", draft.participants, enabled) { model.change(PlanField.PARTICIPANTS, it, stamp) } }
-            item { PlanInput("标记颜色", draft.color, enabled, "RRGGBB 或 AARRGGBB") { model.change(PlanField.COLOR, it, stamp) } }
-            item { PlanInput("新标签", draft.newTag, enabled) { model.change(PlanField.NEW_TAG, it, stamp) }
-                TextButton({ model.addTag(stamp) }, enabled = enabled && draft.newTag.isNotBlank()) { Text("添加标签") } }
-            if (draft.tags.isNotEmpty()) item { PlanChoiceRow("标签（点击移除）") { draft.tags.forEach { tag ->
-                InputChip(true, { model.removeTag(tag, stamp) }, enabled = enabled, label = { Text(tag) }) } } }
-            if (draft.mode == PlanTimeMode.TIMED || draft.mode == PlanTimeMode.ALL_DAY) {
-                item { PlanChoiceRow("重复规则") { ScheduleRepeatRule.entries.forEach { rule -> FilterChip(draft.repeatRule == rule,
-                    { model.setRepeat(rule, stamp) }, enabled = enabled, label = { Text(repeatLabel(rule)) }) } } }
-                if (draft.repeatRule != ScheduleRepeatRule.NONE) {
-                    item { PlanInput("重复间隔", draft.repeatInterval, enabled, "正整数；自定义按周间隔") { model.change(PlanField.REPEAT_INTERVAL, it, stamp) } }
-                    if (draft.repeatRule == ScheduleRepeatRule.CUSTOM) item { PlanChoiceRow("自定义星期") { DayOfWeek.entries.forEach { day ->
-                        FilterChip(day in draft.repeatDays, { model.toggleDay(day, stamp) }, enabled = enabled,
-                            label = { Text(listOf("一", "二", "三", "四", "五", "六", "日")[day.value - 1]) }) } } }
-                    item { PlanInput("重复结束日期", draft.repeatEnd, enabled, "可留空；日期含当天") { model.change(PlanField.REPEAT_END, it, stamp) } }
-                    item { Text("完成操作结束整个重复系列，不是单次打卡。") }
-                }
+                    when (draft.mode) {
+                        PlanTimeMode.NONE -> Text("未设日期", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        PlanTimeMode.DEADLINE -> {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Checkbox(draft.dateOnly, { model.setDateOnly(it, stamp) }, enabled = enabled,
+                                    modifier = Modifier.semantics { contentDescription = "仅日期截止" })
+                                Text("只选日期")
+                            }
+                            if (draft.dateOnly) PlanDateInput("截止日期", "截止日期输入", draft.dueDate, enabled) { model.change(PlanField.DUE_DATE, it, stamp) }
+                            else PlanDateInput("截止时间", "截止时间输入", draft.dueAt, enabled, withTime = true) { model.changeShanghai(PlanField.DUE_AT, it, stamp) }
+                        }
+                        PlanTimeMode.TIMED -> {
+                            PlanDateInput("开始时间", "开始时间输入", draft.startAt, enabled, withTime = true) { model.changeShanghai(PlanField.START_AT, it, stamp) }
+                            PlanDateInput("结束时间", "结束时间输入", draft.endAt, enabled, withTime = true) { model.changeShanghai(PlanField.END_AT, it, stamp) }
+                        }
+                        PlanTimeMode.ALL_DAY -> {
+                            PlanDateInput("开始日期", "全天开始日期输入", draft.allDayStart, enabled) { model.change(PlanField.ALL_DAY_START, it, stamp) }
+                            PlanDateInput("结束日期", "全天结束日期输入", draft.allDayEnd, enabled) { model.change(PlanField.ALL_DAY_END, it, stamp) }
+                        }
+                    }
+                } }
+                item { PlanSection("重复") {
+                    if (draft.mode == PlanTimeMode.TIMED || draft.mode == PlanTimeMode.ALL_DAY) {
+                        PlanChoiceRow("") { ScheduleRepeatRule.entries.forEach { rule -> FilterChip(draft.repeatRule == rule,
+                            { model.setRepeat(rule, stamp) }, enabled = enabled, label = { Text(repeatLabel(rule)) }) } }
+                        if (draft.repeatRule != ScheduleRepeatRule.NONE) {
+                            PlanInput("重复间隔", draft.repeatInterval, enabled, displayLabel = "每隔") { model.change(PlanField.REPEAT_INTERVAL, it, stamp) }
+                            if (draft.repeatRule == ScheduleRepeatRule.CUSTOM) PlanChoiceRow("选择星期") {
+                                (listOf(DayOfWeek.SUNDAY) + DayOfWeek.entries.filter { it != DayOfWeek.SUNDAY }).forEach { day ->
+                                    FilterChip(day in draft.repeatDays, { model.toggleDay(day, stamp) }, enabled = enabled,
+                                        label = { Text(listOf("一", "二", "三", "四", "五", "六", "日")[day.value - 1]) })
+                                }
+                            }
+                            PlanDateInput("结束重复（可留空）", "重复结束日期", draft.repeatEnd, enabled) { model.change(PlanField.REPEAT_END, it, stamp) }
+                        }
+                    } else Text("不重复", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                } }
+                item { PlanSection("") {
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text("闹钟提醒", style = MaterialTheme.typography.titleMedium)
+                            val lead = draft.reminderMinutes.toIntOrNull() ?: 0
+                            Text(when {
+                                !reminderOn -> "关闭提醒"
+                                draft.mode == PlanTimeMode.NONE -> "设置日期后提醒"
+                                lead > 0 -> "提前 $lead 分钟提醒"
+                                else -> "到时提醒"
+                            }, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Switch(reminderOn, { model.setReminder(it, stamp) }, enabled = enabled,
+                            modifier = Modifier.semantics { contentDescription = "单项计划提醒" })
+                    }
+                } }
+                item { Button({ model.save(stamp) }, enabled = enabled, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)) { Text(if (state.isBusy) "正在保存…" else "保存计划") } }
+                item { OutlinedButton({ model.requestClose(stamp) }, enabled = !state.isBusy, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text("返回计划") } }
             }
-            item { Row { Switch(draft.reminderEnabled, { model.setReminder(it, stamp) }, enabled = enabled,
-                modifier = Modifier.semantics { contentDescription = "单项计划提醒" }); Text("单项计划提醒") } }
-            item { PlanInput("提前分钟", draft.reminderMinutes, enabled, "非负整数；留空为不投递。无日期、已完成不投递") { model.change(PlanField.REMINDER_MINUTES, it, stamp) } }
-            item { Text("未启用的时间／重复参数会原样保留。父计划：${draft.base.parentId ?: "无"}；排序：${draft.base.sortOrder}") }
-            item { Button({ model.save(stamp) }, enabled = enabled, modifier = Modifier.fillMaxWidth()) { Text(if (state.isBusy) "正在保存…" else "保存计划") } }
-            item { OutlinedButton({ model.requestClose(stamp) }, enabled = !state.isBusy, modifier = Modifier.fillMaxWidth()) { Text("返回计划") } }
         }
     }
     PlanEditorDialogs(state, model)
 }
 
 @Composable
+private fun PlanQuadrantMenu(priority: TodoPriority, enabled: Boolean, onSelect: (TodoPriority) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    val palette = quadrantPalette(priority)
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Text("象限", style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
+        Box {
+            FilledTonalButton({ expanded = true }, enabled = enabled,
+                colors = ButtonDefaults.filledTonalButtonColors(containerColor = palette.container, contentColor = palette.content),
+                modifier = Modifier.semantics { contentDescription = "选择计划象限" }) {
+                Text(priorityLabel(priority)); Spacer(Modifier.width(4.dp)); Icon(Icons.Outlined.ExpandMore, null, Modifier.size(18.dp))
+            }
+            DropdownMenu(expanded && enabled, { expanded = false }) {
+                listOf(TodoPriority.HIGH, TodoPriority.MEDIUM, TodoPriority.LOW, TodoPriority.NONE).forEach { item ->
+                    DropdownMenuItem(text = { Text(priorityLabel(item)) }, onClick = { expanded = false; onSelect(item) })
+                }
+            }
+        }
+    }
+}
+
+@Composable
 internal fun PlanInput(label: String, value: String, enabled: Boolean, hint: String? = null,
-    singleLine: Boolean = true, onChange: (String) -> Unit) {
-    OutlinedTextField(value, onChange, enabled = enabled, singleLine = singleLine, label = { Text(label) },
+    singleLine: Boolean = true, displayLabel: String = label, onChange: (String) -> Unit) {
+    OutlinedTextField(value, onChange, enabled = enabled, singleLine = singleLine, minLines = if (singleLine) 1 else 3,
+        label = { Text(displayLabel) }, shape = MaterialTheme.shapes.medium,
         supportingText = hint?.let { { Text(it) } }, modifier = Modifier.fillMaxWidth().semantics { contentDescription = label })
 }
 
 @Composable
 internal fun PlanChoiceRow(title: String, content: @Composable RowScope.() -> Unit) {
-    Column { Text(title, style = MaterialTheme.typography.labelLarge)
-        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp), content = content) }
+    Column {
+        if (title.isNotBlank()) Text(title, style = MaterialTheme.typography.labelLarge)
+        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp), content = content)
+    }
 }
 
 internal fun modeLabel(mode: PlanTimeMode): String = when (mode) {

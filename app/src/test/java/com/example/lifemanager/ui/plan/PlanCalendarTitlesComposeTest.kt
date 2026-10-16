@@ -27,6 +27,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 import org.robolectric.annotation.LooperMode
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -108,8 +109,23 @@ class PlanCalendarTitlesComposeTest {
         compose.onNode(inDate(title,3),useUnmergedTree=true)
             .performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(layouts) }
         assertEquals(1,layouts.single().lineCount,"每个日历任务名称必须严格单行")
-        assertEquals(8f,layouts.single().layoutInput.style.fontSize.value,"长名先缩至8sp下限，再单行省略")
+        assertEquals(8f,layouts.single().layoutInput.style.fontSize.value,"大字体窄屏仍保留8sp可读下限")
         compose.onNode(inDate("第三个计划",3),useUnmergedTree=true).assertIsDisplayed()
+    }
+
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    @Test fun `short four character and long task names use one shared month font size`() {
+        show(listOf(plan(1,"课"),plan(2,"准备报告"),plan(3,"很长的项目报告计划名称")))
+        revealDate(3)
+        val layouts=(1..3).map { id ->
+            val results=mutableListOf<TextLayoutResult>()
+            compose.onNodeWithTag("plan-calendar-title-$day-$id",useUnmergedTree=true)
+                .performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(results) }
+            results.single()
+        }
+        assertEquals(1,layouts.map { it.layoutInput.style.fontSize }.distinct().size,"字号只取决于日期格宽度，不能随名称长短变化")
+        layouts.forEach { assertEquals(1,it.lineCount) }
+        assertTrue(!layouts[1].hasVisualOverflow,"320dp常规字号应尽量完整显示四个汉字")
     }
 
     @Test fun `calendar exposes full day details action for accessibility without mode controls`() {

@@ -207,6 +207,42 @@ class PlanEditorViewModelTest {
         assertTrue(f.model.uiState.value.reminderFailures.isEmpty());assertEquals(2,f.repo.writes)
         assertEquals(listOf("第一项","第二项"),f.repo.rows.value.map { it.title })
     }
+    @Test fun `Shanghai edits retain historical zone and hidden fields`()=scenario { f ->
+        val original=p().copy(timeZone="America/New_York",timeMode=PlanTimeMode.TIMED,
+            startAt=Instant.parse("2026-10-20T04:00:00Z"),endAt=Instant.parse("2026-10-20T05:00:00Z"),
+            location="历史地点",participants="参与人",tagNames=listOf("保留标签"),sortOrder=8)
+        f.repo.rows.value=listOf(original);f.model.open(7,f.token);advanceUntilIdle();f.model.beginEdit(f.stamp)
+        f.model.requestClose(f.stamp);assertFalse(f.model.uiState.value.confirmClose)
+        f.model.open(7,f.token);advanceUntilIdle();f.model.beginEdit(f.stamp)
+        f.model.changeShanghai(PlanField.END_AT,"2026-10-20 14:00",f.stamp)
+        f.model.save(f.stamp);advanceUntilIdle()
+        val saved=f.repo.rows.value.single()
+        assertEquals(original.copy(endAt=Instant.parse("2026-10-20T06:00:00Z"),updatedAt=saved.updatedAt),saved)
+    }
+    @Test fun `enabling unconfigured reminder assigns zero minute lead`()=scenario { f ->
+        f.repo.rows.value=listOf(p().copy(reminderEnabled=false,reminderMinutes=null))
+        f.model.open(7,f.token);advanceUntilIdle();f.model.beginEdit(f.stamp)
+        f.model.setReminder(true,f.stamp);assertEquals("0",f.model.uiState.value.draft!!.reminderMinutes)
+        f.model.save(f.stamp);advanceUntilIdle();assertEquals(0,f.repo.rows.value.single().reminderMinutes)
+    }
+    @Test fun `legacy fixed offset can edit title without altering stored time or metadata`()=scenario { f ->
+        val original=p().copy(timeZone="+05:30",timeMode=PlanTimeMode.TIMED,
+            startAt=Instant.parse("2026-10-20T04:00:00Z"),endAt=Instant.parse("2026-10-20T05:00:00Z"),
+            location="旧地点",sortOrder=9,repeatRule=com.example.lifemanager.domain.model.ScheduleRepeatRule.CUSTOM,
+            repeatDaysOfWeek=setOf(java.time.DayOfWeek.TUESDAY))
+        f.repo.rows.value=listOf(original);f.model.open(7,f.token);advanceUntilIdle();f.model.beginEdit(f.stamp)
+        f.change(PlanField.TITLE,"只改标题");f.model.save(f.stamp);advanceUntilIdle()
+        val saved=f.repo.rows.value.single()
+        assertEquals(original.copy(title="只改标题",updatedAt=saved.updatedAt),saved)
+    }
+    @Test fun `Shanghai gap input stays invalid even on a valid historical foreign zone`()=scenario { f ->
+        val original=p().copy(timeZone="UTC",timeMode=PlanTimeMode.DEADLINE,dueAt=Instant.parse("1991-04-14T00:00:00Z"))
+        f.repo.rows.value=listOf(original);f.model.open(7,f.token);advanceUntilIdle();f.model.beginEdit(f.stamp)
+        f.model.changeShanghai(PlanField.DUE_AT,"1991-04-14 02:30",f.stamp)
+        f.change(PlanField.DESCRIPTION,"不能绕过验证");f.model.save(f.stamp);advanceUntilIdle()
+        assertEquals(0,f.repo.writes);assertNotNull(f.model.uiState.value.error)
+        assertEquals(original,f.repo.rows.value.single())
+    }
     private fun scenario(block:suspend TestScope.(EditorTestWorld)->Unit)=runTest {
         val dispatcher=StandardTestDispatcher(testScheduler);Dispatchers.setMain(dispatcher);val f=EditorTestWorld(dispatcher)
         try { advanceUntilIdle();block(f) } finally { f.model.viewModelScope.cancel();advanceUntilIdle();Dispatchers.resetMain() }

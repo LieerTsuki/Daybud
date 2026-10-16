@@ -51,6 +51,20 @@ class PlanOverviewViewModelTest {
         assertTrue(c.uiState.value.includeCompleted)
         c.today(f.token);advanceUntilIdle();assertEquals(day,c.uiState.value.selectedDate)
     }
+    @Test fun `selecting another date in a loaded month retains visible facts without reading again`()=scenario { f,c,_ ->
+        f.repo.rows.value=listOf(p(f).copy(timeMode=PlanTimeMode.DEADLINE,dueDate=day));advanceUntilIdle()
+        val visibleDays=c.uiState.value.days
+        // A date highlight is local presentation: even unavailable persistence must not interrupt it.
+        f.repo.readsFail=true
+        c.selectDate(day.plusDays(1),f.token)
+        assertEquals(day.plusDays(1),c.uiState.value.selectedDate)
+        assertFalse(c.uiState.value.isLoading,"同月单击不应进入整月加载，造成月历短暂消失")
+        assertEquals(visibleDays,c.uiState.value.days)
+        advanceUntilIdle()
+        assertTrue(c.uiState.value.isAvailable)
+        assertNull(c.uiState.value.readError)
+        assertTrue(c.canNavigate(f.token))
+    }
     @Test fun `repeated exceptions and completion update both read models without duplicate series totals`()=scenario { f,c,s ->
         f.repo.rows.value=listOf(p(f).copy(timeMode=PlanTimeMode.ALL_DAY,allDayStartDate=day,allDayEndDate=day,repeatRule=ScheduleRepeatRule.DAILY))
         advanceUntilIdle();assertEquals(1,s.uiState.value.todayScheduledCount)

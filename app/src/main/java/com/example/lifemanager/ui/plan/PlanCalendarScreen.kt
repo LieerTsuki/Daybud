@@ -13,20 +13,14 @@ import androidx.compose.material.icons.outlined.ChevronLeft
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.semantics.*
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.lifemanager.domain.plan.PlanCalendarMode
@@ -73,25 +67,32 @@ fun LazyListScope.planMonthCalendar(
     if (state.isLoading) item(key = "plan-month-loading") {
         LinearProgressIndicator(Modifier.fillMaxWidth().semantics { contentDescription = "正在读取日历" })
     }
-    if (state.isAvailable && !state.isLoading) {
+    if (state.isAvailable) {
         item(key = "plan-month-weekdays") {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-                listOf("一", "二", "三", "四", "五", "六", "日").forEach { name ->
+                listOf("日", "一", "二", "三", "四", "五", "六").forEach { name ->
                     Text(name, Modifier.weight(1f), textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
-        val cells = List<LocalDate?>(month.atDay(1).dayOfWeek.value - 1) { null } +
+        val cells = List<LocalDate?>(month.atDay(1).dayOfWeek.value % 7) { null } +
             (1..month.lengthOfMonth()).map(month::atDay)
         cells.chunked(7).forEachIndexed { index, week ->
             item(key = "plan-month-$month-week-$index") {
-                Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-                    (week + List(7 - week.size) { null }).forEach { date ->
-                        if (date == null) Spacer(Modifier.weight(1f)) else {
-                            MonthDateCell(date, state.days[date].orEmpty(), date == state.selectedDate,
-                                date == LocalDate.now(state.displayZone), enabled, onDate, onOpenDay,
-                                Modifier.weight(1f).fillMaxHeight())
+                BoxWithConstraints(Modifier.fillMaxWidth()) {
+                    // The whole month shares a width-based size, independent of each task's title.
+                    // Reserve six 3dp gaps and 4dp internal padding, aiming for four CJK characters.
+                    val fontScale = LocalDensity.current.fontScale
+                    val fourCharacterSize = (((maxWidth.value - 18f) / 7f - 4f) / (4f * fontScale))
+                    val taskFontSize = (kotlin.math.floor(fourCharacterSize * 2f) / 2f).coerceIn(8f, 10f).sp
+                    Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+                        (week + List(7 - week.size) { null }).forEach { date ->
+                            if (date == null) Spacer(Modifier.weight(1f)) else {
+                                MonthDateCell(date, state.days[date].orEmpty(), date == state.selectedDate,
+                                    date == LocalDate.now(state.displayZone), enabled, onDate, onOpenDay,
+                                    taskFontSize, Modifier.weight(1f).fillMaxHeight())
+                            }
                         }
                     }
                 }
@@ -107,7 +108,7 @@ fun LazyListScope.planMonthCalendar(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun MonthDateCell(date: LocalDate, rows: List<PlanListRow>, isSelected: Boolean, isToday: Boolean,
-    enabled: Boolean, onDate: (LocalDate) -> Unit, onOpenDay: (LocalDate) -> Unit, modifier: Modifier) {
+    enabled: Boolean, onDate: (LocalDate) -> Unit, onOpenDay: (LocalDate) -> Unit, taskFontSize: TextUnit, modifier: Modifier) {
     Surface(shape = RoundedCornerShape(10.dp), color = MaterialTheme.colorScheme.surfaceContainerLow,
         border = BorderStroke(if (isSelected) 1.5.dp else 0.5.dp,
             if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
@@ -121,7 +122,7 @@ private fun MonthDateCell(date: LocalDate, rows: List<PlanListRow>, isSelected: 
                     if (enabled) { onOpenDay(date); true } else false
                 })
             }) {
-        Column(Modifier.padding(horizontal = 2.dp, vertical = 6.dp),
+        Column(Modifier.padding(horizontal = 1.dp, vertical = 6.dp),
             horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(3.dp)) {
             Surface(shape = CircleShape,
                 color = if (isToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerLow,
@@ -130,7 +131,7 @@ private fun MonthDateCell(date: LocalDate, rows: List<PlanListRow>, isSelected: 
                     Text(date.dayOfMonth.toString(), style = MaterialTheme.typography.labelSmall, maxLines = 1)
                 }
             }
-            rows.take(4).forEach { row -> MonthTaskTitle(date, row) }
+            rows.take(4).forEach { row -> MonthTaskTitle(date, row, taskFontSize) }
             if (rows.size > 4) Text("还有 ${rows.size - 4} 项", Modifier.fillMaxWidth(),
                 style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, softWrap = false,
@@ -140,29 +141,19 @@ private fun MonthDateCell(date: LocalDate, rows: List<PlanListRow>, isSelected: 
 }
 
 @Composable
-private fun MonthTaskTitle(date: LocalDate, row: PlanListRow) {
+private fun MonthTaskTitle(date: LocalDate, row: PlanListRow, taskFontSize: TextUnit) {
     val originalTitle = row.plan.title.ifBlank { "（历史空标题）" }
     val displayTitle = originalTitle.replace(Regex("[\\r\\n]+"), " ")
     val palette = quadrantPalette(row.plan.priority)
     val style = MaterialTheme.typography.labelSmall
-    val measurer = rememberTextMeasurer()
-    val density = LocalDensity.current
-    var availableWidth by remember { mutableIntStateOf(0) }
-    // Keep the user's font scale. Shrink only within a bounded caption range before ellipsizing.
-    val fontSize = remember(displayTitle, availableWidth, style, density.fontScale, density.density, measurer) {
-        if (availableWidth == 0) 11 else listOf(11, 10, 9, 8).firstOrNull { size ->
-            !measurer.measure(displayTitle, style.copy(fontSize = size.sp), softWrap = false, maxLines = 1,
-                constraints = Constraints(maxWidth = availableWidth)).hasVisualOverflow
-        } ?: 8
-    }
     Surface(color = palette.container, contentColor = palette.content, shape = RoundedCornerShape(4.dp),
         modifier = Modifier.fillMaxWidth()) {
-        Box(Modifier.fillMaxWidth().padding(horizontal = 2.dp, vertical = 2.dp)) {
-            Text(displayTitle, Modifier.fillMaxWidth().onSizeChanged { availableWidth = it.width.coerceAtLeast(1) }
+        Box(Modifier.fillMaxWidth().padding(horizontal = 1.dp, vertical = 2.dp)) {
+            Text(displayTitle, Modifier.fillMaxWidth()
                 .testTag("plan-calendar-title-$date-${row.plan.id}").semantics {
                 stateDescription = priorityLabel(row.plan.priority)
                 if (displayTitle != originalTitle) contentDescription = originalTitle
-            }, style = style.copy(fontSize = fontSize.sp, lineHeight = (fontSize + 3).sp),
+            }, style = style.copy(fontSize = taskFontSize, lineHeight = (taskFontSize.value + 3).sp, letterSpacing = 0.sp),
                 color = palette.content, maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis)
         }
     }

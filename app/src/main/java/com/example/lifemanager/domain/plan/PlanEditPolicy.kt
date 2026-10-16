@@ -14,7 +14,6 @@ internal fun PlanConflictProof.ownedEditSnapshot()=copy(candidate=candidate.owne
 
 /** Caller owns global admission then Plan lock. No dialog/user interaction or nested admission here. */
 internal suspend fun verifyPlanEdit(repository:PlanRepository,plan:Plan,policy:PlanEditPolicy):Plan {
-    require(PlanRules.validate(plan)==null) { "计划表单无效" }
     require(plan.id==(policy.original?.id ?: 0L)) { "编辑身份不匹配" }
     val current=if(plan.id==0L)null else repository.get(plan.id) ?: throw PlanEditChangedException()
     if(current!=null) {
@@ -22,6 +21,7 @@ internal suspend fun verifyPlanEdit(repository:PlanRepository,plan:Plan,policy:P
         if(original.copy(isCompleted=current.isCompleted,completedAt=current.completedAt,updatedAt=current.updatedAt)!=current)
             throw PlanEditChangedException()
     }
+    require(PlanRules.validateEdit(plan,current)==null) { "计划表单无效" }
     val candidate=plan.copy(isCompleted=current?.isCompleted ?: false,completedAt=current?.completedAt)
     if(candidate.isCompleted || candidate.timeMode !in listOf(PlanTimeMode.TIMED,PlanTimeMode.ALL_DAY)) return candidate
     val zone=ZoneId.of(candidate.timeZone)

@@ -48,9 +48,9 @@ class PlanRepositoryImpl(
 
     override suspend fun save(plan: Plan, tagNames: List<String>, expected: DataGeneration): Long = mutate(expected) {
         require(plan.id >= 0) { "Invalid plan identity" }
-        val error = PlanRules.validate(plan)
-        require(error == null) { "Invalid edited plan: $error" }
         val stored = if (plan.id == 0L) null else requireExisting(plan.id)
+        val error = PlanRules.validateEdit(plan, stored?.toPlan())
+        require(error == null) { "Invalid edited plan: $error" }
         val previous = stored?.entity
         if (previous == null) require(!plan.isCompleted && plan.completedAt == null) { "New plan must start pending" }
         validateParent(plan.id, plan.parentId)

@@ -64,6 +64,7 @@ class PlanQuadrantEditorTest {
         show()
         compose.onNode(SemanticsMatcher.keyIsDefined(SemanticsActions.ScrollToIndex))
             .performScrollToNode(hasText("象限"))
+        compose.onNodeWithContentDescription("选择计划象限").performClick()
         compose.onNodeWithText("重要且紧急").performClick()
         assertEquals(TodoPriority.HIGH, world.model.uiState.value.draft!!.priority)
         compose.onNodeWithText("优先级").assertDoesNotExist()

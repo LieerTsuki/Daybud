@@ -14,7 +14,7 @@ internal fun LazyListScope.planFeedback(state: PlanEditorState, model: PlanEdito
     val stamp = state.stamp
     if (state.isLoading) item { Text("正在读取计划与提醒设置…") }
     if (state.isMaintaining) item { Text("正在维护数据，草稿保留，暂不能修改") }
-    state.message?.let { message -> item { Text(message) } }
+    state.message?.takeIf { it == "数据已替换，旧草稿已失效" }?.let { message -> item { Text(message) } }
     state.error?.let { error -> item { Column {
         Text(error, color = MaterialTheme.colorScheme.error)
         if (!state.isAvailable) TextButton(model::retryRead, enabled = !state.isMaintaining) { Text("重新读取") }
@@ -35,9 +35,16 @@ internal fun PlanEditorDialogs(state: PlanEditorState, model: PlanEditorViewMode
         confirmButton = { TextButton({ model.confirmClose(stamp) }, enabled = !state.isBusy) { Text("放弃草稿") } },
         dismissButton = { TextButton({ model.cancelClose(stamp) }) { Text("继续编辑") } })
     else if (state.pendingMode != null) AlertDialog(onDismissRequest = { model.cancelMode(stamp) }, title = { Text("切换为${modeLabel(state.pendingMode)}？") },
-        text = { val draft=state.draft
-            DialogBody("切换会停用原模式的日期、区间和重复／提醒行为，但保留原字段。重新选择区间或全天可能重新启用保留的重复规则，请核对后保存。\n" +
-                if(draft==null)""else "当前截止表示：${if(draft.dateOnly)"仅日期"else"时刻"}（仅在截止模式启用）\n截止日期：${draft.dueDate.ifBlank { "无" }}\n截止时刻：${draft.dueAt.ifBlank { "无" }}\n保存截止模式时日期与时刻互斥，仅保留所选截止字段；其他非活动时间/重复字段保留。\n区间：${draft.startAt.ifBlank { "无" }} — ${draft.endAt.ifBlank { "无" }}\n全天：${draft.allDayStart.ifBlank { "无" }} — ${draft.allDayEnd.ifBlank { "无" }}\n重复：${repeatLabel(draft.repeatRule)} · 间隔：${draft.repeatInterval}\n星期：${draft.repeatDays.joinToString()}\n重复结束：${draft.repeatEnd.ifBlank { "无" }}\n提醒：${if(draft.reminderEnabled)"开启"else"关闭"} · 提前：${draft.reminderMinutes.ifBlank { "未配置" }} 分钟\n时区：${draft.timeZone}") },
+        text = {
+            val draft=state.draft
+            val time=draft?.let { when(it.mode) {
+                com.example.lifemanager.domain.plan.PlanTimeMode.NONE -> "未设日期"
+                com.example.lifemanager.domain.plan.PlanTimeMode.DEADLINE -> if(it.dateOnly)it.dueDate else planInputDateTime(it.dueAt)
+                com.example.lifemanager.domain.plan.PlanTimeMode.TIMED -> "${planInputDateTime(it.startAt)} — ${planInputDateTime(it.endAt)}"
+                com.example.lifemanager.domain.plan.PlanTimeMode.ALL_DAY -> "${it.allDayStart} — ${it.allDayEnd}"
+            } }.orEmpty()
+            DialogBody("当前安排：$time\n切换后按新类型安排，原有设置会保留。请核对日期和重复设置后保存。")
+        },
         confirmButton = { TextButton({ model.confirmMode(stamp) }, enabled = enabled) { Text("确认切换") } },
         dismissButton = { TextButton({ model.cancelMode(stamp) }) { Text("保留原类型") } })
     else if (state.conflicts != null) AlertDialog(onDismissRequest = { model.cancelConflict(stamp) }, title = { Text("检测到时间冲突") },

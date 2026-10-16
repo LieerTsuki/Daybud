@@ -27,10 +27,11 @@ class PlanDraftTest {
     @Test fun `blank title is rejected without silently repairing history`() {
         assertFailsWith<IllegalArgumentException> { build(PlanDraft(p.copy(title=" "))) }
     }
-    @Test fun `fixed offset history is preserved on display but requires registered zone to edit`() {
+    @Test fun `fixed offset history stays editable unchanged while new fixed offset is rejected`() {
         val draft=PlanDraft(p.copy(timeZone="+08:00"))
         assertEquals("+08:00",draft.timeZone)
-        assertFailsWith<IllegalArgumentException> { build(draft) }
+        assertEquals(draft.base,build(draft))
+        assertFailsWith<IllegalArgumentException> { build(PlanDraft(draft.base.copy(id=0))) }
         assertEquals("Asia/Shanghai",build(draft.copy(timeZone="Asia/Shanghai")).timeZone)
     }
     @Test fun `only date conversion does not invent a timed interval`() {

@@ -13,7 +13,7 @@ import kotlinx.coroutines.isActive
     val owner=LocalLifecycleOwner.current
     LaunchedEffect(model,owner) {
         owner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-            while(isActive) { refresh(ZoneId.systemDefault());delay(60_000) }
+            while(isActive) { refresh(planDisplayZone);delay(60_000) }
         }
     }
 }

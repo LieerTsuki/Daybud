@@ -15,8 +15,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.example.lifemanager.domain.model.TodoPriority
 import com.example.lifemanager.domain.plan.*
-import com.example.lifemanager.ui.settings.displayDate
-import com.example.lifemanager.ui.settings.displayDateTime
 import java.time.ZoneId
 
 @Composable
@@ -52,11 +50,5 @@ internal fun priorityLabel(value: TodoPriority): String = when (value) {
 }
 
 @Composable
-internal fun timeLabel(row: PlanListRow, zone: ZoneId): String = when (val time = row.occurrence?.time) {
-    is PlanOccurrenceTime.DeadlineInstant -> "日程 · 截止 ${displayDateTime(time.at, zone)}"
-    is PlanOccurrenceTime.DeadlineDate -> "日程 · 截止 ${displayDate(time.date)}（${row.plan.timeZone}）"
-    is PlanOccurrenceTime.Timed -> "日程 · ${displayDateTime(time.start, zone)} — ${displayDateTime(time.end, zone)}"
-    is PlanOccurrenceTime.AllDay -> "日程 · 全天 ${displayDate(time.first)} — ${displayDate(time.lastInclusive)}（${row.plan.timeZone}）"
-    is PlanOccurrenceTime.Completion -> "系列已完成 · ${displayDateTime(time.at, zone)}"
-    null -> if (row.plan.isScheduled) "日程 · 无后续发生" else "待办 · 无日期"
-}
+@Suppress("UNUSED_PARAMETER")
+internal fun timeLabel(row: PlanListRow, zone: ZoneId): String = planTimeSummary(row)

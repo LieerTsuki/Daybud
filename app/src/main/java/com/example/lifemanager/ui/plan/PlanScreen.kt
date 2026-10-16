@@ -42,7 +42,7 @@ fun PlanScreen(viewModel: PlanViewModel, onNew: ((DataGeneration?) -> Unit)? = n
     val owner = LocalLifecycleOwner.current
     LaunchedEffect(viewModel, owner) {
         owner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-            while (isActive) { viewModel.refresh(ZoneId.systemDefault()); delay(60_000) }
+            while (isActive) { viewModel.refresh(planDisplayZone); delay(60_000) }
         }
     }
     PlanScreen(state, { viewModel.onFilterChanged(it, renderedGeneration) },
@@ -60,7 +60,6 @@ fun PlanScreen(state: PlanUiState, onFilterChanged: (PlanFilter) -> Unit,
     canNavigate: Boolean = true, extraContent: LazyListScope.() -> Unit = {},
     onNewInQuadrant: ((TodoPriority) -> Unit)? = null) {
     val enabled = state.isAvailable && !state.isMaintaining
-    val filter = state.filter
     Surface(color = MaterialTheme.colorScheme.background) {
         LazyColumn(modifier = Modifier.fillMaxSize(), state = rememberLazyListState(),
             contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -81,7 +80,7 @@ fun PlanScreen(state: PlanUiState, onFilterChanged: (PlanFilter) -> Unit,
                     TextButton(onClick = onRetryRead, enabled = !state.isMaintaining) { Text("重新读取") }
                 }
             }
-            if (state.message != null) item(key = "message") {
+            if (state.message != null && state.message !in setOf("已完成，可在原象限展开已完成计划", "已撤销完成，计划回到原象限")) item(key = "message") {
                 Column {
                     Text(state.message)
                     TextButton(onClick = onDismissMessage) { Text("收起提示") }
@@ -95,11 +94,6 @@ fun PlanScreen(state: PlanUiState, onFilterChanged: (PlanFilter) -> Unit,
                             modifier = Modifier.semantics { contentDescription = "重试提醒：$id" }) { Text("重试提醒") }
                     }
                 }
-            }
-            item(key = "search") {
-                OutlinedTextField(value = filter.query,
-                    onValueChange = { onFilterChanged(PlanFilter(status = PlanStatus.ALL, query = it)) },
-                    modifier = Modifier.fillMaxWidth(), label = { Text("搜索计划") }, enabled = enabled, singleLine = true)
             }
             if (state.isLoading) item(key = "loading") {
                 CircularProgressIndicator(Modifier.semantics { contentDescription = "正在读取计划" })

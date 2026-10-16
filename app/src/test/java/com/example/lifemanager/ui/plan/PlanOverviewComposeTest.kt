@@ -57,6 +57,22 @@ class PlanOverviewComposeTest {
         val bounds = compose.onNodeWithTag("plan-calendar-date-$day").getUnclippedBoundsInRoot()
         assertTrue(bounds.bottom - bounds.top <= 64.dp)
     }
+    @Test fun `month starts on Sunday with October first aligned under Thursday`() {
+        val state=PlanCalendarState(selectedDate=day,displayZone=zone,isAvailable=true,isLoading=false)
+        compose.setContent { LifeManagerTheme { Box(Modifier.size(320.dp,640.dp)) { PlanCalendarScreen(state,{},{},{},{},{},{},null) } } }
+        val sunday=compose.onNodeWithText("日").fetchSemanticsNode().boundsInRoot
+        val monday=compose.onNodeWithText("一").fetchSemanticsNode().boundsInRoot
+        val thursday=compose.onNodeWithText("四").fetchSemanticsNode().boundsInRoot
+        val first=compose.onNodeWithTag("plan-calendar-date-2026-10-01").fetchSemanticsNode().boundsInRoot
+        assertTrue(sunday.left<monday.left,"星期日应为首列")
+        assertTrue(kotlin.math.abs(thursday.center.x-first.center.x)<1f,"2026年10月1日应对齐星期四")
+    }
+    @Test fun `refresh keeps the verified month visible while disabling date actions`() {
+        val state=PlanCalendarState(selectedDate=day,displayZone=zone,isAvailable=true,isLoading=true)
+        compose.setContent { LifeManagerTheme { Box(Modifier.size(320.dp,640.dp)) { PlanCalendarScreen(state,{},{},{},{},{},{},null) } } }
+        compose.onNodeWithTag("plan-calendar-date-2026-10-01").assertExists().assertIsNotEnabled()
+        compose.onNodeWithContentDescription("正在读取日历").assertExists()
+    }
     @Test fun `month component omits standalone page title mode tabs and completion filter`() {
         val state=PlanCalendarState(selectedDate=day,displayZone=zone,isAvailable=true,isLoading=false)
         compose.setContent { LifeManagerTheme { PlanCalendarScreen(state,{},{},{},{},{},{},null) } }

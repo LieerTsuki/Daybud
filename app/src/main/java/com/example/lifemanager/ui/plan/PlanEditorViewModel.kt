@@ -84,7 +84,7 @@ class PlanEditorViewModel(private val repository:PlanRepository,private val case
         if(dirty()) { pending=selected;state.update { it.copy(confirmClose=true,stamp=it.stamp.copy(revision=it.stamp.revision+1)) } } else select(selected)
     }
     private fun select(selected:Target) {
-        val zone=clock.zone.id.takeIf { it in java.time.ZoneId.getAvailableZoneIds() } ?: "UTC"
+        val zone="Asia/Shanghai"
         val draft=if(selected.id==null)PlanDraft(Plan(title="",priority=selected.priority,timeZone=zone,createdAt=clock.instant(),updatedAt=clock.instant()))else null
         state.update { it.copy(stamp=PlanEditorStamp(selected.generation,selected.session,0),pane=if(draft==null)PlanPane.DETAIL else PlanPane.EDIT,
             detail=null,draft=draft,isAvailable=false,isLoading=true,error=null,pendingMode=null,confirmClose=false,confirmDelete=false,conflicts=null) }
@@ -106,11 +106,35 @@ class PlanEditorViewModel(private val repository:PlanRepository,private val case
             pendingMode=null,conflicts=null,confirmClose=false,confirmDelete=false) }
     }
     fun change(field:PlanField,value:String,stamp:PlanEditorStamp)=edit(stamp) { PlanDraftRules.edit(it,field,value) }
+    /** Shanghai input preserves historical recurrence zones and untouched instants. */
+    fun changeShanghai(field:PlanField,value:String,stamp:PlanEditorStamp)=edit(stamp) { draft ->
+        require(field in setOf(PlanField.DUE_AT,PlanField.START_AT,PlanField.END_AT))
+        if(value.isBlank()) PlanDraftRules.edit(draft,field,value) else {
+            val parsed=runCatching {
+                val zone=java.time.ZoneId.of("Asia/Shanghai")
+                val normalized=value.trim().replace(' ','T')
+                val instant=try {
+                    val offset=java.time.OffsetDateTime.parse(normalized)
+                    require(offset.offset in zone.rules.getValidOffsets(offset.toLocalDateTime()))
+                    offset.toInstant()
+                } catch (_:java.time.format.DateTimeParseException) {
+                    val local=java.time.LocalDateTime.parse(normalized)
+                    val offsets=zone.rules.getValidOffsets(local)
+                    require(offsets.size==1)
+                    local.toInstant(offsets.single())
+                }
+                instantText(instant,draft.timeZone)
+            }
+            PlanDraftRules.edit(draft,field,parsed.getOrDefault(value)).let {
+                if(parsed.isFailure)it.copy(localTimeErrors=it.localTimeErrors+field)else it
+            }
+        }
+    }
     fun setDateOnly(value:Boolean,stamp:PlanEditorStamp)=edit(stamp) { it.copy(dateOnly=value) }
     fun setPriority(value:TodoPriority,stamp:PlanEditorStamp)=edit(stamp) { it.copy(priority=value) }
     fun setRepeat(value:ScheduleRepeatRule,stamp:PlanEditorStamp)=edit(stamp) { it.copy(repeatRule=value) }
     fun toggleDay(value:DayOfWeek,stamp:PlanEditorStamp)=edit(stamp) { it.copy(repeatDays=if(value in it.repeatDays)it.repeatDays-value else it.repeatDays+value) }
-    fun setReminder(value:Boolean,stamp:PlanEditorStamp)=edit(stamp) { it.copy(reminderEnabled=value) }
+    fun setReminder(value:Boolean,stamp:PlanEditorStamp)=edit(stamp) { it.copy(reminderEnabled=value,reminderMinutes=if(value && (it.reminderMinutes.toIntOrNull()?.let { lead->lead>=0 }!=true))"0"else it.reminderMinutes) }
     fun addTag(stamp:PlanEditorStamp)=edit(stamp) {
         val name=it.newTag.trim();if(name.isEmpty())it else it.copy(tags=(it.tags+name).distinct(),newTag="")
     }

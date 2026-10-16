@@ -45,6 +45,74 @@ class PlanEditorComposeTest {
         compose.runOnIdle { if(editor)f.model.openNew(f.token) else f.model.open(7,f.token) }
         waitFor { it.isAvailable && it.pane==if(editor)PlanPane.EDIT else PlanPane.DETAIL }
     }
+    @Test fun `simple editor omits technical and historical metadata fields`() {
+        show()
+        assertFailsWith<AssertionError> { scroll(hasContentDescription("IANA 时区")) }
+        assertFailsWith<AssertionError> { scroll(hasContentDescription("地点")) }
+        assertFailsWith<AssertionError> { scroll(hasContentDescription("提前分钟")) }
+        scroll(hasContentDescription("单项计划提醒"))
+        compose.onNodeWithContentDescription("单项计划提醒").assertExists()
+    }
+    @Test fun `detail shows only active time in Shanghai without diagnostic fields`() {
+        f.repo.rows.value=listOf(Plan(id=7,title="会议计划",description="带上笔记本",timeZone="America/New_York",
+            timeMode=PlanTimeMode.TIMED,startAt=java.time.Instant.parse("2026-10-20T04:00:00Z"),
+            endAt=java.time.Instant.parse("2026-10-20T05:00:00Z"),location="旧地点",createdAt=f.now,updatedAt=f.now))
+        show(editor=false)
+        scroll(hasText("2026-10-20 12:00 — 13:00"))
+        compose.onNodeWithText("2026-10-20 12:00 — 13:00").assertExists()
+        assertFailsWith<AssertionError> { scroll(hasText("时区：",substring=true)) }
+        assertFailsWith<AssertionError> { scroll(hasText("记录 #",substring=true)) }
+        assertFailsWith<AssertionError> { scroll(hasText("旧地点",substring=true)) }
+        scroll(hasText("不重复"));compose.onNodeWithText("不重复").assertExists()
+    }
+    @Test fun `friendly Shanghai time entry saves the chosen instant without an offset field`() {
+        show()
+        compose.onNodeWithContentDescription("计划标题").performTextReplacement("上海会议")
+        scroll(hasText("时间区间"));compose.onNodeWithText("时间区间").performClick()
+        scroll(hasContentDescription("开始时间输入"))
+        compose.onNodeWithContentDescription("开始时间输入").performTextReplacement("2026-10-20 12:00")
+        compose.onNodeWithContentDescription("开始时间输入").assertTextContains("2026-10-20 12:00")
+        scroll(hasContentDescription("结束时间输入"))
+        compose.onNodeWithContentDescription("结束时间输入").performTextReplacement("2026-10-20 13:00")
+        scroll(hasText("保存计划"));compose.onNodeWithText("保存计划").performClick()
+        waitFor { it.detail!=null && !it.isBusy }
+        val saved=f.repo.rows.value.single()
+        assertEquals(java.time.Instant.parse("2026-10-20T04:00:00Z"),saved.startAt)
+        assertEquals(java.time.Instant.parse("2026-10-20T05:00:00Z"),saved.endAt)
+        assertEquals("Asia/Shanghai",saved.timeZone)
+    }
+    @Test fun `date and time picker commits only after both confirmations`() {
+        show()
+        scroll(hasText("截止日期"));compose.onNodeWithText("截止日期").performClick()
+        scroll(hasContentDescription("选择截止时间"));compose.onNodeWithContentDescription("选择截止时间").performClick()
+        compose.onNodeWithText("取消").performClick()
+        assertEquals("",f.model.uiState.value.draft!!.dueAt)
+        compose.onNodeWithContentDescription("选择截止时间").performClick()
+        compose.onNodeWithText("确定").performClick()
+        assertEquals("",f.model.uiState.value.draft!!.dueAt)
+        compose.onNodeWithText("确定").performClick()
+        assertTrue(f.model.uiState.value.draft!!.dueAt.isNotBlank())
+        scroll(hasContentDescription("截止时间输入"))
+        compose.onNodeWithContentDescription("截止时间输入").assertTextContains("09:00", substring = true)
+    }
+    @Test fun `unconfigured historical reminder is off until enabling creates a real alarm lead`() {
+        f.repo.rows.value=listOf(Plan(id=7,title="旧提醒计划",timeZone="Asia/Shanghai",reminderEnabled=true,
+            reminderMinutes=null,timeMode=PlanTimeMode.DEADLINE,dueAt=java.time.Instant.parse("2026-10-20T04:00:00Z"),createdAt=f.now,updatedAt=f.now))
+        show()
+        compose.runOnIdle { f.model.open(7,f.token) }
+        waitFor { it.detail?.id==7L && !it.isLoading }
+        compose.runOnIdle { f.model.beginEdit(f.model.uiState.value.stamp) }
+        waitFor { it.draft?.base?.id==7L && !it.isLoading }
+        scroll(hasContentDescription("单项计划提醒"))
+        compose.onNodeWithContentDescription("单项计划提醒").assertIsOff().performClick()
+        assertTrue(f.model.uiState.value.draft!!.reminderEnabled)
+        assertEquals("0",f.model.uiState.value.draft!!.reminderMinutes)
+        compose.onNodeWithContentDescription("单项计划提醒").assertIsOn()
+        scroll(hasText("保存计划"));compose.onNodeWithText("保存计划").performClick()
+        waitFor { it.detail?.id==7L && !it.isBusy }
+        assertTrue(f.repo.rows.value.single().reminderEnabled)
+        assertEquals(0,f.repo.rows.value.single().reminderMinutes)
+    }
     @Test fun `blank editor exposes real title entry and save writes once`() {
         show();compose.onNodeWithContentDescription("计划标题").performTextReplacement("手机测试目标")
         scroll(hasText("保存计划"));compose.onNodeWithText("保存计划").performClick()
@@ -116,7 +184,7 @@ class PlanEditorComposeTest {
         scroll(hasContentDescription("计划标题"));compose.onNodeWithContentDescription("计划标题").performTextReplacement("保留后修改")
         assertEquals("保留后修改",f.model.uiState.value.draft!!.title);assertEquals(1,f.repo.rows.value.size)
     }
-    @Test fun `mode confirmation displays the actual retained repeat and reminder configuration`() {
+    @Test fun `mode confirmation preserves retained repeat and reminder configuration without technical fields`() {
         show();compose.runOnIdle {
             f.model.setRepeat(com.example.lifemanager.domain.model.ScheduleRepeatRule.CUSTOM,f.model.uiState.value.stamp)
             f.model.change(PlanField.REPEAT_INTERVAL,"3",f.model.uiState.value.stamp)
@@ -125,13 +193,17 @@ class PlanEditorComposeTest {
             f.model.change(PlanField.REMINDER_MINUTES,"5",f.model.uiState.value.stamp)
         }
         scroll(hasText("时间区间"));compose.onNodeWithText("时间区间").performClick()
-        compose.onNodeWithText("自定义",substring=true).assertExists()
-        compose.onNodeWithText("间隔：3",substring=true).assertExists()
-        compose.onNodeWithText("MONDAY",substring=true).assertExists()
-        compose.onNodeWithText("2026-10-30",substring=true).assertExists()
-        compose.onNodeWithText("提前：5",substring=true).assertExists()
+        compose.onNodeWithText("确认切换").assertExists()
+        compose.onNodeWithText("MONDAY",substring=true).assertDoesNotExist()
+        compose.onNodeWithText("Asia/Shanghai",substring=true).assertDoesNotExist()
         compose.onNodeWithText("保留原类型").performClick()
-        assertEquals(PlanTimeMode.NONE,f.model.uiState.value.draft!!.mode)
+        val draft=f.model.uiState.value.draft!!
+        assertEquals(PlanTimeMode.NONE,draft.mode)
+        assertEquals(com.example.lifemanager.domain.model.ScheduleRepeatRule.CUSTOM,draft.repeatRule)
+        assertEquals("3",draft.repeatInterval)
+        assertEquals(setOf(java.time.DayOfWeek.MONDAY),draft.repeatDays)
+        assertEquals("2026-10-30",draft.repeatEnd)
+        assertEquals("5",draft.reminderMinutes)
     }
     @Test fun `mode confirmation distinguishes active instant deadline from retained date`() {
         show();compose.runOnIdle {
@@ -142,8 +214,8 @@ class PlanEditorComposeTest {
             f.model.change(PlanField.DUE_AT,"2026-10-21T16:00+08:00",f.model.uiState.value.stamp)
         }
         scroll(hasText("无日期待办"));compose.onNodeWithText("无日期待办").performClick()
-        compose.onNodeWithText("当前截止表示：时刻",substring=true).assertExists()
-        compose.onNodeWithText("截止时刻：2026-10-21T16:00+08:00",substring=true).assertExists()
-        compose.onNodeWithText("截止日期：2026-10-20",substring=true).assertExists()
+        compose.onNode(hasText("2026-10-21 16:00",substring=true) and hasAnyAncestor(isDialog())).assertExists()
+        compose.onNode(hasText("2026-10-20",substring=true) and hasAnyAncestor(isDialog())).assertDoesNotExist()
+        compose.onNode(hasText("Asia/Shanghai",substring=true) and hasAnyAncestor(isDialog())).assertDoesNotExist()
     }
 }

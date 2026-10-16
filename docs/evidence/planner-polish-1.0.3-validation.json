@@ -1,0 +1,149 @@
+{
+  "date": "2026-10-16",
+  "versionName": "1.0.3",
+  "versionCode": 6,
+  "schema": 6,
+  "publication": "Validated local candidate; not yet published",
+  "jvm": {
+    "tests": 1161,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 97,
+    "lint": {
+      "Error": 0,
+      "Warning": 47,
+      "Fatal": 0
+    }
+  },
+  "device": {
+    "tests": 70,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "api": 35,
+    "avd": "Rizhiya_Branding"
+  },
+  "upgrade": {
+    "identicalAllTables": true,
+    "plans": 6,
+    "schema": 6,
+    "version": "1.0.3",
+    "code": 6,
+    "inlineMonth": true,
+    "calendarRemainingCount": 1,
+    "dayDetailsCount": 5,
+    "pointerDoubleTap": true,
+    "undatedAbsent": true
+  },
+  "nativeUi": {
+    "detailSimple": true,
+    "editorSimple": true,
+    "unconfiguredReminderShownOff": true,
+    "unchangedReturn": true,
+    "monthRetainedSelections": [
+      "2026-10-17",
+      "2026-10-18",
+      "2026-10-19",
+      "2026-10-20"
+    ],
+    "limitation": "Post-tap hierarchy checks; no claim that every video frame was sampled"
+  },
+  "apk": {
+    "name": "rizhiya-1.0.3-planner-polish-preview.apk",
+    "bytes": 12435895,
+    "sha256": "1c9cf8ace0274e0a8eb8f371bc3075607a651cb7a8c244410655e34076a14701",
+    "certificateSha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+    "debuggable": false,
+    "v2": true,
+    "v3": true,
+    "zipalign": true
+  },
+  "review": {
+    "score": 9,
+    "unresolved": 0
+  },
+  "limitations": [
+    "Dedicated emulator, synthetic six-plan fixture",
+    "Native post-tap hierarchy checks do not sample every frame",
+    "No physical-device/stable60fps/store-signing acceptance"
+  ],
+  "performance": {
+    "serial": "emulator-5580",
+    "version": "1.0.3",
+    "code": 6,
+    "debuggable": false,
+    "coldTotalTimeMs": [
+      665,
+      733,
+      746,
+      927,
+      919
+    ],
+    "medianMs": 746,
+    "maxMs": 927,
+    "navigationCycles": 2,
+    "navigationMinimumDelaySeconds": 0.9,
+    "confirmedNavigations": [
+      {
+        "destination": "打卡",
+        "automationElapsedMs": 3063
+      },
+      {
+        "destination": "订阅",
+        "automationElapsedMs": 3062
+      },
+      {
+        "destination": "设置",
+        "automationElapsedMs": 3063
+      },
+      {
+        "destination": "计划",
+        "automationElapsedMs": 3078
+      },
+      {
+        "destination": "打卡",
+        "automationElapsedMs": 3047
+      },
+      {
+        "destination": "订阅",
+        "automationElapsedMs": 3078
+      },
+      {
+        "destination": "设置",
+        "automationElapsedMs": 3063
+      },
+      {
+        "destination": "计划",
+        "automationElapsedMs": 3078
+      }
+    ],
+    "gfxSummary": [
+      "Total frames rendered: 405",
+      "Janky frames: 35 (8.64%)",
+      "Janky frames (legacy): 176 (43.46%)",
+      "50th percentile: 18ms",
+      "90th percentile: 28ms",
+      "95th percentile: 34ms",
+      "99th percentile: 48ms",
+      "Number Missed Vsync: 0",
+      "50th gpu percentile: 15ms",
+      "90th gpu percentile: 22ms",
+      "95th gpu percentile: 4950ms",
+      "99th gpu percentile: 4950ms",
+      "Total frames rendered: 405",
+      "Janky frames: 35 (8.64%)",
+      "Janky frames (legacy): 176 (43.46%)",
+      "50th percentile: 18ms",
+      "90th percentile: 28ms",
+      "95th percentile: 34ms",
+      "99th percentile: 48ms",
+      "Number Missed Vsync: 0",
+      "50th gpu percentile: 15ms",
+      "90th gpu percentile: 22ms",
+      "95th gpu percentile: 4950ms",
+      "99th gpu percentile: 4950ms"
+    ],
+    "limitation": "Emulator, synthetic small database, system launch and navigation smoke only; no physical-device or stable-60fps acceptance."
+  }
+}
