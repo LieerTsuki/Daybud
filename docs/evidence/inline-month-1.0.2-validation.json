@@ -6,7 +6,7 @@
   "versionName": "1.0.2",
   "versionCode": 5,
   "schema": 6,
-  "publication": "Validated local candidate, pending authorized main merge and publication",
+  "publication": "Published preview Release and merged to main",
   "jvm": {
     "suites": 97,
     "tests": 1144,
@@ -161,5 +161,7 @@
     "No stable 60fps claim",
     "No large-database or cloud-provider acceptance",
     "Existing preview signing, no app-store signing eligibility"
-  ]
+  ],
+  "sourceCommit": "e6fdde5984ab61116ad6563a78c993a9c4ef20ee",
+  "publicationRecord": "inline-month-1.0.2-publication.json"
 }

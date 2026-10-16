@@ -1,6 +1,6 @@
 # 内嵌月历与单行彩色任务验收
 
-日期：2026-10-16。基线：`ae07a522fdfb8dcdcadc2982058cf82ee69f8e41`，功能分支`feat/inline-month-calendar`，候选1.0.2/code5。本轮待验收后按用户既有授权直接合并和发布，不停在PR等待再次授权；当前公开版本仍1.0.1。
+日期：2026-10-16。基线：`ae07a522fdfb8dcdcadc2982058cf82ee69f8e41`，功能分支`feat/inline-month-calendar`，候选1.0.2/code5。本轮已按用户既有授权直接合并和发布，当前公开版本为1.0.2。
 
 ## 最终需求与实现
 
@@ -36,4 +36,12 @@
 
 同一专用模拟器、六条合成计划、最终非调试APK，且无Gradle并发的五次系统冷启动为815/789/759/689/828ms，中位789ms、最大828ms；两轮8次真实选中核对的切页，gfxinfo采样412帧、24帧janky（5.83%），legacy172帧（41.75%）。仅模拟器小库系统口径，不作为稳定60fps、真机或比历史版本更快的结论。原始日志及脚本在`.tools/inline-month-performance`和`.tools/inline-month-performance.py`。
 
-[结构化验证记录](evidence/inline-month-1.0.2-validation.json)。预览证书沿用，升级前另存完整备份并同签名覆盖；真机、手动TalkBack、大库、云提供方与稳定60fps不属于本轮通过结论。当前完成候选验收，后续按既有授权合并与发布结果另记，不把历史数字当本轮结果。
+[结构化验证记录](evidence/inline-month-1.0.2-validation.json)。预览证书沿用，升级前另存完整备份并同签名覆盖；真机、手动TalkBack、大库、云提供方与稳定60fps不属于本轮通过结论。以上为本轮同一源码树的实际验收，公开发布与合并记录如下。
+
+## 已合并与公开发布（2026-10-16）
+
+已验收源码`e6fdde5984ab61116ad6563a78c993a9c4ef20ee`直接快进合并main并推送，不再停在PR等待授权。本轮1144项JVM/97 suites、70项设备、构建/lint、覆盖升级和性能均在该源码树完成，main快进前后代码完全相同，不额外重复相同测试或冒充新增执行。
+
+[1.0.2预览Release](https://github.com/LieerTsuki/Daybud/releases/tag/v1.0.2-rizhiya-preview-20261016)于`2026-10-16T05:42:24Z`（UTC）公开；[下载APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.0.2-rizhiya-preview-20261016/rizhiya-1.0.2-inline-month-preview.apk)。服务器资产摘要与本地已安装过的签名APK一致，再从公开链接实际下载核对12,435,895字节及SHA-256一致；1.0.1及更早Release保留。[发布核对](evidence/inline-month-1.0.2-publication.json)。
+
+[完整交付压缩包](https://github.com/LieerTsuki/Daybud/releases/download/v1.0.2-rizhiya-preview-20261016/rizhiya-1.0.2-inline-month-delivery.zip)含APK、摘要、验收与发布记录、截图及原始采证，13,314,645字节，SHA-256 `3cfe1deab0c96a1f66888988b13196299f7b80c008e820b65f74d2b769a9bc06`，已核对服务器摘要与本地一致。
