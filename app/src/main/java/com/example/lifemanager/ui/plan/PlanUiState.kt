@@ -11,7 +11,7 @@ data class PlanUiState(
     val generation: DataGeneration? = null,
     val rows: List<PlanListRow> = emptyList(),
     val tags: List<Tag> = emptyList(),
-    val filter: PlanFilter = PlanFilter(),
+    val filter: PlanFilter = PlanFilter(status = com.example.lifemanager.domain.plan.PlanStatus.ALL),
     val isLoading: Boolean = true,
     val isAvailable: Boolean = false,
     val isMaintaining: Boolean = false,

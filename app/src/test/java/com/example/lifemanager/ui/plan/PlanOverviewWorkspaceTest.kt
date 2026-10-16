@@ -70,11 +70,11 @@ class PlanOverviewWorkspaceTest {
         statsDispatcher.release()
         waitFor { stats.uiState.value.isAvailable && !stats.uiState.value.isLoading }
         scroll(hasText("全库完成率：0%（0 / 1）"));compose.onNodeWithText("全库完成率：0%（0 / 1）").assertExists()
-        scroll(hasText("列表"));compose.onNodeWithText("列表").performClick()
+        scroll(hasText("四象限"));compose.onNodeWithText("四象限").performClick()
         assertEquals("无结果",list.uiState.value.filter.query);assertEquals(PlanCategory.TODO,list.uiState.value.filter.category)
     }
     @Test fun `editor hides section shortcuts and keeps dirty draft on cancel close`() {
-        show();scroll(hasText("新建计划"));compose.onNodeWithText("新建计划").performClick()
+        show();scroll(hasContentDescription("添加计划：重要且紧急"));compose.onNodeWithContentDescription("添加计划：重要且紧急").performClick()
         waitFor { f.model.uiState.value.draft!=null && f.model.uiState.value.isAvailable }
         compose.onNodeWithContentDescription("计划标题").performTextReplacement("必须保留的草稿")
         compose.onNodeWithText("日历",useUnmergedTree=true).assertDoesNotExist();compose.onNodeWithText("统计").assertDoesNotExist()
@@ -85,7 +85,9 @@ class PlanOverviewWorkspaceTest {
     @Test fun `retained calendar open cannot select reused identity after replacement`() {
         f.repo.rows.value=listOf(Plan(id=7,title="旧日历记录",timeZone=clock.zone.id,createdAt=f.now,updatedAt=f.now,timeMode=PlanTimeMode.DEADLINE,dueDate=day))
         show();scroll(hasText("日历"));compose.onNodeWithText("日历").performClick()
-        scroll(hasText("旧日历记录"));val old=compose.onNodeWithText("旧日历记录").fetchSemanticsNode().config[SemanticsActions.OnClick].action!!
+        // Appearing starts a fresh admitted calendar read; the list is absent while loading.
+        waitFor { calendar.uiState.value.let { it.isAvailable && !it.isLoading && it.days[day].orEmpty().any { row -> row.plan.id==7L } } }
+        scroll(hasTestTag("plan-calendar-entry-7"));val old=compose.onNodeWithTag("plan-calendar-entry-7").fetchSemanticsNode().config[SemanticsActions.OnClick].action!!
         compose.mainClock.autoAdvance=false
         try {
             runBlocking(Dispatchers.IO) { f.coordinator.withSession { session -> f.coordinator.withMaintenance(session) {

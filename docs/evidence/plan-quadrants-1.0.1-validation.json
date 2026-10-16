@@ -1,0 +1,165 @@
+{
+  "date": "2026-10-16",
+  "sourceBaseCommit": "17a562cf958a5792d47b40791bc100ff87d319a8",
+  "sourceBranch": "feat/plan-quadrants",
+  "versionName": "1.0.1",
+  "versionCode": 4,
+  "applicationId": "com.example.lifemanager",
+  "schema": 6,
+  "publication": "Local preview candidate, not published or merged",
+  "jvm": {
+    "suites": 95,
+    "tests": 1138,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "instrumentation": {
+    "suites": 1,
+    "tests": 70,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "lint": {
+    "Error": 0,
+    "Fatal": 0,
+    "Warning": 47
+  },
+  "release": {
+    "file": "rizhiya-1.0.1-quadrants-preview.apk",
+    "bytes": 12435895,
+    "sha256": "b2bae413c70e7ed6046d2b79a6cfe87d34c715a2fd8970b562878840c9762ef0",
+    "debuggable": false,
+    "zipalign": true,
+    "signatureSchemes": [
+      "v2",
+      "v3"
+    ],
+    "certificateSha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+    "signing": "Existing preview debug certificate"
+  },
+  "upgrade": {
+    "fromVersion": "1.0.0",
+    "fromCode": 3,
+    "method": "install -r without uninstall between versions",
+    "avd": "Rizhiya_Branding",
+    "serial": "emulator-5580",
+    "identicalAllTables": true,
+    "plans": 6,
+    "schema": 6,
+    "version": "1.0.1",
+    "code": 4,
+    "calendarNames": true,
+    "calendarRemainingCount": 2,
+    "undatedAbsent": true,
+    "tables": [
+      "android_metadata",
+      "app_maintenance",
+      "app_settings",
+      "habit_records",
+      "habits",
+      "plan_exceptions",
+      "plan_legacy_refs",
+      "plan_reminder_state",
+      "plan_tag_cross_ref",
+      "plans",
+      "room_master_table",
+      "subscription_payments",
+      "subscription_reminders",
+      "subscriptions",
+      "tags"
+    ],
+    "beforeSha256": "63b021555e0ad61dd6cfd5b0b4f25e61ff61b4baf90546a32c63cce4ef2b5225",
+    "afterSha256": "63b021555e0ad61dd6cfd5b0b4f25e61ff61b4baf90546a32c63cce4ef2b5225"
+  },
+  "performance": {
+    "serial": "emulator-5580",
+    "version": "1.0.1",
+    "code": 4,
+    "debuggable": false,
+    "coldTotalTimeMs": [
+      651,
+      998,
+      1033,
+      765,
+      1028
+    ],
+    "medianMs": 998,
+    "maxMs": 1033,
+    "navigationCycles": 2,
+    "navigationMinimumDelaySeconds": 0.9,
+    "confirmedNavigations": [
+      {
+        "destination": "打卡",
+        "automationElapsedMs": 3140
+      },
+      {
+        "destination": "订阅",
+        "automationElapsedMs": 3094
+      },
+      {
+        "destination": "设置",
+        "automationElapsedMs": 3078
+      },
+      {
+        "destination": "计划",
+        "automationElapsedMs": 3094
+      },
+      {
+        "destination": "打卡",
+        "automationElapsedMs": 3094
+      },
+      {
+        "destination": "订阅",
+        "automationElapsedMs": 3093
+      },
+      {
+        "destination": "设置",
+        "automationElapsedMs": 3141
+      },
+      {
+        "destination": "计划",
+        "automationElapsedMs": 3109
+      }
+    ],
+    "gfxSummary": [
+      "Total frames rendered: 414",
+      "Janky frames: 21 (5.07%)",
+      "Janky frames (legacy): 173 (41.79%)",
+      "50th percentile: 18ms",
+      "90th percentile: 25ms",
+      "95th percentile: 30ms",
+      "99th percentile: 48ms",
+      "Number Missed Vsync: 1",
+      "50th gpu percentile: 14ms",
+      "90th gpu percentile: 19ms",
+      "95th gpu percentile: 22ms",
+      "99th gpu percentile: 4950ms",
+      "Total frames rendered: 414",
+      "Janky frames: 21 (5.07%)",
+      "Janky frames (legacy): 173 (41.79%)",
+      "50th percentile: 18ms",
+      "90th percentile: 25ms",
+      "95th percentile: 30ms",
+      "99th percentile: 48ms",
+      "Number Missed Vsync: 1",
+      "50th gpu percentile: 14ms",
+      "90th gpu percentile: 19ms",
+      "95th gpu percentile: 22ms",
+      "99th gpu percentile: 4950ms"
+    ],
+    "limitation": "Emulator, synthetic small database, system launch and navigation smoke only; no physical-device or stable-60fps acceptance."
+  },
+  "screenshots": {
+    "plan-quadrants-board.png": "fdec3c429e37ba12112ace4c466eb9102f3a076669d65b61a0ff4546019b6800",
+    "plan-quadrants-calendar.png": "13613372e7d823eb54788ae1324fb6187c8a9832aadd4ab0cc1f53a56db60eb8",
+    "plan-quadrants-empty.png": "7160bf3839a1a7012f1018f05b792ab91b4eb02f7d6ad82f323ebdd1c621ee97"
+  },
+  "limitations": [
+    "No physical-device or manual TalkBack acceptance",
+    "No stable 60fps claim",
+    "No large-database or cloud-provider acceptance",
+    "Existing preview signing, no production app-store eligibility"
+  ]
+}

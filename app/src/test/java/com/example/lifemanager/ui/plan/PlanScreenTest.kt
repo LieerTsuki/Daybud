@@ -69,7 +69,7 @@ class PlanScreenTest {
     }
     @Test fun `completed checkbox offers undo instead of another completion`() {
         state.value=state.value.copy(rows=listOf(row.copy(plan=row.plan.copy(isCompleted=true,completedAt=now))))
-        show();scrollTo(hasContentDescription("撤销完成：长期学习目标"));compose.onNodeWithContentDescription("撤销完成：长期学习目标").performClick()
+        show();scrollTo(hasContentDescription("不重要不紧急：已完成 1 项"));compose.onNodeWithContentDescription("不重要不紧急：已完成 1 项").performClick();scrollTo(hasContentDescription("撤销完成：长期学习目标"));compose.onNodeWithContentDescription("撤销完成：长期学习目标").performClick()
         assertEquals(1L to false,completed)
     }
     @Test fun `maintenance preserves records but disables completion`() {
@@ -81,20 +81,18 @@ class PlanScreenTest {
         state.value=state.value.copy(isAvailable=false,rows=emptyList(),readError="读取失败")
         show();compose.onNodeWithText("重新读取").performScrollTo().performClick()
         assertEquals(1,reads)
-        scrollTo(hasText("创建时间"))
-        compose.onNodeWithText("当前筛选下暂无计划").assertDoesNotExist()
+        scrollTo(hasTestTag("plan-quadrant-NONE"))
+        compose.onNodeWithText("留一点空间，开始新计划").assertDoesNotExist()
     }
     @Test fun `true empty success does not invent records or future module buttons`() {
         state.value=state.value.copy(rows=emptyList());show()
-        scrollTo(hasText("当前筛选下暂无计划"));compose.onNodeWithText("当前筛选下暂无计划").assertIsDisplayed()
+        scrollTo(hasTestTag("plan-quadrant-NONE"));compose.onAllNodesWithText("留一点空间，开始新计划").assertCountEquals(4)
         compose.onNodeWithText("新建计划").assertDoesNotExist()
         compose.onNodeWithText("日历").assertDoesNotExist()
         compose.onNodeWithText("统计").assertDoesNotExist()
     }
-    @Test fun `filters search and date not applicable hint are interactive`() {
-        show();compose.onNodeWithText("待办").performScrollTo().performClick()
-        assertEquals(PlanCategory.TODO,state.value.filter.category)
-        compose.onNodeWithText("无日期待办不适用日期筛选").assertExists()
+    @Test fun `search stays interactive without obsolete filter controls`() {
+        show();compose.onNodeWithText("全部分类").assertDoesNotExist()
         compose.onNode(hasSetTextAction()).performScrollTo().performTextReplacement("Kotlin")
         assertEquals("Kotlin",state.value.filter.query)
     }
@@ -109,7 +107,7 @@ class PlanScreenTest {
         show(dark=true,large=true)
         scrollTo(hasContentDescription("完成：${state.value.rows.single().plan.title}"))
         compose.onNodeWithContentDescription("完成：${state.value.rows.single().plan.title}").assertIsDisplayed().assertIsEnabled()
-        compose.onNodeWithText("很长的真实备注".repeat(16)).assertExists()
+        compose.onNodeWithText(state.value.rows.single().plan.title).assertExists()
     }
     @Test fun `retained adapter checkbox action cannot borrow replacement generation`() {
         val generations=TestGenerations(4)

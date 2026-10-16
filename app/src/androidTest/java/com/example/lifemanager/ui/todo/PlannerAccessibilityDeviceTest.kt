@@ -41,23 +41,25 @@ class PlannerAccessibilityDeviceTest {
                 CompositionLocalProvider(LocalDensity provides Density(LocalDensity.current.density, fontScale = 2f)) {
                     LifeManagerTheme(darkTheme = dark) {
                         Box(Modifier.width(320.dp).height(500.dp)) {
-                            PlanScreen(viewModel = model, onNew = {})
+                            PlanScreen(viewModel = model, onNewInQuadrant = { _, _ -> })
                         }
                     }
                 }
             }
         }
         compose.waitForIdle()
-        compose.waitUntil(10_000) { compose.onAllNodes(hasText("新建计划") and isEnabled()).fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(10_000) { compose.onAllNodes(hasContentDescription("添加计划：重要且紧急") and isEnabled()).fetchSemanticsNodes().isNotEmpty() }
         assertTextFits("计划手账")
-        compose.onNodeWithText("新建计划").assertIsDisplayed().assertHeightIsAtLeast(48.dp)
-        assertTextFits("新建计划")
-        compose.onNodeWithText("搜索标题或备注").performScrollTo().assertIsDisplayed()
-        // Lazy items below the compact viewport are not composed until scrolled into view.
-        compose.onNode(SemanticsMatcher.keyIsDefined(SemanticsProperties.VerticalScrollAxisRange))
-            .performScrollToNode(hasText("全部优先级"))
-        compose.onNodeWithText("全部优先级").assertIsDisplayed().assertHeightIsAtLeast(48.dp)
-        assertTextFits("全部优先级")
+        listOf("重要且紧急", "重要不紧急", "紧急不重要", "不重要不紧急").forEach { quadrant ->
+            // Lazy quadrant rows below the compact viewport are composed on demand.
+            compose.onNode(SemanticsMatcher.keyIsDefined(SemanticsProperties.VerticalScrollAxisRange))
+                .performScrollToNode(hasText(quadrant))
+            assertTextFits(quadrant)
+            val add = hasContentDescription("添加计划：$quadrant")
+            compose.onNode(SemanticsMatcher.keyIsDefined(SemanticsProperties.VerticalScrollAxisRange))
+                .performScrollToNode(add)
+            compose.onNode(add).assertIsDisplayed().assertHeightIsAtLeast(48.dp)
+        }
     }
 
     private fun assertTextFits(label: String) {

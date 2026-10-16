@@ -45,10 +45,10 @@ internal fun PlanListItem(row: PlanListRow, enabled: Boolean, displayZone: ZoneI
 }
 
 internal fun priorityLabel(value: TodoPriority): String = when (value) {
-    TodoPriority.NONE -> "无优先级"
-    TodoPriority.LOW -> "低优先级"
-    TodoPriority.MEDIUM -> "中优先级"
-    TodoPriority.HIGH -> "高优先级"
+    TodoPriority.NONE -> "不重要不紧急"
+    TodoPriority.LOW -> "紧急不重要"
+    TodoPriority.MEDIUM -> "重要不紧急"
+    TodoPriority.HIGH -> "重要且紧急"
 }
 
 @Composable

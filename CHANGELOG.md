@@ -2,6 +2,15 @@
 
 本文件随每次版本更新维护。未发布区是开发进度，不代表手机安装包已经包含新功能。
 
+## 未发布 · 1.0.1 / code4 · 四象限计划（2026-10-16）
+
+- 计划首页改为 2×2 四象限，每格均可直接添加计划；移除分类、状态、日期、优先级、标签及排序筛选条和顶部大新增按钮，保留搜索。已完成计划在原象限展开查看并可撤销完成。
+- 手动选择「重要且紧急／重要不紧急／紧急不重要／不重要不紧急」。沿用 HIGH／MEDIUM／LOW／NONE 保存，旧计划按原值显示；修改日期不会挪动象限。
+- 月历日期格直接显示前两项计划名称及其余数量，选择日期后可查看当天完整列表；未设置日期的计划不进入日历。
+- 安装身份、Room schema6、V2备份及旧V1严格兼容不变；沿用预览证书，覆盖前建议独立导出备份，不卸载清数据。版本提高至1.0.1/code4用于本地候选，历史1.0.0 Release与APK保留。
+- 本轮1138项JVM/95 suites和70项API35设备测试通过（均0 failure/error/skipped）；Debug/androidTest/Release与lint复核通过（0 error/47既有warning）。实际1.0.0覆盖升级后六条合成计划及15张数据库表内容不变，补齐真实界面截图和非调试候选性能采样；真机与稳定60fps不作为本轮通过项。
+- 已生成本地预览候选，尚未发布、未合并main；APK、SHA-256、本轮结果与限制见[四象限改版验收](docs/plan-quadrants-acceptance.md)。
+
 ## 1.0.0 / code3 · 统一计划预览版（2026-10-16已发布）
 
 - 发布：[v1.0.0-rizhiya-preview-20261016](https://github.com/LieerTsuki/Daybud/releases/tag/v1.0.0-rizhiya-preview-20261016)；已验收APK源码 [`4db24de`](https://github.com/LieerTsuki/Daybud/commit/4db24deb56d9562fede555d7d3aa7100f5013cee)，V1已合并main。历史Release不覆盖，当前安装身份仍为`com.example.lifemanager`，数据库schema6。

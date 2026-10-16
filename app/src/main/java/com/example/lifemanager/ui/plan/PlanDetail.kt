@@ -19,7 +19,7 @@ fun PlanDetail(state: PlanEditorState, model: PlanEditorViewModel) {
             planFeedback(state, model)
             if (plan != null) {
                 item { Text(plan.description ?: "无备注") }
-                item { Text("${modeLabel(plan.timeMode)} · ${if (plan.isCompleted) "已完成" else "未完成"} · ${priorityLabel(plan.priority)}") }
+                item { Text("${modeLabel(plan.timeMode)} · ${if (plan.isCompleted) "已完成" else "未完成"}\n象限：${priorityLabel(plan.priority)}") }
                 item { Text("时区：${plan.timeZone}\n截止时刻：${instantText(plan.dueAt, plan.timeZone).ifEmpty { "无" }}\n截止日期：${plan.dueDate ?: "无"}") }
                 item { Text("区间：${instantText(plan.startAt, plan.timeZone).ifEmpty { "无" }} — ${instantText(plan.endAt, plan.timeZone).ifEmpty { "无" }}\n全天：${plan.allDayStartDate ?: "无"} — ${plan.allDayEndDate ?: "无"}（含结束日）") }
                 item { Text("重复：${repeatLabel(plan.repeatRule)} · 间隔 ${plan.repeatInterval}\n星期：${plan.repeatDaysOfWeek.joinToString()}\n结束日期：${plan.repeatEndDate ?: "无"}\n未启用模式的参数仅保留，不产生发生或提醒。") }

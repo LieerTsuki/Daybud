@@ -18,11 +18,11 @@ import kotlin.test.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class PlanViewModelTest {
-    @Test fun `fresh snapshot defaults to unfinished across categories`() = scenario { f ->
+    @Test fun `fresh snapshot includes completed records for quadrant history`() = scenario { f ->
         assertTrue(f.model.uiState.value.isAvailable)
         assertFalse(f.model.uiState.value.isLoading)
         assertEquals(DataGeneration(4),f.model.uiState.value.generation)
-        assertEquals(listOf(1L,2L),f.model.uiState.value.rows.map { it.plan.id })
+        assertEquals(listOf(1L,2L,3L),f.model.uiState.value.rows.map { it.plan.id })
     }
     @Test fun `filter drives real repository rows and preserves completion status selection`() = scenario { f ->
         f.model.onFilterChanged(PlanFilter(category=PlanCategory.TODO,status=PlanStatus.ALL,query="长期"),DataGeneration(4))
@@ -33,8 +33,8 @@ class PlanViewModelTest {
     @Test fun `complete persists once and leaves original filter unchanged`() = scenario { f ->
         f.model.setCompleted(1,true,DataGeneration(4)); advanceUntilIdle()
         assertTrue(f.repo.rows.value.first { it.id==1L }.isCompleted)
-        assertEquals(listOf(2L),f.model.uiState.value.rows.map { it.plan.id })
-        assertEquals(PlanFilter(),f.model.uiState.value.filter)
+        assertEquals(listOf(1L,2L,3L),f.model.uiState.value.rows.map { it.plan.id })
+        assertEquals(PlanFilter(status=PlanStatus.ALL),f.model.uiState.value.filter)
         assertEquals(1,f.repo.writes)
         assertNotNull(f.model.uiState.value.message)
     }
@@ -80,7 +80,7 @@ class PlanViewModelTest {
         f.repo.writeFailure=IllegalStateException("disk failure")
         f.model.setCompleted(1,true,DataGeneration(4)); advanceUntilIdle()
         assertFalse(f.repo.rows.value.first { it.id==1L }.isCompleted)
-        assertEquals(listOf(1L,2L),f.model.uiState.value.rows.map { it.plan.id })
+        assertEquals(listOf(1L,2L,3L),f.model.uiState.value.rows.map { it.plan.id })
         assertTrue(f.model.uiState.value.reminderFailures.isEmpty())
         assertNotNull(f.model.uiState.value.message)
     }
@@ -88,7 +88,7 @@ class PlanViewModelTest {
         f.repo.readFailure=true; f.model.refresh(); advanceUntilIdle()
         assertFalse(f.model.uiState.value.isAvailable)
         assertNotNull(f.model.uiState.value.readError)
-        assertEquals(listOf(1L,2L),f.model.uiState.value.rows.map { it.plan.id })
+        assertEquals(listOf(1L,2L,3L),f.model.uiState.value.rows.map { it.plan.id })
         f.model.setCompleted(1,true,DataGeneration(4)); advanceUntilIdle()
         assertEquals(0,f.repo.writes)
         f.repo.readFailure=false; f.model.retryRead(); advanceUntilIdle()
@@ -105,7 +105,7 @@ class PlanViewModelTest {
         val maintenance=launch { f.coordinator.withSession { entered.complete(Unit);release.await() } }
         runCurrent();entered.await();runCurrent()
         assertTrue(f.model.uiState.value.isMaintaining)
-        assertEquals(listOf(1L,2L),f.model.uiState.value.rows.map { it.plan.id })
+        assertEquals(listOf(1L,2L,3L),f.model.uiState.value.rows.map { it.plan.id })
         f.model.setCompleted(1,true,DataGeneration(4));runCurrent()
         release.complete(Unit);maintenance.join();advanceUntilIdle()
         assertEquals(0,f.repo.writes)

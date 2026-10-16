@@ -11,7 +11,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.example.lifemanager.MainActivity
 import com.example.lifemanager.data.local.LifeManagerDatabaseFactory
 import com.example.lifemanager.data.plan.PlanEntity
-import com.example.lifemanager.domain.plan.PlanCategory
+import com.example.lifemanager.domain.model.TodoPriority
 import com.example.lifemanager.domain.plan.PlanReminderToken
 import com.example.lifemanager.domain.plan.PlanTimeMode
 import com.example.lifemanager.notification.PlanNotificationHelper
@@ -59,6 +59,18 @@ class UnifiedPlanActivityDeviceTest {
         val matcher = hasText(label) and hasClickAction()
         scrollTo(matcher)
         compose.onNode(matcher).assertIsEnabled().performClick()
+    }
+
+    private fun addInHighQuadrant() {
+        val matcher = hasContentDescription("添加计划：重要且紧急") and hasClickAction()
+        scrollTo(matcher)
+        compose.onNode(matcher).assertIsEnabled().performClick()
+    }
+
+    private fun openHighQuadrantPlan(title: String, id: Long) {
+        val matcher = hasText(title) and hasAnyAncestor(hasTestTag("plan-quadrant-HIGH"))
+        scrollTo(hasTestTag("quadrant-plan-$id"))
+        compose.onNode(matcher).assertIsDisplayed().performClick()
     }
 
     private fun ready() {
@@ -133,7 +145,7 @@ class UnifiedPlanActivityDeviceTest {
             ready()
             val baseline = assertNotNull(statistics().uiState.value.statistics)
             val day = calendar().uiState.value.selectedDate
-            clickAction("新建计划")
+            addInHighQuadrant()
             awaitEditor()
             compose.onNodeWithContentDescription("计划标题").performTextReplacement(title)
             // Keep this synthetic test from scheduling OS alarms while changing time modes.
@@ -146,18 +158,18 @@ class UnifiedPlanActivityDeviceTest {
             val id = original.id
             assertTrue(id > 0)
             assertEquals(PlanTimeMode.NONE, original.timeMode)
+            assertEquals(TodoPriority.HIGH, original.priority)
             assertEquals(id, ownedRows(title).single().id)
+            assertEquals(TodoPriority.HIGH, ownedRows(title).single().priority)
 
-            // Verify that adding a date reclassifies the actual list row, without a replacement ID.
+            // A date changes calendar placement, while manual quadrant and identity stay fixed.
             returnToList()
-            clickAction("待办")
             waitFor {
                 plans().uiState.value.let {
-                    !it.isLoading && it.filter.category == PlanCategory.TODO && it.rows.any { row -> row.plan.id == id }
+                    !it.isLoading && it.rows.any { row -> row.plan.id == id && row.plan.priority == TodoPriority.HIGH }
                 }
             }
-            scrollTo(hasText(title))
-            compose.onNodeWithText(title).performClick()
+            openHighQuadrantPlan(title, id)
             awaitDetail(title)
             clickAction("编辑计划")
             awaitEditor()
@@ -172,22 +184,21 @@ class UnifiedPlanActivityDeviceTest {
             assertEquals(id, dated.id)
             assertEquals(original.createdAt, dated.createdAt)
             assertEquals(PlanTimeMode.DEADLINE, dated.timeMode)
+            assertEquals(TodoPriority.HIGH, dated.priority)
             assertEquals(day, dated.dueDate)
             assertNull(dated.dueAt)
             assertFalse(dated.reminderEnabled)
             val stored = ownedRows(title).single()
             assertEquals(id, stored.id)
             assertEquals(day.toEpochDay(), stored.dueDate)
-            assertEquals(PlanCategory.TODO, plans().uiState.value.filter.category)
+            assertEquals(TodoPriority.HIGH, stored.priority)
             returnToList()
-            clickAction("日程")
             waitFor {
                 plans().uiState.value.let {
-                    !it.isLoading && it.filter.category == PlanCategory.SCHEDULE && it.rows.any { row -> row.plan.id == id }
+                    !it.isLoading && it.rows.any { row -> row.plan.id == id && row.plan.priority == TodoPriority.HIGH }
                 }
             }
-            scrollTo(hasText(title))
-            compose.onNodeWithText(title).performClick()
+            openHighQuadrantPlan(title, id)
             awaitDetail(title)
 
             clickAction("勾选完成")
@@ -215,10 +226,27 @@ class UnifiedPlanActivityDeviceTest {
                     it.isAvailable && !it.isLoading && it.days[day].orEmpty().any { row -> row.plan.id == id }
                 }
             }
-            scrollTo(hasText(title))
-            compose.onNodeWithText(title).assertIsDisplayed().performClick()
+            scrollTo(hasTestTag("plan-calendar-entry-$id"))
+            compose.onNodeWithTag("plan-calendar-entry-$id").assertIsDisplayed().performClick()
             awaitDetail(title)
             assertEquals(id, editor().uiState.value.detail!!.id)
+            assertEquals(TodoPriority.HIGH, editor().uiState.value.detail!!.priority)
+
+            clickAction("编辑计划")
+            awaitEditor()
+            clickAction("无日期待办")
+            compose.onNodeWithText("确认切换").performClick()
+            clickAction("保存计划")
+            awaitDetail(title)
+            val undated = ownedRows(title).single()
+            assertEquals(id, undated.id)
+            assertEquals(TodoPriority.HIGH, undated.priority)
+            assertEquals(PlanTimeMode.NONE, undated.timeMode)
+            waitFor { calendar().uiState.value.let { !it.isLoading && it.days.values.flatten().none { row -> row.plan.id == id } } }
+            returnToList()
+            clickAction("四象限")
+            openHighQuadrantPlan(title, id)
+            awaitDetail(title)
         } catch (error: Throwable) {
             failure = error
             throw error
@@ -233,7 +261,7 @@ class UnifiedPlanActivityDeviceTest {
         var failure: Throwable? = null
         try {
             ready()
-            clickAction("新建计划")
+            addInHighQuadrant()
             awaitEditor()
             compose.onNodeWithContentDescription("计划标题").performTextReplacement(title)
             val retained = editor()
@@ -276,7 +304,7 @@ class UnifiedPlanActivityDeviceTest {
         var failure: Throwable? = null
         try {
             ready()
-            clickAction("新建计划")
+            addInHighQuadrant()
             awaitEditor()
             compose.onNodeWithContentDescription("计划标题").performTextReplacement(targetTitle)
             scrollTo(hasContentDescription("单项计划提醒"))
@@ -286,7 +314,7 @@ class UnifiedPlanActivityDeviceTest {
             awaitDetail(targetTitle)
             val target = assertNotNull(editor().uiState.value.detail)
             returnToList()
-            clickAction("新建计划")
+            addInHighQuadrant()
             awaitEditor()
             compose.onNodeWithContentDescription("计划标题").performTextReplacement(draftTitle)
 

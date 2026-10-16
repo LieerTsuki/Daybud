@@ -30,6 +30,7 @@ import com.example.lifemanager.ui.plan.PlanPane
 import com.example.lifemanager.domain.plan.PlanTimeMode
 import com.example.lifemanager.domain.plan.PlanStatus
 import com.example.lifemanager.domain.plan.PlanRepository
+import com.example.lifemanager.domain.model.TodoPriority
 import com.example.lifemanager.ui.subscription.SubscriptionViewModel
 import org.junit.Rule
 import org.junit.Before
@@ -152,8 +153,14 @@ class V1ActivityActivationTest {
 
     private fun ready() {
         waitFor {
-            compose.onAllNodes(hasText("新建计划") and isEnabled()).fetchSemanticsNodes().isNotEmpty()
+            compose.onAllNodes(hasContentDescription("添加计划：重要且紧急") and isEnabled()).fetchSemanticsNodes().isNotEmpty()
         }
+    }
+
+    private fun addHighQuadrantPlan() {
+        val add=hasContentDescription("添加计划：重要且紧急") and hasClickAction()
+        scrollTo(add)
+        compose.onNode(add).assertIsEnabled().performClick()
     }
 
     private fun subscriptionIntent(generation: Long = 0L) = Intent(activity, MainActivity::class.java)
@@ -184,7 +191,7 @@ class V1ActivityActivationTest {
         val habit=hilt[HabitViewModel::class.java]
         val subscription=hilt[SubscriptionViewModel::class.java]
         val editor=provider[PlanEditorViewModel::class.java]
-        compose.onNodeWithText("新建计划").performClick()
+        addHighQuadrantPlan()
         awaitEditorReady()
         val stamp=editor.uiState.value.stamp
         repeat(3) {
@@ -208,7 +215,7 @@ class V1ActivityActivationTest {
         ready()
         val editor=ViewModelProvider(activity,activity.v1Factory)[PlanEditorViewModel::class.java]
         val title="E6生产接线写入"
-        compose.onNodeWithText("新建计划").performClick()
+        addHighQuadrantPlan()
         awaitEditorReady()
         compose.onNodeWithContentDescription("计划标题").performTextReplacement(title)
         scrollTo(hasText("保存计划"))
@@ -217,6 +224,7 @@ class V1ActivityActivationTest {
         val id=requireNotNull(editor.uiState.value.detail).id
         assertTrue(id>0)
         assertEquals(PlanTimeMode.NONE,editor.uiState.value.detail!!.timeMode)
+        assertEquals(TodoPriority.HIGH,editor.uiState.value.detail!!.priority)
         scrollTo(hasText("勾选完成"))
         compose.onNodeWithText("勾选完成").performClick()
         waitFor { editor.uiState.value.detail?.let { it.id==id && it.isCompleted }==true && !editor.uiState.value.isBusy }
@@ -224,21 +232,22 @@ class V1ActivityActivationTest {
         compose.onNodeWithText("返回计划").performClick()
         waitFor { editor.uiState.value.pane==PlanPane.LIST && !editor.uiState.value.isLoading }
         val list=SemanticsMatcher.keyIsDefined(SemanticsActions.ScrollToIndex)
-        val completedChip=hasText("已完成") and hasClickAction()
+        val completedChip=hasContentDescription("重要且紧急：已完成 1 项") and hasClickAction()
         compose.onNode(list).performScrollToNode(completedChip)
         val plans=ViewModelProvider(activity,activity.v1Factory)[PlanViewModel::class.java]
         compose.onNode(completedChip).assertIsEnabled().performClick()
         waitFor { plans.uiState.value.let { state ->
-            state.filter.status==PlanStatus.COMPLETED && state.isAvailable && !state.isLoading &&
-                state.rows.any { it.plan.id==id && it.plan.title==title && it.plan.isCompleted }
+            state.filter.status==PlanStatus.ALL && state.isAvailable && !state.isLoading &&
+                state.rows.any { it.plan.id==id && it.plan.title==title && it.plan.isCompleted && it.plan.priority==TodoPriority.HIGH }
         } }
         compose.onNode(list).performScrollToNode(hasText(title))
-        compose.onNodeWithText(title).performClick()
+        compose.onNode(hasText(title) and hasAnyAncestor(hasTestTag("plan-quadrant-HIGH"))).performClick()
         waitFor { editor.uiState.value.detail?.let { it.id==id && it.isCompleted && it.title==title }==true }
         controller.recreate()
         assertSame(editor,ViewModelProvider(activity,activity.v1Factory)[PlanEditorViewModel::class.java])
         assertEquals(id,editor.uiState.value.detail!!.id)
         assertTrue(editor.uiState.value.detail!!.isCompleted)
+        assertEquals(TodoPriority.HIGH,editor.uiState.value.detail!!.priority)
     }
 
     @Test fun rejectedMixedPlanEnvelopeCannotFallThroughToValidSubscriptionMetadata() {
@@ -251,14 +260,14 @@ class V1ActivityActivationTest {
         assertNull(owners[PlanNavigationViewModel::class.java].uiState.value.pending)
         // Subscription is Hilt-owned; lookup through Activity's default factory reuses its instance.
         assertNull(ViewModelProvider(activity)[SubscriptionViewModel::class.java].uiState.value.detailId)
-        compose.onNodeWithText("新建计划").assertExists()
+        compose.onNodeWithContentDescription("添加计划：重要且紧急").assertExists()
         assertFalse(event.hasExtra(MainActivity.EXTRA_SUBSCRIPTION_ID))
         assertFalse(event.hasExtra(ReminderGeneration.EXTRA))
     }
 
     @Test fun subscriptionNotificationWaitsForPlanDraftDecisionAndIsConsumedAcrossRecreation() {
         ready()
-        compose.onNodeWithText("新建计划").performClick()
+        addHighQuadrantPlan()
         awaitEditorReady()
         compose.onNodeWithContentDescription("计划标题").performTextReplacement("通知到达时保留")
         val event = subscriptionIntent()
@@ -289,7 +298,7 @@ class V1ActivityActivationTest {
         val event = subscriptionIntent(Long.MAX_VALUE)
         compose.runOnIdle { InstrumentationRegistry.getInstrumentation().callActivityOnNewIntent(activity, event) }
         compose.waitForIdle()
-        compose.onNodeWithText("新建计划").assertExists()
+        compose.onNodeWithContentDescription("添加计划：重要且紧急").assertExists()
         compose.onNodeWithText("订阅不存在或已删除").assertDoesNotExist()
         compose.runOnIdle { assertFalse(event.hasExtra(MainActivity.EXTRA_SUBSCRIPTION_ID)) }
     }

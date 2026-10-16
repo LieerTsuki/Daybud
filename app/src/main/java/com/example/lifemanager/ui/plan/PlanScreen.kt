@@ -1,18 +1,23 @@
 package com.example.lifemanager.ui.plan
 
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -29,7 +34,8 @@ import kotlinx.coroutines.isActive
 @Composable
 fun PlanScreen(viewModel: PlanViewModel, onNew: ((DataGeneration?) -> Unit)? = null,
     onOpen: ((Long, DataGeneration?) -> Unit)? = null, canNavigate: Boolean = true,
-    extraContent: LazyListScope.() -> Unit = {}) {
+    extraContent: LazyListScope.() -> Unit = {},
+    onNewInQuadrant: ((TodoPriority, DataGeneration?) -> Unit)? = null) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     // Delegated state getters are live. Old UI actions must not borrow a replacement's token.
     val renderedGeneration = state.generation
@@ -42,7 +48,8 @@ fun PlanScreen(viewModel: PlanViewModel, onNew: ((DataGeneration?) -> Unit)? = n
     PlanScreen(state, { viewModel.onFilterChanged(it, renderedGeneration) },
         { id, completed -> viewModel.setCompleted(id, completed, renderedGeneration) },
         viewModel::retryRead, { viewModel.retryReminders(it, renderedGeneration) }, viewModel::dismissMessage, state.displayZone,
-        onNew?.let { action -> { action(renderedGeneration) } }, onOpen?.let { action -> { id -> action(id, renderedGeneration) } }, canNavigate, extraContent)
+        onNew?.let { action -> { action(renderedGeneration) } }, onOpen?.let { action -> { id -> action(id, renderedGeneration) } }, canNavigate, extraContent,
+        onNewInQuadrant?.let { action -> { priority -> action(priority, renderedGeneration) } })
 }
 
 @Composable
@@ -50,7 +57,8 @@ fun PlanScreen(state: PlanUiState, onFilterChanged: (PlanFilter) -> Unit,
     onCompleted: (Long, Boolean) -> Unit, onRetryRead: () -> Unit,
     onRetryReminders: (Long) -> Unit, onDismissMessage: () -> Unit,
     displayZone: ZoneId = state.displayZone, onNew: (() -> Unit)? = null, onOpen: ((Long) -> Unit)? = null,
-    canNavigate: Boolean = true, extraContent: LazyListScope.() -> Unit = {}) {
+    canNavigate: Boolean = true, extraContent: LazyListScope.() -> Unit = {},
+    onNewInQuadrant: ((TodoPriority) -> Unit)? = null) {
     val enabled = state.isAvailable && !state.isMaintaining
     val filter = state.filter
     Surface(color = MaterialTheme.colorScheme.background) {
@@ -60,15 +68,12 @@ fun PlanScreen(state: PlanUiState, onFilterChanged: (PlanFilter) -> Unit,
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Column(Modifier.weight(1f)) {
                         Text("计划手账", style = MaterialTheme.typography.headlineMedium)
-                        Text("把长远目标与每日安排放在一起", style = MaterialTheme.typography.bodyMedium)
+                        Text("按重要与紧急，安排每一天", style = MaterialTheme.typography.bodyMedium)
                     }
-                    PlannerIllustration(Modifier.size(72.dp))
+                    PlannerIllustration(Modifier.size(48.dp))
                 }
             }
             extraContent()
-            if (onNew != null) item(key = "new-plan") {
-                Button(onNew, enabled = enabled && canNavigate && !state.isLoading, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text("新建计划") }
-            }
             if (state.isMaintaining) item(key = "maintenance") { Text("正在维护数据，暂不能修改") }
             if (state.readError != null) item(key = "read-error") {
                 Column {
@@ -92,66 +97,100 @@ fun PlanScreen(state: PlanUiState, onFilterChanged: (PlanFilter) -> Unit,
                 }
             }
             item(key = "search") {
-                OutlinedTextField(value = filter.query, onValueChange = { onFilterChanged(filter.copy(query = it)) },
-                    modifier = Modifier.fillMaxWidth(), label = { Text("搜索标题或备注") }, enabled = enabled, singleLine = true)
+                OutlinedTextField(value = filter.query,
+                    onValueChange = { onFilterChanged(PlanFilter(status = PlanStatus.ALL, query = it)) },
+                    modifier = Modifier.fillMaxWidth(), label = { Text("搜索计划") }, enabled = enabled, singleLine = true)
             }
-            item(key = "category") { FilterStrip("分类") {
-                PlanCategory.entries.forEach { value ->
-                    FilterChip(selected = filter.category == value, onClick = { onFilterChanged(filter.copy(category = value)) }, enabled = enabled,
-                        label = { Text(when (value) { PlanCategory.ALL -> "全部分类"; PlanCategory.TODO -> "待办"; PlanCategory.SCHEDULE -> "日程" }) })
-                }
-            } }
-            item(key = "status") { FilterStrip("状态") {
-                PlanStatus.entries.forEach { value ->
-                    FilterChip(selected = filter.status == value, onClick = { onFilterChanged(filter.copy(status = value)) }, enabled = enabled,
-                        label = { Text(when (value) { PlanStatus.UNFINISHED -> "未完成"; PlanStatus.COMPLETED -> "已完成"; PlanStatus.ALL -> "全部状态" }) })
-                }
-            } }
-            item(key = "date") {
-                if (filter.category == PlanCategory.TODO) Text("无日期待办不适用日期筛选")
-                FilterStrip("日期") {
-                    PlanDateFilter.entries.forEach { value ->
-                        FilterChip(selected = filter.date == value, onClick = { onFilterChanged(filter.copy(date = value)) },
-                            enabled = enabled && filter.category != PlanCategory.TODO,
-                            label = { Text(when (value) { PlanDateFilter.ALL -> "全部日期"; PlanDateFilter.TODAY -> "今天"; PlanDateFilter.TOMORROW -> "明天"; PlanDateFilter.WEEK -> "本周" }) })
+            if (state.isLoading) item(key = "loading") {
+                CircularProgressIndicator(Modifier.semantics { contentDescription = "正在读取计划" })
+            }
+            val quadrants = listOf(TodoPriority.HIGH, TodoPriority.MEDIUM, TodoPriority.LOW, TodoPriority.NONE)
+            quadrants.chunked(2).forEachIndexed { index, pair ->
+                item(key = "quadrant-row-$index") {
+                    Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        pair.forEach { priority ->
+                            QuadrantCard(priority, state.rows.filter { it.plan.priority == priority }, state,
+                                enabled && !state.isLoading, displayZone, onCompleted, if (canNavigate) onOpen else null,
+                                if (onNewInQuadrant != null || onNew != null) ({ onNewInQuadrant?.invoke(priority) ?: onNew?.invoke() }) else null,
+                                canNavigate, Modifier.weight(1f).fillMaxHeight())
+                        }
                     }
                 }
-            }
-            item(key = "priority") { FilterStrip("优先级") {
-                FilterChip(selected = filter.priority == null, onClick = { onFilterChanged(filter.copy(priority = null)) }, enabled = enabled, modifier = Modifier.heightIn(min = 48.dp), label = { Text("全部优先级") })
-                TodoPriority.entries.reversed().forEach { value ->
-                    FilterChip(selected = filter.priority == value, onClick = { onFilterChanged(filter.copy(priority = value)) }, enabled = enabled,
-                        label = { Text(priorityLabel(value)) })
-                }
-            } }
-            if (state.tags.isNotEmpty() || filter.tagId != null) item(key = "tags") { FilterStrip("标签") {
-                FilterChip(selected = filter.tagId == null, onClick = { onFilterChanged(filter.copy(tagId = null)) }, enabled = enabled, label = { Text("全部标签") })
-                state.tags.forEach { tag ->
-                    FilterChip(selected = filter.tagId == tag.id, onClick = { onFilterChanged(filter.copy(tagId = tag.id)) }, enabled = enabled, label = { Text(tag.name) })
-                }
-                if (filter.tagId != null && state.tags.none { it.id == filter.tagId }) Text("所选标签已不存在，请清除筛选")
-            } }
-            item(key = "sort") { FilterStrip("排序") {
-                PlanSort.entries.forEach { value ->
-                    FilterChip(selected = filter.sort == value, onClick = { onFilterChanged(filter.copy(sort = value)) }, enabled = enabled,
-                        label = { Text(when (value) { PlanSort.CREATED -> "创建时间"; PlanSort.DATE -> "截止／发生时间"; PlanSort.PRIORITY -> "优先级排序" }) })
-                }
-            } }
-            if (state.isLoading) item(key = "loading") { CircularProgressIndicator(Modifier.semantics { contentDescription = "正在读取计划" }) }
-            if (state.isAvailable && !state.isLoading) item(key = "count") { Text("当前筛选：${state.rows.size} 项（非全库统计）") }
-            if (state.rows.isEmpty() && state.isAvailable && !state.isLoading) item(key = "empty") { Text("当前筛选下暂无计划") }
-            items(state.rows, key = { "plan-${it.plan.id}" }) { row ->
-                PlanListItem(row, enabled && !state.isLoading && row.plan.id !in state.pendingIds, displayZone, onCompleted,
-                    if (canNavigate) onOpen else null)
             }
         }
     }
 }
 
 @Composable
-private fun FilterStrip(title: String, content: @Composable RowScope.() -> Unit) {
-    Column {
-        Text(title, style = MaterialTheme.typography.labelLarge)
-        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp), content = content)
+private fun QuadrantCard(priority: TodoPriority, rows: List<PlanListRow>, state: PlanUiState,
+    enabled: Boolean, zone: ZoneId, onCompleted: (Long, Boolean) -> Unit, onOpen: ((Long) -> Unit)?,
+    onAdd: (() -> Unit)?, canNavigate: Boolean, modifier: Modifier = Modifier) {
+    // Keep each expansion local to its quadrant and data generation, never a database filter.
+    var showCompleted by rememberSaveable(priority, state.generation?.value) { mutableStateOf(false) }
+    var showAll by rememberSaveable(priority, state.generation?.value, state.filter.query) { mutableStateOf(false) }
+    val active = rows.filterNot { it.plan.isCompleted }
+    val completed = rows.filter { it.plan.isCompleted }
+    val tint = when (priority) {
+        TodoPriority.HIGH -> MaterialTheme.colorScheme.secondaryContainer
+        TodoPriority.MEDIUM -> MaterialTheme.colorScheme.primaryContainer
+        TodoPriority.LOW -> MaterialTheme.colorScheme.tertiaryContainer
+        TodoPriority.NONE -> MaterialTheme.colorScheme.surfaceVariant
+    }
+    Card(modifier.testTag("plan-quadrant-${priority.name}"), shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)) {
+        Column(Modifier.fillMaxWidth().heightIn(min = 224.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Surface(color = tint, modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(12.dp)) {
+                    Text(priorityLabel(priority), style = MaterialTheme.typography.titleSmall)
+                    Text("${active.size} 项待完成", style = MaterialTheme.typography.labelSmall)
+                }
+            }
+            if (onAdd != null) TextButton(onClick = onAdd, enabled = enabled && canNavigate,
+                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).semantics {
+                    contentDescription = "添加计划：${priorityLabel(priority)}"
+                }) { Text("＋ 添加计划") }
+            if (active.isEmpty() && state.isAvailable && !state.isLoading) {
+                Text(if (state.filter.query.isBlank()) "留一点空间，开始新计划" else "没有匹配的计划",
+                    Modifier.padding(12.dp), style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            (if (showAll) active else active.take(3)).forEach { row ->
+                QuadrantEntry(row, enabled && row.plan.id !in state.pendingIds, zone, onCompleted, onOpen)
+            }
+            if (active.size > 3) TextButton({ showAll = !showAll }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                enabled = !state.isMaintaining) { Text(if (showAll) "收起计划" else "展开其余 ${active.size - 3} 项") }
+            if (completed.isNotEmpty()) {
+                TextButton({ showCompleted = !showCompleted }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                    .semantics { contentDescription = "${priorityLabel(priority)}：已完成 ${completed.size} 项" },
+                    enabled = !state.isMaintaining) { Text("已完成 ${completed.size} 项 ${if (showCompleted) "⌃" else "⌄"}") }
+                if (showCompleted) completed.forEach { row ->
+                    QuadrantEntry(row, enabled && row.plan.id !in state.pendingIds, zone, onCompleted, onOpen)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun QuadrantEntry(row: PlanListRow, enabled: Boolean, zone: ZoneId,
+    onCompleted: (Long, Boolean) -> Unit, onOpen: ((Long) -> Unit)?) {
+    val plan = row.plan
+    val title = plan.title.ifBlank { "（历史空标题）" }
+    Column(Modifier.fillMaxWidth().padding(horizontal = 8.dp).testTag("quadrant-plan-${plan.id}")) {
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        Text(title, style = MaterialTheme.typography.bodyMedium, maxLines = 3, overflow = TextOverflow.Ellipsis,
+            textDecoration = if (plan.isCompleted) TextDecoration.LineThrough else null,
+            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).then(if (onOpen != null) Modifier.clickable(
+                enabled = enabled, onClickLabel = "打开计划详情") { onOpen(plan.id) } else Modifier).padding(top = 8.dp))
+        if (plan.isRepeating) Text("重复系列 · 勾选完成将结束整个系列",
+            style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(if (plan.isScheduled) timeLabel(row, zone) else "未设日期", Modifier.weight(1f),
+                style = MaterialTheme.typography.labelSmall, maxLines = 2, overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Checkbox(plan.isCompleted, { onCompleted(plan.id, it) }, enabled = enabled,
+                modifier = Modifier.semantics { contentDescription = "${if (plan.isCompleted) "撤销完成" else "完成"}：$title" })
+        }
     }
 }

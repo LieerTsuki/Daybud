@@ -29,7 +29,7 @@ fun PlanWorkspace(list: PlanViewModel, editor: PlanEditorViewModel, calendar:Pla
                         val current=editor.uiState.value
                         if(current.pane==PlanPane.LIST && current.stamp.generation==stamp.generation && !current.isMaintaining && !current.isBusy)
                             section=target
-                    },enabled=navigationEnabled,label={Text(when(target) { PlanSection.LIST -> "列表";PlanSection.CALENDAR -> "日历";PlanSection.STATISTICS -> "统计" })})
+                    },enabled=navigationEnabled,label={Text(when(target) { PlanSection.LIST -> "四象限";PlanSection.CALENDAR -> "日历";PlanSection.STATISTICS -> "统计" })})
                 }
             }
         }
@@ -40,8 +40,8 @@ fun PlanWorkspace(list: PlanViewModel, editor: PlanEditorViewModel, calendar:Pla
         PlanPane.LIST -> when {
             section==PlanSection.CALENDAR && calendar!=null -> PlanCalendarScreen(calendar,editor::open,navigationEnabled,extra)
             section==PlanSection.STATISTICS && statistics!=null -> PlanStatisticsScreen(statistics,extra)
-            else -> PlanScreen(list,editor::openNew,editor::open,
-                canNavigate=state.isAvailable && navigationEnabled,extraContent=extra)
+            else -> PlanScreen(list,onOpen=editor::open,
+                canNavigate=state.isAvailable && navigationEnabled,extraContent=extra,onNewInQuadrant=editor::openNewInQuadrant)
         }
         PlanPane.DETAIL -> PlanDetail(state, editor)
         PlanPane.EDIT -> PlanEditor(state, editor)

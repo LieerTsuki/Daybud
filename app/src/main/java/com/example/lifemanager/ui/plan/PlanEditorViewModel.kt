@@ -75,16 +75,17 @@ class PlanEditorViewModel(private val repository:PlanRepository,private val case
     }
 
     fun openNew(rendered:DataGeneration?)=requestTarget(null,rendered)
+    fun openNewInQuadrant(priority:TodoPriority,rendered:DataGeneration?)=requestTarget(null,rendered,priority)
     fun open(id:Long,rendered:DataGeneration?) { if(id>0)requestTarget(id,rendered) }
-    private fun requestTarget(id:Long?,rendered:DataGeneration?) {
+    private fun requestTarget(id:Long?,rendered:DataGeneration?,priority:TodoPriority=TodoPriority.NONE) {
         val current=state.value
         if(rendered!=current.stamp.generation || !allowed(current.stamp,false)) return
-        val selected=Target(id,checkNotNull(rendered),++sequence)
+        val selected=Target(id,checkNotNull(rendered),++sequence,priority)
         if(dirty()) { pending=selected;state.update { it.copy(confirmClose=true,stamp=it.stamp.copy(revision=it.stamp.revision+1)) } } else select(selected)
     }
     private fun select(selected:Target) {
         val zone=clock.zone.id.takeIf { it in java.time.ZoneId.getAvailableZoneIds() } ?: "UTC"
-        val draft=if(selected.id==null)PlanDraft(Plan(title="",timeZone=zone,createdAt=clock.instant(),updatedAt=clock.instant()))else null
+        val draft=if(selected.id==null)PlanDraft(Plan(title="",priority=selected.priority,timeZone=zone,createdAt=clock.instant(),updatedAt=clock.instant()))else null
         state.update { it.copy(stamp=PlanEditorStamp(selected.generation,selected.session,0),pane=if(draft==null)PlanPane.DETAIL else PlanPane.EDIT,
             detail=null,draft=draft,isAvailable=false,isLoading=true,error=null,pendingMode=null,confirmClose=false,confirmDelete=false,conflicts=null) }
         pending=null;target.value=selected
@@ -142,7 +143,7 @@ class PlanEditorViewModel(private val repository:PlanRepository,private val case
         }
         launchOperation(stamp) { op ->
             cases.saveChecked(candidate,candidate.tagNames,checkNotNull(stamp.generation),PlanEditPolicy(draft.base.takeIf { it.id>0 },proof)) { receipt ->
-                acknowledge(op,receipt,"已保存到${if(candidate.isScheduled)"日程"else"待办"}；当前列表筛选保持不变",receipt.planId)
+                acknowledge(op,receipt,"计划已保存",receipt.planId)
             }
         }
     }
@@ -235,7 +236,7 @@ class PlanEditorViewModel(private val repository:PlanRepository,private val case
         target.value=null;retryRead()
     }
     fun retryRead() { refresh.update { it+1 } }
-    private data class Target(val id:Long?,val generation:DataGeneration,val session:Long)
+    private data class Target(val id:Long?,val generation:DataGeneration,val session:Long,val priority:TodoPriority=TodoPriority.NONE)
     private data class Context(val generation:DataGeneration,val phase:MaintenanceState,val selected:Target?)
     private data class Snapshot(val plan:Plan?,val enabled:Boolean)
     private class Operation(val stamp:PlanEditorStamp,var receipt:PlanWriteReceipt?)

@@ -8,7 +8,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.*
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChevronLeft
@@ -64,16 +66,25 @@ import java.time.YearMonth
                     item { Row(Modifier.fillMaxWidth()) { listOf("一","二","三","四","五","六","日").forEach { Text(it,Modifier.weight(1f),style=MaterialTheme.typography.labelSmall) } } }
                     val cells=List<LocalDate?>(month.atDay(1).dayOfWeek.value-1) { null }+(1..month.lengthOfMonth()).map(month::atDay)
                     cells.chunked(7).forEach { week -> item {
-                        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(2.dp)) {
+                        Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min),horizontalArrangement=Arrangement.spacedBy(2.dp)) {
                             (week+List(7-week.size) { null }).forEach { date ->
                                 if(date==null) Spacer(Modifier.weight(1f)) else {
-                                    val count=state.days[date].orEmpty().size
+                                    val rows=state.days[date].orEmpty()
+                                    val count=rows.size
                                     Surface(shape=RoundedCornerShape(12.dp),color=if(date==state.selectedDate) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceContainer,
-                                        modifier=Modifier.weight(1f).heightIn(min=64.dp).clickable(enabled=enabled,onClickLabel="选择日期") { onDate(date) }
+                                        modifier=Modifier.weight(1f).fillMaxHeight().heightIn(min=112.dp)
+                                            .testTag("plan-calendar-date-$date").clickable(enabled=enabled,onClickLabel="选择日期") { onDate(date) }
                                             .semantics { contentDescription="$date，$count 条日历记录";selected=date==state.selectedDate }) {
-                                        Column(Modifier.padding(vertical=8.dp),horizontalAlignment=Alignment.CenterHorizontally) {
+                                        Column(Modifier.padding(horizontal=3.dp,vertical=8.dp),horizontalAlignment=Alignment.CenterHorizontally,
+                                            verticalArrangement=Arrangement.spacedBy(3.dp)) {
                                             Text(date.dayOfMonth.toString(),style=MaterialTheme.typography.labelSmall)
-                                            if(count>0) Box(Modifier.padding(top=4.dp).size(6.dp).background(MaterialTheme.colorScheme.primary,RoundedCornerShape(3.dp)))
+                                            rows.take(2).forEach { row ->
+                                                Text(row.plan.title.ifBlank { "（历史空标题）" },Modifier.fillMaxWidth(),
+                                                    style=MaterialTheme.typography.labelSmall,color=MaterialTheme.colorScheme.onSurface,
+                                                    maxLines=2,overflow=TextOverflow.Ellipsis)
+                                            }
+                                            if(count>2) Text("还有 ${count-2} 项",Modifier.fillMaxWidth(),
+                                                style=MaterialTheme.typography.labelSmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
                                         }
                                     }
                                 }
@@ -96,7 +107,8 @@ import java.time.YearMonth
 
 @Composable private fun CalendarEntry(row:PlanListRow,state:PlanCalendarState,enabled:Boolean,onOpen:((Long)->Unit)?) {
     Card(shape=RoundedCornerShape(24.dp),border=BorderStroke(1.dp,MaterialTheme.colorScheme.outlineVariant),modifier=Modifier.fillMaxWidth()) {
-        Column(Modifier.fillMaxWidth().then(if(onOpen!=null) Modifier.clickable(enabled=enabled,onClickLabel="打开计划详情") { onOpen(row.plan.id) } else Modifier)
+        Column(Modifier.fillMaxWidth().testTag("plan-calendar-entry-${row.plan.id}")
+            .then(if(onOpen!=null) Modifier.clickable(enabled=enabled,onClickLabel="打开计划详情") { onOpen(row.plan.id) } else Modifier)
             .padding(16.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
             Text(row.plan.title.ifBlank { "（历史空标题）" },style=MaterialTheme.typography.titleMedium)
             Text(timeLabel(row,state.displayZone),style=MaterialTheme.typography.bodyMedium)

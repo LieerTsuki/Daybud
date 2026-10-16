@@ -25,7 +25,7 @@ class TopLevelNavigationActivityTest {
         repeat(3) { listOf("计划","打卡","订阅","设置").forEach(::selectTab) }
         compose.runOnIdle { compose.activity.onBackPressedDispatcher.onBackPressed() }
         awaitSelectedTab("计划")
-        compose.onNodeWithText("新建计划").assertExists()
+        compose.onNodeWithContentDescription("添加计划：重要且紧急").assertExists()
     }
     @Test fun habitSubpageSurvivesSwitchesAndRecreation() {
         selectTab("打卡");compose.onNodeWithText("统计").performClick()

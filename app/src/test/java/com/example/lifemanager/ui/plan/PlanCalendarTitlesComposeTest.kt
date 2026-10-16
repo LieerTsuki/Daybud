@@ -1,0 +1,100 @@
+package com.example.lifemanager.ui.plan
+
+import android.app.Application
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.*
+import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.dp
+import com.example.lifemanager.domain.plan.*
+import com.example.lifemanager.ui.theme.LifeManagerTheme
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import org.robolectric.annotation.LooperMode
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk=[28],application=Application::class)
+@LooperMode(LooperMode.Mode.PAUSED)
+class PlanCalendarTitlesComposeTest {
+    @get:Rule val compose=createComposeRule()
+    private val day=LocalDate.parse("2026-10-14")
+    private val zone=ZoneId.of("Asia/Shanghai")
+
+    private fun plan(id:Long,title:String,date:LocalDate?=day)=Plan(
+        id=id,title=title,timeZone=zone.id,createdAt=Instant.EPOCH,updatedAt=Instant.EPOCH,
+        timeMode=if(date==null) PlanTimeMode.NONE else PlanTimeMode.DEADLINE,dueDate=date)
+
+    private fun show(plans:List<Plan>,largeText:Boolean=false,onDate:(LocalDate)->Unit={}) {
+        val selected=day.plusDays(1)
+        val state=PlanCalendarState(selectedDate=selected,displayZone=zone,isAvailable=true,isLoading=false,
+            days=PlanCalendarQuery.select(plans,selected,PlanCalendarMode.MONTH,zone))
+        compose.setContent {
+            val density=LocalDensity.current
+            CompositionLocalProvider(LocalDensity provides Density(density.density,if(largeText) 2f else 1f)) {
+                LifeManagerTheme(darkTheme=largeText) { Box(Modifier.size(320.dp,640.dp)) {
+                    PlanCalendarScreen(state,onDate,{},{},{},{},{},null)
+                } }
+            }
+        }
+    }
+
+    private fun revealDate(count:Int) {
+        compose.onNode(SemanticsMatcher.keyIsDefined(SemanticsActions.ScrollToIndex))
+            .performScrollToNode(hasContentDescription("$day，$count 条日历记录"))
+    }
+    private fun inDate(text:String,count:Int)=hasText(text) and
+        hasAnyAncestor(hasContentDescription("$day，$count 条日历记录"))
+
+    @Test fun `unselected month date displays actual plan name and remains selectable`() {
+        var selected:LocalDate?=null
+        show(listOf(plan(1,"准备项目报告")),onDate={selected=it})
+        revealDate(1)
+        compose.onNode(inDate("准备项目报告",1),useUnmergedTree=true).assertIsDisplayed()
+        compose.onNodeWithContentDescription("$day，1 条日历记录").performClick()
+        assertEquals(day,selected)
+    }
+
+    @Test fun `busy month date shows two names and remaining item count`() {
+        show(listOf(plan(1,"写报告"),plan(2,"交材料"),plan(3,"开例会"),plan(4,"整理记录")))
+        revealDate(4)
+        compose.onNode(inDate("写报告",4),useUnmergedTree=true).assertIsDisplayed()
+        compose.onNode(inDate("交材料",4),useUnmergedTree=true).assertIsDisplayed()
+        compose.onNode(inDate("还有 2 项",4),useUnmergedTree=true).assertIsDisplayed()
+        compose.onNode(inDate("开例会",4),useUnmergedTree=true).assertDoesNotExist()
+        compose.onNode(inDate("整理记录",4),useUnmergedTree=true).assertDoesNotExist()
+    }
+
+    @Test fun `month title rendering excludes plans without a date`() {
+        show(listOf(plan(1,"有日期的安排"),plan(2,"没有日期的计划",null)))
+        revealDate(1)
+        compose.onNode(inDate("有日期的安排",1),useUnmergedTree=true).assertIsDisplayed()
+        compose.onNodeWithText("没有日期的计划",useUnmergedTree=true).assertDoesNotExist()
+    }
+
+    @Test fun `narrow month cells keep long names within date bounds at two hundred percent text`() {
+        val title="很长的计划名称用于检查窄屏日历".repeat(4)
+        show(listOf(plan(1,title),plan(2,"第二个计划"),plan(3,"第三个计划")),largeText=true)
+        revealDate(3)
+        val cell=compose.onNodeWithContentDescription("$day，3 条日历记录")
+        cell.assertHeightIsAtLeast(48.dp)
+        val cellBounds=cell.fetchSemanticsNode().boundsInRoot
+        val titleBounds=compose.onNode(inDate(title,3),useUnmergedTree=true)
+            .assertIsDisplayed().fetchSemanticsNode().boundsInRoot
+        assertTrue(titleBounds.left>=cellBounds.left && titleBounds.right<=cellBounds.right)
+        assertTrue(titleBounds.top>=cellBounds.top && titleBounds.bottom<=cellBounds.bottom)
+        compose.onNode(inDate("还有 1 项",3),useUnmergedTree=true).assertIsDisplayed()
+    }
+}

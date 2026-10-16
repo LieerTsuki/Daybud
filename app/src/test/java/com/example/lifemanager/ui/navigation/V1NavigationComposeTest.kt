@@ -76,7 +76,7 @@ class V1NavigationComposeTest {
         compose.onNodeWithContentDescription("订阅入口").performClick();waitFor { nav.uiState.value.destination==V1Destination.SUBSCRIPTION }
         compose.onNodeWithContentDescription("添加订阅").assertExists()
         compose.onNodeWithContentDescription("计划入口").performClick();waitFor { nav.uiState.value.destination==V1Destination.PLAN }
-        compose.onNodeWithText("新建计划").assertExists()
+        compose.onNodeWithContentDescription("添加计划：重要且紧急").assertExists()
     }
     @Test fun `subscription notification reaches actual page once and closing detail does not replay it`() {
         show()

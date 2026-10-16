@@ -10,11 +10,15 @@
 
 > 当前预览版本为 `v1.0.0-rizhiya-preview-20261016`，于 2026-10-16T01:24:20+08:00 发布，对应已验收源码 [`4db24de`](https://github.com/LieerTsuki/Daybud/commit/4db24deb56d9562fede555d7d3aa7100f5013cee)。V1功能分支已合并到main；APK为1.0.0/code3/schema6，使用既有预览证书的非调试Release构建。历史0.1.1仍保留：[旧版下载](https://github.com/lieer-12/app/releases/tag/v0.1.1-rizhiya-preview-20261009)。发布/合并核对见[发布记录](docs/v1-publication.md)。
 
+## 四象限计划 · 1.0.1 本地候选，未发布
+
+当前功能分支将计划首页改为四象限，每格可添加计划并手动选择归属，移除旧筛选条；月历直接显示每天的计划名称。旧优先级 HIGH／MEDIUM／LOW／NONE 依次对应四个象限，日期变化不自动改归属。安装包版本1.0.1/code4，仍为Room6及原备份格式。顶部下载仍是已发布的1.0.0；本轮验证与候选交付见[四象限改版验收](docs/plan-quadrants-acceptance.md)。
+
 ## V1 统一计划改版 · 1.0.0 预览版已发布
 
 F 本轮已将源码提升至 **1.0.0 / code3 / Room6**，完成1122项JVM/92 suites和70项API35设备测试（均0 failure/error/skipped）、Debug/androidTest/Release构建，以及lint检查（0 error/47既有warning）。补齐真实计划操作、同ID日期转换、完成/撤销、统计/日历、严格新通知及草稿旋转设备闭环，并修正设备回归发现的问题。实际覆盖升级、备份往返、签名、性能和交付文件以[1.0.0交付验收](docs/v1-delivery-acceptance.md)及[交付说明](docs/v1-release-notes.md)为准。
 
-以下分批记录保留各批当时状态；其中“版本暂留0.1.1”属于历史，当前分支源码为1.0.0。顶部链接已更新为新1.0.0预览，main已合并V1；历史Release和旧APK继续保留。1.0.0候选使用既有预览证书，正式签名、真机、稳定60fps和商店分发资格仍需另行验收，不将模拟器通过扩大为这些结论。
+以下分批记录保留各批当时状态；其中“版本暂留0.1.1”属于历史，该批源码为1.0.0。顶部链接已更新为新1.0.0预览，main已合并V1；历史Release和旧APK继续保留。1.0.0候选使用既有预览证书，正式签名、真机、稳定60fps和商店分发资格仍需另行验收，不将模拟器通过扩大为这些结论。
 
 第十九批 E6 源码接线验收通过（2026-10-15）：Room v6、计划/打卡/订阅/设置四入口、新版设置、V2 备份及统一提醒共用生产数据库单例。旧独立待办/日程正常写入与页面退役，历史迁移、V1备份验证和旧通知安全兼容保留，不使用 destructive migration。最终1122项JVM/92 suites强制重跑通过（0 failure/error/skipped），Debug重新打包、androidTest构建检查通过，重新生成的lint报告0 error/47 warning，独立源码复审无遗留问题。测试条数变化与旧用例移植/退役见[覆盖映射](docs/e6-test-coverage-mapping.md)，完整失败过程和限制见[验收记录](docs/v1-unified-plans-acceptance.md)。
 

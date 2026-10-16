@@ -87,6 +87,6 @@ class PlanOverviewComposeTest {
             }
         }
         scroll(hasContentDescription("2026-10-14",substring=true));compose.onNodeWithContentDescription("2026-10-14",substring=true).assertHeightIsAtLeast(48.dp)
-        scroll(hasText(title));compose.onNodeWithText(title).performClick();assertEquals(7L,opened)
+        scroll(hasTestTag("plan-calendar-entry-7"));compose.onNodeWithTag("plan-calendar-entry-7").performClick();assertEquals(7L,opened)
     }
 }

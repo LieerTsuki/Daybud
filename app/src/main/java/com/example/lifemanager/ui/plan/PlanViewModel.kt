@@ -18,7 +18,7 @@ class PlanViewModel(private val repository: PlanRepository, private val useCases
     private val clock: Clock = Clock.systemDefaultZone()) : ViewModel() {
     private val state = MutableStateFlow(PlanUiState())
     val uiState = state.asStateFlow()
-    private val filter = MutableStateFlow(PlanFilter())
+    private val filter = MutableStateFlow(PlanFilter(status = PlanStatus.ALL))
     private val refreshes = MutableStateFlow(0L)
     private val zone = MutableStateFlow(clock.zone)
     // Owned by Main; an old operation must never release a same-ID operation in a new generation.
@@ -95,7 +95,7 @@ class PlanViewModel(private val repository: PlanRepository, private val useCases
                     operation.receipt = receipt
                     if (owns(id, operation, receipt.generation)) state.update { it.copy(
                         reminderFailures = it.reminderFailures + (id to receipt),
-                        message = if (completed) "已完成；已保留筛选，可切换已完成查看" else "已撤销完成；已保留筛选，可切换未完成查看",
+                        message = if (completed) "已完成，可在原象限展开已完成计划" else "已撤销完成，计划回到原象限",
                     ) }
                 }
             }

@@ -44,11 +44,12 @@ class PlanListRoomTest {
         val id=f.cases.save(p("长期目标"),listOf("学习"),DataGeneration(0)) {}.receipt.planId
         f.start();f.await { it.isAvailable && it.rows.size==1 }
         withContext(Dispatchers.Main) { f.model.setCompleted(id,true,DataGeneration(0)) }
-        f.await { it.rows.isEmpty() && it.pendingIds.isEmpty() && it.message!=null }
+        f.await { it.rows.singleOrNull()?.plan?.isCompleted==true && it.pendingIds.isEmpty() && it.message!=null }
+        assertEquals(id,f.model.uiState.value.rows.single().plan.id)
         assertTrue(f.repo.get(id)!!.isCompleted)
         assertEquals(listOf("学习"),f.repo.get(id)!!.tagNames)
         withContext(Dispatchers.Main) { f.model.onFilterChanged(PlanFilter(status=PlanStatus.COMPLETED),DataGeneration(0)) }
-        f.await { it.filter.status==PlanStatus.COMPLETED && it.rows.size==1 }
+        f.await { !it.isLoading && it.filter.status==PlanStatus.COMPLETED && it.rows.size==1 }
         withContext(Dispatchers.Main) { f.model.setCompleted(id,false,DataGeneration(0)) }
         f.await { it.rows.isEmpty() && it.pendingIds.isEmpty() }
         assertFalse(f.repo.get(id)!!.isCompleted)
@@ -85,9 +86,10 @@ class PlanListRoomTest {
         f.cases.saveException(cancellation,DataGeneration(0)) {}
         f.start();f.await { it.isAvailable && it.rows.size==1 }
         withContext(Dispatchers.Main) { f.model.setCompleted(id,true,DataGeneration(0)) }
-        f.await { it.rows.isEmpty() && it.pendingIds.isEmpty() }
+        f.await { it.rows.singleOrNull()?.plan?.isCompleted==true && it.pendingIds.isEmpty() }
+        assertEquals(id,f.model.uiState.value.rows.single().plan.id)
         withContext(Dispatchers.Main) { f.model.onFilterChanged(PlanFilter(status=PlanStatus.COMPLETED),DataGeneration(0)) }
-        f.await { it.rows.size==1 && it.filter.status==PlanStatus.COMPLETED }
+        f.await { !it.isLoading && it.rows.size==1 && it.filter.status==PlanStatus.COMPLETED }
         assertEquals(PlanOccurrenceTime.Completion(now),f.model.uiState.value.rows.single().occurrence!!.time)
         withContext(Dispatchers.Main) { f.model.setCompleted(id,false,DataGeneration(0)) }
         f.await { it.rows.isEmpty() && it.pendingIds.isEmpty() }

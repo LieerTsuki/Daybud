@@ -16,6 +16,7 @@ import com.example.lifemanager.domain.plan.PlanTimeMode
 import java.time.DayOfWeek
 
 @Composable
+@OptIn(ExperimentalLayoutApi::class)
 fun PlanEditor(state: PlanEditorState, model: PlanEditorViewModel) {
     val draft = state.draft ?: return
     // Capture a value, never a delegated/live state getter, in every rendered callback.
@@ -23,7 +24,7 @@ fun PlanEditor(state: PlanEditorState, model: PlanEditorViewModel) {
     val enabled = state.isAvailable && !state.isMaintaining && !state.isBusy
     Surface(color = MaterialTheme.colorScheme.background) {
         LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            item { PlanFormHeading(if (draft.base.id == 0L) "种下新计划" else "整理计划", "无日期是待办，有日期是日程；转换保留同一条记录") }
+            item { PlanFormHeading(if (draft.base.id == 0L) "种下新计划" else "整理计划", "手动选择象限，添加日期后也会出现在日历中") }
             item { PlanInput("计划标题", draft.title, enabled) { model.change(PlanField.TITLE, it, stamp) } }
             item { PlanInput("计划备注", draft.description, enabled, singleLine = false) { model.change(PlanField.DESCRIPTION, it, stamp) } }
             planFeedback(state, model)
@@ -50,8 +51,16 @@ fun PlanEditor(state: PlanEditorState, model: PlanEditorViewModel) {
                 }
             }
             item { PlanInput("IANA 时区", draft.timeZone, enabled, "如 Asia/Shanghai；更换时区保留未改动时间的实际时刻") { model.change(PlanField.ZONE, it, stamp) } }
-            item { PlanChoiceRow("优先级") { TodoPriority.entries.forEach { priority -> FilterChip(draft.priority == priority,
-                { model.setPriority(priority, stamp) }, enabled = enabled, label = { Text(priorityLabel(priority)) }) } } }
+            item { Column {
+                Text("象限", style = MaterialTheme.typography.labelLarge)
+                FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf(TodoPriority.HIGH, TodoPriority.MEDIUM, TodoPriority.LOW, TodoPriority.NONE).forEach { priority ->
+                        FilterChip(draft.priority == priority, { model.setPriority(priority, stamp) }, enabled = enabled,
+                            modifier = Modifier.heightIn(min = 48.dp), label = { Text(priorityLabel(priority)) })
+                    }
+                }
+                Text("象限由你决定，日期变化不会自动移动计划。", style = MaterialTheme.typography.bodySmall)
+            } }
             item { PlanInput("地点", draft.location, enabled) { model.change(PlanField.LOCATION, it, stamp) } }
             item { PlanInput("参与人", draft.participants, enabled) { model.change(PlanField.PARTICIPANTS, it, stamp) } }
             item { PlanInput("标记颜色", draft.color, enabled, "RRGGBB 或 AARRGGBB") { model.change(PlanField.COLOR, it, stamp) } }

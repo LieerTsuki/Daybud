@@ -10,6 +10,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
 import com.example.lifemanager.domain.plan.*
+import com.example.lifemanager.domain.model.TodoPriority
 import com.example.lifemanager.ui.common.GenerationAccess
 import com.example.lifemanager.ui.theme.LifeManagerTheme
 import java.time.Clock
@@ -47,17 +48,17 @@ class PlanWorkspaceComposeTest {
         compose.setContent { LifeManagerTheme { Box(Modifier.size(320.dp,640.dp)) { PlanWorkspace(list,f.model) } } }
         waitFor { list.uiState.value.isAvailable && f.model.uiState.value.isAvailable }
     }
-    @Test fun `new entry saves then returns to unchanged todo filter with persisted row`() {
-        show();compose.runOnIdle { list.onFilterChanged(PlanFilter(category=PlanCategory.TODO),f.token) }
+    @Test fun `quadrant add saves in selected manual quadrant and returns to board`() {
+        show()
         waitFor { !list.uiState.value.isLoading }
-        scroll(hasText("新建计划"));compose.onNodeWithText("新建计划").performClick()
+        scroll(hasContentDescription("添加计划：重要且紧急"));compose.onNodeWithContentDescription("添加计划：重要且紧急").performClick()
         waitFor { f.model.uiState.value.pane==PlanPane.EDIT && f.model.uiState.value.isAvailable }
         compose.onNodeWithContentDescription("计划标题").performTextReplacement("真正的新目标")
         scroll(hasText("保存计划"));compose.onNodeWithText("保存计划").performClick()
         waitFor { f.model.uiState.value.detail?.title=="真正的新目标" && !f.model.uiState.value.isBusy }
         scroll(hasText("返回计划"));compose.onNodeWithText("返回计划").performClick()
         waitFor { f.model.uiState.value.pane==PlanPane.LIST && !list.uiState.value.isLoading }
-        assertEquals(PlanCategory.TODO,list.uiState.value.filter.category)
+        assertEquals(TodoPriority.HIGH,f.repo.rows.value.single().priority)
         scroll(hasText("真正的新目标"));compose.onNodeWithText("真正的新目标").assertExists()
         assertEquals(1,f.repo.rows.value.size)
     }
@@ -77,7 +78,7 @@ class PlanWorkspaceComposeTest {
     }
     @Test fun `failed reminder receipt remains actionable after returning to list`() {
         f.effects={_,_->error("synthetic alarm failure")};show()
-        scroll(hasText("新建计划"));compose.onNodeWithText("新建计划").performClick()
+        scroll(hasContentDescription("添加计划：重要且紧急"));compose.onNodeWithContentDescription("添加计划：重要且紧急").performClick()
         waitFor { f.model.uiState.value.draft!=null && f.model.uiState.value.isAvailable }
         compose.onNodeWithContentDescription("计划标题").performTextReplacement("提醒失败目标")
         scroll(hasText("保存计划"));compose.onNodeWithText("保存计划").performClick()
@@ -93,9 +94,9 @@ class PlanWorkspaceComposeTest {
         waitFor { !f.model.uiState.value.isBusy && f.model.uiState.value.reminderReceipt==null }
         assertEquals(1,f.repo.writes);assertEquals(1,f.repo.rows.value.size)
     }
-    @Test fun `date conversion keeps same ID and filter through both classifications`() {
-        f.repo.rows.value=listOf(Plan(id=7,title="长期目标",tagNames=listOf("保留标签"),timeZone="Asia/Shanghai",createdAt=f.now,updatedAt=f.now))
-        show();compose.runOnIdle { list.onFilterChanged(PlanFilter(category=PlanCategory.TODO),f.token) }
+    @Test fun `date conversion keeps same ID tags and manually chosen quadrant`() {
+        f.repo.rows.value=listOf(Plan(id=7,title="长期目标",priority=TodoPriority.MEDIUM,tagNames=listOf("保留标签"),timeZone="Asia/Shanghai",createdAt=f.now,updatedAt=f.now))
+        show()
         waitFor { !list.uiState.value.isLoading };scroll(hasText("长期目标"));compose.onNodeWithText("长期目标").performClick()
         waitFor { f.model.uiState.value.detail?.id==7L }
         scroll(hasText("编辑计划"));compose.onNodeWithText("编辑计划").performClick()
@@ -104,7 +105,7 @@ class PlanWorkspaceComposeTest {
         scroll(hasContentDescription("截止日期输入"));compose.onNodeWithContentDescription("截止日期输入").performTextReplacement("2026-10-20")
         scroll(hasText("保存计划"));compose.onNodeWithText("保存计划").performClick()
         waitFor { f.model.uiState.value.detail?.timeMode==PlanTimeMode.DEADLINE && !f.model.uiState.value.isBusy }
-        assertEquals(PlanCategory.TODO,list.uiState.value.filter.category)
+        assertEquals(TodoPriority.MEDIUM,f.repo.rows.value.single().priority)
         assertEquals(listOf("保留标签"),f.repo.rows.value.single().tagNames)
         scroll(hasText("编辑计划"));compose.onNodeWithText("编辑计划").performClick()
         scroll(hasText("无日期待办"));compose.onNodeWithText("无日期待办").performClick()
@@ -112,6 +113,7 @@ class PlanWorkspaceComposeTest {
         scroll(hasText("保存计划"));compose.onNodeWithText("保存计划").performClick()
         waitFor { f.model.uiState.value.detail?.timeMode==PlanTimeMode.NONE && !f.model.uiState.value.isBusy }
         assertEquals(7L,f.repo.rows.value.single().id)
+        assertEquals(TodoPriority.MEDIUM,f.repo.rows.value.single().priority)
         assertEquals(java.time.LocalDate.parse("2026-10-20"),f.repo.rows.value.single().dueDate)
     }
     @Test fun `retained list navigation actions cannot borrow a replacement generation`() {
@@ -124,7 +126,7 @@ class PlanWorkspaceComposeTest {
         waitFor { val state=list.uiState.value
             state.isAvailable && !state.isLoading && state.generation==f.token &&
                 state.rows.any { it.plan.id==7L && it.plan.title=="旧数据" } }
-        scroll(hasText("新建计划"));val oldNew=compose.onNodeWithText("新建计划").fetchSemanticsNode().config[SemanticsActions.OnClick].action!!
+        scroll(hasContentDescription("添加计划：重要且紧急"));val oldNew=compose.onNodeWithContentDescription("添加计划：重要且紧急").fetchSemanticsNode().config[SemanticsActions.OnClick].action!!
         scroll(hasText("旧数据"));val oldOpen=compose.onNodeWithText("旧数据").fetchSemanticsNode().config[SemanticsActions.OnClick].action!!
         compose.mainClock.autoAdvance=false
         try {
