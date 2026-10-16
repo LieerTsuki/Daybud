@@ -2,16 +2,22 @@ package com.example.lifemanager.ui.plan
 
 import android.app.Application
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.example.lifemanager.domain.plan.*
+import com.example.lifemanager.domain.model.TodoPriority
 import com.example.lifemanager.ui.theme.LifeManagerTheme
 import java.time.Instant
 import java.time.LocalDate
@@ -37,7 +43,7 @@ class PlanCalendarTitlesComposeTest {
         id=id,title=title,timeZone=zone.id,createdAt=Instant.EPOCH,updatedAt=Instant.EPOCH,
         timeMode=if(date==null) PlanTimeMode.NONE else PlanTimeMode.DEADLINE,dueDate=date)
 
-    private fun show(plans:List<Plan>,largeText:Boolean=false,onDate:(LocalDate)->Unit={}) {
+    private fun show(plans:List<Plan>,largeText:Boolean=false,onDate:(LocalDate)->Unit={},onOpenDay:(LocalDate)->Unit={}) {
         val selected=day.plusDays(1)
         val state=PlanCalendarState(selectedDate=selected,displayZone=zone,isAvailable=true,isLoading=false,
             days=PlanCalendarQuery.select(plans,selected,PlanCalendarMode.MONTH,zone))
@@ -45,7 +51,9 @@ class PlanCalendarTitlesComposeTest {
             val density=LocalDensity.current
             CompositionLocalProvider(LocalDensity provides Density(density.density,if(largeText) 2f else 1f)) {
                 LifeManagerTheme(darkTheme=largeText) { Box(Modifier.size(320.dp,640.dp)) {
-                    PlanCalendarScreen(state,onDate,{},{},{},{},{},null)
+                    LazyColumn(contentPadding=PaddingValues(16.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
+                        planMonthCalendar(state,onDate,onOpenDay,{},{},{})
+                    }
                 } }
             }
         }
@@ -64,17 +72,18 @@ class PlanCalendarTitlesComposeTest {
         revealDate(1)
         compose.onNode(inDate("准备项目报告",1),useUnmergedTree=true).assertIsDisplayed()
         compose.onNodeWithContentDescription("$day，1 条日历记录").performClick()
+        compose.mainClock.advanceTimeBy(500); compose.waitForIdle()
         assertEquals(day,selected)
     }
 
-    @Test fun `busy month date shows two names and remaining item count`() {
-        show(listOf(plan(1,"写报告"),plan(2,"交材料"),plan(3,"开例会"),plan(4,"整理记录")))
-        revealDate(4)
-        compose.onNode(inDate("写报告",4),useUnmergedTree=true).assertIsDisplayed()
-        compose.onNode(inDate("交材料",4),useUnmergedTree=true).assertIsDisplayed()
-        compose.onNode(inDate("还有 2 项",4),useUnmergedTree=true).assertIsDisplayed()
-        compose.onNode(inDate("开例会",4),useUnmergedTree=true).assertDoesNotExist()
-        compose.onNode(inDate("整理记录",4),useUnmergedTree=true).assertDoesNotExist()
+    @Test fun `busy month date shows four names and remaining item count`() {
+        show(listOf(plan(1,"写报告"),plan(2,"交材料"),plan(3,"开例会"),plan(4,"整理记录"),plan(5,"复核材料")))
+        revealDate(5)
+        listOf("写报告","交材料","开例会","整理记录").forEach {
+            compose.onNode(inDate(it,5),useUnmergedTree=true).assertIsDisplayed()
+        }
+        compose.onNode(inDate("还有 1 项",5),useUnmergedTree=true).assertIsDisplayed()
+        compose.onNode(inDate("复核材料",5),useUnmergedTree=true).assertDoesNotExist()
     }
 
     @Test fun `month title rendering excludes plans without a date`() {
@@ -95,6 +104,45 @@ class PlanCalendarTitlesComposeTest {
             .assertIsDisplayed().fetchSemanticsNode().boundsInRoot
         assertTrue(titleBounds.left>=cellBounds.left && titleBounds.right<=cellBounds.right)
         assertTrue(titleBounds.top>=cellBounds.top && titleBounds.bottom<=cellBounds.bottom)
-        compose.onNode(inDate("还有 1 项",3),useUnmergedTree=true).assertIsDisplayed()
+        val layouts=mutableListOf<TextLayoutResult>()
+        compose.onNode(inDate(title,3),useUnmergedTree=true)
+            .performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(layouts) }
+        assertEquals(1,layouts.single().lineCount,"每个日历任务名称必须严格单行")
+        assertEquals(8f,layouts.single().layoutInput.style.fontSize.value,"长名先缩至8sp下限，再单行省略")
+        compose.onNode(inDate("第三个计划",3),useUnmergedTree=true).assertIsDisplayed()
+    }
+
+    @Test fun `calendar exposes full day details action for accessibility without mode controls`() {
+        var opened:LocalDate?=null
+        show(listOf(plan(1,"准备项目报告")),onOpenDay={opened=it})
+        revealDate(1)
+        val actions=compose.onNodeWithContentDescription("$day，1 条日历记录")
+            .fetchSemanticsNode().config.getOrNull(SemanticsActions.CustomActions).orEmpty()
+        assertTrue(actions.any { it.label=="查看当天全部计划" })
+        assertTrue(actions.single { it.label=="查看当天全部计划" }.action())
+        assertEquals(day,opened)
+        compose.onNodeWithText("周视图").assertDoesNotExist()
+        compose.onNodeWithText("日视图").assertDoesNotExist()
+    }
+
+    @Test fun `double tap opens date details without firing a single selection first`() {
+        var selected:LocalDate?=null
+        var opened:LocalDate?=null
+        show(listOf(plan(1,"准备项目报告")),onDate={selected=it},onOpenDay={opened=it})
+        revealDate(1)
+        compose.onNodeWithTag("plan-calendar-date-$day").performTouchInput { doubleClick() }
+        compose.waitForIdle()
+        assertEquals(day,opened)
+        assertEquals(null,selected,"双击不能先触发单击读取并让详情打开被loading拒绝")
+    }
+
+    @Test fun `every task line announces its matching quadrant`() {
+        val priorities=listOf(TodoPriority.HIGH,TodoPriority.MEDIUM,TodoPriority.LOW,TodoPriority.NONE)
+        show(priorities.mapIndexed { index,priority -> plan(index.toLong()+1,"任务${index+1}").copy(priority=priority) })
+        revealDate(4)
+        priorities.forEachIndexed { index,priority ->
+            compose.onNodeWithTag("plan-calendar-title-$day-${index+1}",useUnmergedTree=true)
+                .assert(SemanticsMatcher.expectValue(androidx.compose.ui.semantics.SemanticsProperties.StateDescription,priorityLabel(priority)))
+        }
     }
 }

@@ -78,11 +78,11 @@ class PlanOverviewViewModelTest {
         c.selectDate(day.plusDays(8),f.token);advanceUntilIdle()
         f.coordinator.withSession {
             runCurrent();assertTrue(c.uiState.value.isMaintaining);assertTrue(s.uiState.value.isMaintaining)
-            c.selectMode(PlanCalendarMode.DAY,f.token);c.movePeriod(1,f.token);c.showCompleted(true,f.token)
+            c.selectMode(PlanCalendarMode.DAY,f.token);c.movePeriod(1,f.token);c.showCompleted(false,f.token)
             assertFalse(c.canNavigate(f.token));assertFalse(s.canNavigate(f.token))
         }
         advanceUntilIdle();assertEquals(day.plusDays(8),c.uiState.value.selectedDate)
-        assertEquals(PlanCalendarMode.MONTH,c.uiState.value.mode);assertFalse(c.uiState.value.includeCompleted)
+        assertEquals(PlanCalendarMode.MONTH,c.uiState.value.mode);assertTrue(c.uiState.value.includeCompleted)
         assertTrue(c.uiState.value.isAvailable)
     }
     @Test fun `generation replacement clears old facts and rejects retained callbacks`()=scenario { f,c,s ->

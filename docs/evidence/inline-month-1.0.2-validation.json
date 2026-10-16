@@ -1,0 +1,165 @@
+{
+  "date": "2026-10-16",
+  "sourceBaseCommit": "ae07a522fdfb8dcdcadc2982058cf82ee69f8e41",
+  "sourceBranch": "feat/inline-month-calendar",
+  "applicationId": "com.example.lifemanager",
+  "versionName": "1.0.2",
+  "versionCode": 5,
+  "schema": 6,
+  "publication": "Validated local candidate, pending authorized main merge and publication",
+  "jvm": {
+    "suites": 97,
+    "tests": 1144,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "instrumentation": {
+    "suites": 1,
+    "tests": 70,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "lint": {
+    "Error": 0,
+    "Fatal": 0,
+    "Warning": 47
+  },
+  "release": {
+    "file": "rizhiya-1.0.2-inline-month-preview.apk",
+    "bytes": 12435895,
+    "sha256": "00441dfed4803cf07df06a45b58431429ce477818e656042e0e3546d7940058b",
+    "debuggable": false,
+    "certificateSha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+    "zipalign": true,
+    "signatureSchemes": [
+      "v2",
+      "v3"
+    ]
+  },
+  "upgrade": {
+    "fromVersion": "1.0.1",
+    "fromCode": 4,
+    "avd": "Rizhiya_Branding",
+    "serial": "emulator-5580",
+    "identicalAllTables": true,
+    "plans": 6,
+    "schema": 6,
+    "version": "1.0.2",
+    "code": 5,
+    "inlineMonth": true,
+    "calendarRemainingCount": 1,
+    "dayDetailsCount": 5,
+    "pointerDoubleTap": true,
+    "undatedAbsent": true,
+    "tables": [
+      "android_metadata",
+      "app_maintenance",
+      "app_settings",
+      "habit_records",
+      "habits",
+      "plan_exceptions",
+      "plan_legacy_refs",
+      "plan_reminder_state",
+      "plan_tag_cross_ref",
+      "plans",
+      "room_master_table",
+      "subscription_payments",
+      "subscription_reminders",
+      "subscriptions",
+      "tags"
+    ],
+    "beforeSha256": "54c7c68eacc464789fb206abac43aa5eb8ff55c5e51b959845b06a4e2e430630",
+    "afterSha256": "54c7c68eacc464789fb206abac43aa5eb8ff55c5e51b959845b06a4e2e430630"
+  },
+  "performance": {
+    "serial": "emulator-5580",
+    "version": "1.0.2",
+    "code": 5,
+    "debuggable": false,
+    "coldTotalTimeMs": [
+      815,
+      789,
+      759,
+      689,
+      828
+    ],
+    "medianMs": 789,
+    "maxMs": 828,
+    "navigationCycles": 2,
+    "navigationMinimumDelaySeconds": 0.9,
+    "confirmedNavigations": [
+      {
+        "destination": "打卡",
+        "automationElapsedMs": 3093
+      },
+      {
+        "destination": "订阅",
+        "automationElapsedMs": 3063
+      },
+      {
+        "destination": "设置",
+        "automationElapsedMs": 3062
+      },
+      {
+        "destination": "计划",
+        "automationElapsedMs": 3079
+      },
+      {
+        "destination": "打卡",
+        "automationElapsedMs": 3062
+      },
+      {
+        "destination": "订阅",
+        "automationElapsedMs": 3063
+      },
+      {
+        "destination": "设置",
+        "automationElapsedMs": 3046
+      },
+      {
+        "destination": "计划",
+        "automationElapsedMs": 3063
+      }
+    ],
+    "gfxSummary": [
+      "Total frames rendered: 412",
+      "Janky frames: 24 (5.83%)",
+      "Janky frames (legacy): 172 (41.75%)",
+      "50th percentile: 18ms",
+      "90th percentile: 27ms",
+      "95th percentile: 30ms",
+      "99th percentile: 44ms",
+      "Number Missed Vsync: 1",
+      "50th gpu percentile: 14ms",
+      "90th gpu percentile: 21ms",
+      "95th gpu percentile: 24ms",
+      "99th gpu percentile: 4950ms",
+      "Total frames rendered: 412",
+      "Janky frames: 24 (5.83%)",
+      "Janky frames (legacy): 172 (41.75%)",
+      "50th percentile: 18ms",
+      "90th percentile: 27ms",
+      "95th percentile: 30ms",
+      "99th percentile: 44ms",
+      "Number Missed Vsync: 1",
+      "50th gpu percentile: 14ms",
+      "90th gpu percentile: 21ms",
+      "95th gpu percentile: 24ms",
+      "99th gpu percentile: 4950ms"
+    ],
+    "limitation": "Emulator, synthetic small database, system launch and navigation smoke only; no physical-device or stable-60fps acceptance."
+  },
+  "screenshots": {
+    "inline-month-collapsed.png": "cc8296741ab0d718b9b828aea5e88927047da4147d076fd66a4c329f4254ab82",
+    "inline-month-day-details.png": "d678fdfae9b2c1ae0f7617a109da456eb3f11f3de9a2af398949b7822b065e11",
+    "inline-month-expanded.png": "2a95873b0f385371397a029a0387fc0228df96208cdd814bff5252593ae33758"
+  },
+  "limitations": [
+    "No physical-device or manual TalkBack acceptance",
+    "No stable 60fps claim",
+    "No large-database or cloud-provider acceptance",
+    "Existing preview signing, no app-store signing eligibility"
+  ]
+}

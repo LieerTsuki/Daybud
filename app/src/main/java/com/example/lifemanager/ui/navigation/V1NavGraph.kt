@@ -31,7 +31,7 @@ import kotlinx.coroutines.launch
 /** Every destination uses the actual retained Activity owner. */
 @Composable
 fun V1NavGraph(navigation:PlanNavigationViewModel,list:PlanViewModel,editor:PlanEditorViewModel,
-    calendar:PlanCalendarViewModel,statistics:PlanStatisticsViewModel,settings:V1SettingsViewModel,
+    calendar:PlanCalendarViewModel,settings:V1SettingsViewModel,
     habits:HabitViewModel,subscriptions:SubscriptionViewModel,backup:V1BackupSettingsViewModel) {
     val state=navigation.uiState.collectAsStateWithLifecycle().value
     val edit=editor.uiState.collectAsStateWithLifecycle().value
@@ -81,7 +81,7 @@ fun V1NavGraph(navigation:PlanNavigationViewModel,list:PlanViewModel,editor:Plan
                     if(state.waitingForDraft)Text("有待处理通知，请先保存或关闭当前草稿",Modifier.padding(12.dp))
                     Box(Modifier.weight(1f)) { pages.SaveableStateProvider(state.destination.name) {
                         when(state.destination) {
-                            V1Destination.PLAN->PlanWorkspace(list,editor,calendar,statistics)
+                            V1Destination.PLAN->PlanWorkspace(list,editor,calendar)
                             V1Destination.HABIT->HabitScreen(habits)
                             V1Destination.SUBSCRIPTION->SubscriptionScreen(subscriptions)
                             V1Destination.SETTINGS->V1SettingsScreen(settings,backup,

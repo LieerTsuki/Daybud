@@ -16,7 +16,7 @@ class PlanCalendarViewModel(private val repository:PlanRepository,private val ac
     private val dispatcher:CoroutineDispatcher,private val clock:Clock=Clock.systemDefaultZone()):ViewModel() {
     private val state=MutableStateFlow(PlanCalendarState(selectedDate=LocalDate.now(clock),displayZone=clock.zone))
     val uiState=state.asStateFlow()
-    private val selection=MutableStateFlow(Selection(LocalDate.now(clock),PlanCalendarMode.MONTH,false,clock.zone))
+    private val selection=MutableStateFlow(Selection(LocalDate.now(clock),PlanCalendarMode.MONTH,true,clock.zone))
     private val refreshes=MutableStateFlow(0L)
     init { viewModelScope.launch(dispatcher) { refreshes.collectLatest { observeCalendar() } } }
 

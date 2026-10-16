@@ -36,10 +36,12 @@ class PlanOverviewRoomTest {
         val goal=f.save(p("长期目标"));f.cases.setCompleted(goal,true,token) {}
         val series=f.save(p("重复系列").copy(timeMode=PlanTimeMode.ALL_DAY,allDayStartDate=day,allDayEndDate=day,repeatRule=ScheduleRepeatRule.DAILY))
         val cutoff=f.save(p("截止日程").copy(timeMode=PlanTimeMode.DEADLINE,dueDate=day));f.cases.setCompleted(cutoff,true,token) {}
-        f.start();f.stats { it.isAvailable && it.todayScheduledCount==2 };f.awaitCalendar { it.isAvailable && it.days.getValue(day).size==1 }
+        f.start();f.stats { it.isAvailable && it.todayScheduledCount==2 }
+        f.awaitCalendar { it.isAvailable && !it.isLoading && it.days.getValue(day).map { row -> row.plan.id }.toSet()==setOf(series,cutoff) }
+        assertTrue(f.calendar.uiState.value.includeCompleted)
         assertEquals(PlanStatistics(3,2,1,2,0,2.0/3),f.statistics.uiState.value.statistics)
         f.cases.saveException(PlanException(series,day,true),token) {}
-        f.stats { it.todayScheduledCount==1 };f.awaitCalendar { it.days.getValue(day).isEmpty() }
+        f.stats { it.todayScheduledCount==1 };f.awaitCalendar { it.days.getValue(day).singleOrNull()?.plan?.id==cutoff }
         f.cases.setCompleted(series,true,token) {};f.stats { it.statistics?.completedCount==3 }
         f.main { f.calendar.showCompleted(true,token) }
         f.awaitCalendar { it.includeCompleted && !it.isLoading && it.days.getValue(day).size==2 }

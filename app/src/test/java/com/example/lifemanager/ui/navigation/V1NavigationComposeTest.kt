@@ -48,7 +48,6 @@ class V1NavigationComposeTest {
     private val access=GenerationAccess(f.generations,f.coordinator)
     private val list=PlanViewModel(f.repo,f.cases,access,Dispatchers.IO)
     private val calendar=PlanCalendarViewModel(f.repo,access,Dispatchers.IO)
-    private val stats=PlanStatisticsViewModel(f.repo,access,Dispatchers.IO)
     private val prefs=MemoryV1Settings().apply { afterWrite={ f.enabled=rows.value.planReminders } }
     private val settings=V1SettingsViewModel(prefs,access,SettingsEffects(),Dispatchers.IO)
     private val nav=PlanNavigationViewModel(access,Dispatchers.IO)
@@ -58,12 +57,12 @@ class V1NavigationComposeTest {
     private val subscription=SubscriptionViewModel(EmptySubscriptions(),object:SubscriptionReminderSchedulerContract {
         override fun cancel(subscriptionId:Long,reminderDays:Set<Int>) {};override fun cancelAll(subscriptionId:Long) {}
     },prefs,Dispatchers.IO,access)
-    @After fun cleanup() { listOf(f.model,list,calendar,stats,settings,nav,habit,subscription,backup).forEach { it.viewModelScope.cancel() } }
+    @After fun cleanup() { listOf(f.model,list,calendar,settings,nav,habit,subscription,backup).forEach { it.viewModelScope.cancel() } }
     private fun waitFor(predicate:()->Boolean) { compose.waitUntil(5000) { compose.waitForIdle();predicate() } }
     private fun show() {
         compose.setContent { Box(Modifier.size(360.dp,720.dp)) {
             backDispatcher=checkNotNull(LocalOnBackPressedDispatcherOwner.current).onBackPressedDispatcher
-            V1NavGraph(nav,list,f.model,calendar,stats,settings,habit,subscription,backup)
+            V1NavGraph(nav,list,f.model,calendar,settings,habit,subscription,backup)
         } }
         waitFor { f.model.uiState.value.isAvailable && settings.uiState.value.isAvailable && list.uiState.value.isAvailable }
     }
@@ -227,15 +226,15 @@ class V1NavigationComposeTest {
         compose.onNodeWithText("深色").assertIsNotEnabled();compose.onNodeWithText("重新读取设置").performScrollTo().assertExists()
         prefs.failRead=false;compose.onNodeWithText("重新读取设置").performClick();waitFor { settings.uiState.value.isAvailable }
     }
-    @Test fun `calendar page selection survives leaving and returning through root destinations`() {
+    @Test fun `expanded inline month survives leaving and returning through root destinations`() {
         show()
-        compose.onNode(SemanticsMatcher.keyIsDefined(SemanticsActions.ScrollToIndex)).performScrollToNode(hasText("日历"))
-        compose.onNodeWithText("日历").performClick();waitFor { calendar.uiState.value.isAvailable && !calendar.uiState.value.isLoading }
-        compose.onNodeWithText("日视图").performClick();val selected=calendar.uiState.value.selectedDate
+        compose.onNode(SemanticsMatcher.keyIsDefined(SemanticsActions.ScrollToIndex)).performScrollToNode(hasContentDescription("展开月历"))
+        compose.onNodeWithContentDescription("展开月历").performClick();waitFor { calendar.uiState.value.isAvailable && !calendar.uiState.value.isLoading }
+        val selected=calendar.uiState.value.selectedDate
         compose.onNodeWithContentDescription("设置入口").performClick();waitFor { nav.uiState.value.destination==V1Destination.SETTINGS }
         compose.onNodeWithContentDescription("计划入口").performClick();waitFor { nav.uiState.value.destination==V1Destination.PLAN }
-        assertEquals(PlanCalendarMode.DAY,calendar.uiState.value.mode);assertEquals(selected,calendar.uiState.value.selectedDate)
-        compose.onNodeWithText("日历手账").assertExists()
+        assertEquals(PlanCalendarMode.MONTH,calendar.uiState.value.mode);assertEquals(selected,calendar.uiState.value.selectedDate)
+        compose.onNodeWithContentDescription("收起月历").assertExists()
     }
     @Test fun `retained root click cannot navigate after generation replacement`() {
         show();val old=compose.onNodeWithContentDescription("打卡入口").fetchSemanticsNode().config[SemanticsActions.OnClick].action!!

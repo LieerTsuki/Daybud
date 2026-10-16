@@ -25,7 +25,6 @@ class MainActivity : ComponentActivity() {
     private val plans: PlanViewModel by viewModels { v1Factory }
     private val editor: PlanEditorViewModel by viewModels { v1Factory }
     private val calendar: PlanCalendarViewModel by viewModels { v1Factory }
-    private val statistics: PlanStatisticsViewModel by viewModels { v1Factory }
     private val settings: V1SettingsViewModel by viewModels { v1Factory }
     private val backup: V1BackupSettingsViewModel by viewModels { v1Factory }
     private val habits: HabitViewModel by viewModels()
@@ -34,7 +33,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         if (savedInstanceState == null) receiveNotificationIntent(intent)
         setContent {
-            V1NavGraph(navigation, plans, editor, calendar, statistics, settings, habits, subscriptions, backup)
+            V1NavGraph(navigation, plans, editor, calendar, settings, habits, subscriptions, backup)
         }
     }
 

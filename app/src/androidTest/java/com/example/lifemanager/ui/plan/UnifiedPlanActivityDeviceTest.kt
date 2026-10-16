@@ -43,7 +43,6 @@ class UnifiedPlanActivityDeviceTest {
     private fun editor() = owners()[PlanEditorViewModel::class.java]
     private fun plans() = owners()[PlanViewModel::class.java]
     private fun calendar() = owners()[PlanCalendarViewModel::class.java]
-    private fun statistics() = owners()[PlanStatisticsViewModel::class.java]
     private fun navigation() = owners()[PlanNavigationViewModel::class.java]
 
     private fun waitFor(predicate: () -> Boolean) {
@@ -77,7 +76,6 @@ class UnifiedPlanActivityDeviceTest {
         waitFor {
             editor().uiState.value.let { it.isAvailable && !it.isLoading && !it.isBusy } &&
                 plans().uiState.value.let { it.isAvailable && !it.isLoading } &&
-                statistics().uiState.value.let { it.isAvailable && !it.isLoading && it.statistics != null } &&
                 calendar().uiState.value.let { it.isAvailable && !it.isLoading } &&
                 compose.onAllNodes(hasContentDescription("计划入口") and isEnabled()).fetchSemanticsNodes().size == 1
         }
@@ -138,12 +136,11 @@ class UnifiedPlanActivityDeviceTest {
         assertTrue(ownedRows(title).isEmpty(), "Only the test-owned plan must be removed")
     }
 
-    @Test fun realPlanUiKeepsIdentityThroughDateCompletionCalendarAndStatistics() {
+    @Test fun realPlanUiKeepsIdentityThroughDateCompletionAndInlineMonthDetails() {
         val title = "F设备闭环-${UUID.randomUUID()}"
         var failure: Throwable? = null
         try {
             ready()
-            val baseline = assertNotNull(statistics().uiState.value.statistics)
             val day = calendar().uiState.value.selectedDate
             addInHighQuadrant()
             awaitEditor()
@@ -209,28 +206,42 @@ class UnifiedPlanActivityDeviceTest {
             assertFalse(ownedRows(title).single().isCompleted)
             returnToList()
 
-            clickAction("统计")
-            waitFor {
-                statistics().uiState.value.let {
-                    it.isAvailable && !it.isLoading && it.statistics?.totalCount == baseline.totalCount + 1 &&
-                        it.statistics?.completedCount == baseline.completedCount
-                }
-            }
-            scrollTo(hasContentDescription("全库计划完成进度"))
-            compose.onNodeWithContentDescription("全库计划完成进度").assertIsDisplayed()
-            assertEquals(baseline.pendingCount + 1, statistics().uiState.value.statistics!!.pendingCount)
-
-            clickAction("日历")
+            compose.onNodeWithText("统计", useUnmergedTree = true).assertDoesNotExist()
+            scrollTo(hasContentDescription("展开月历"))
+            compose.onNodeWithContentDescription("展开月历").assertIsEnabled().performClick()
             waitFor {
                 calendar().uiState.value.let {
                     it.isAvailable && !it.isLoading && it.days[day].orEmpty().any { row -> row.plan.id == id }
                 }
             }
-            scrollTo(hasTestTag("plan-calendar-entry-$id"))
+            compose.onNodeWithText("周视图", useUnmergedTree = true).assertDoesNotExist()
+            compose.onNodeWithText("日视图", useUnmergedTree = true).assertDoesNotExist()
+            scrollTo(hasTestTag("plan-calendar-date-$day"))
+            val monthLayouts = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
+            compose.onNodeWithTag("plan-calendar-title-$day-$id", useUnmergedTree = true)
+                .performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(monthLayouts) }
+            assertEquals(1, monthLayouts.single().lineCount, "Each calendar task must remain one line")
+            // A real pointer double tap, not a semantics-only substitute, opens the day's full details.
+            compose.onNodeWithTag("plan-calendar-date-$day").performTouchInput { doubleClick() }
+            compose.onNodeWithTag("plan-day-details").assertIsDisplayed()
+            compose.onNodeWithTag("plan-day-details-list").performScrollToNode(hasTestTag("plan-calendar-entry-$id"))
+            compose.onNode(hasText(title) and hasAnyAncestor(hasTestTag("plan-day-details"))).assertExists()
             compose.onNodeWithTag("plan-calendar-entry-$id").assertIsDisplayed().performClick()
             awaitDetail(title)
             assertEquals(id, editor().uiState.value.detail!!.id)
             assertEquals(TodoPriority.HIGH, editor().uiState.value.detail!!.priority)
+
+            // Return to the same expanded month before opening the same SQL-owned identity again.
+            returnToList()
+            scrollTo(hasContentDescription("收起月历"))
+            compose.onNodeWithContentDescription("收起月历").assertIsEnabled()
+            assertEquals(day, calendar().uiState.value.selectedDate)
+            scrollTo(hasTestTag("plan-calendar-date-$day"))
+            compose.onNodeWithTag("plan-calendar-date-$day").performTouchInput { doubleClick() }
+            compose.onNodeWithTag("plan-day-details-list").performScrollToNode(hasTestTag("plan-calendar-entry-$id"))
+            compose.onNodeWithTag("plan-calendar-entry-$id").performClick()
+            awaitDetail(title)
+            assertEquals(id, editor().uiState.value.detail!!.id)
 
             clickAction("编辑计划")
             awaitEditor()
@@ -244,7 +255,8 @@ class UnifiedPlanActivityDeviceTest {
             assertEquals(PlanTimeMode.NONE, undated.timeMode)
             waitFor { calendar().uiState.value.let { !it.isLoading && it.days.values.flatten().none { row -> row.plan.id == id } } }
             returnToList()
-            clickAction("四象限")
+            scrollTo(hasContentDescription("收起月历"))
+            compose.onNodeWithContentDescription("收起月历").performClick()
             openHighQuadrantPlan(title, id)
             awaitDetail(title)
         } catch (error: Throwable) {

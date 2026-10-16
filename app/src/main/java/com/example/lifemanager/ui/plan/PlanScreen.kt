@@ -130,17 +130,12 @@ private fun QuadrantCard(priority: TodoPriority, rows: List<PlanListRow>, state:
     var showAll by rememberSaveable(priority, state.generation?.value, state.filter.query) { mutableStateOf(false) }
     val active = rows.filterNot { it.plan.isCompleted }
     val completed = rows.filter { it.plan.isCompleted }
-    val tint = when (priority) {
-        TodoPriority.HIGH -> MaterialTheme.colorScheme.secondaryContainer
-        TodoPriority.MEDIUM -> MaterialTheme.colorScheme.primaryContainer
-        TodoPriority.LOW -> MaterialTheme.colorScheme.tertiaryContainer
-        TodoPriority.NONE -> MaterialTheme.colorScheme.surfaceVariant
-    }
+    val palette = quadrantPalette(priority)
     Card(modifier.testTag("plan-quadrant-${priority.name}"), shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)) {
         Column(Modifier.fillMaxWidth().heightIn(min = 224.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Surface(color = tint, modifier = Modifier.fillMaxWidth()) {
+            Surface(color = palette.container, contentColor = palette.content, modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(12.dp)) {
                     Text(priorityLabel(priority), style = MaterialTheme.typography.titleSmall)
                     Text("${active.size} 项待完成", style = MaterialTheme.typography.labelSmall)

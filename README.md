@@ -12,6 +12,10 @@
 
 > 历史预览版本 `v1.0.0-rizhiya-preview-20261016`，于 2026-10-16T01:24:20+08:00 发布，对应已验收源码 [`4db24de`](https://github.com/LieerTsuki/Daybud/commit/4db24deb56d9562fede555d7d3aa7100f5013cee)。V1功能分支已合并到main；APK为1.0.0/code3/schema6，使用既有预览证书的非调试Release构建。历史0.1.1仍保留：[旧版下载](https://github.com/lieer-12/app/releases/tag/v0.1.1-rizhiya-preview-20261009)。发布/合并核对见[发布记录](docs/v1-publication.md)。
 
+## 内嵌月历 · 1.0.2 开发中
+
+本分支将月历收进四象限页的下拉区域，只保留月视图；移除独立日历和计划统计界面。日格每条任务严格单行并按四象限配色，先缩字再省略，双击日期查看当天完整计划详情。候选版本1.0.2/code5，schema6与备份兼容保持；尚未发布，顶部下载仍1.0.1。本轮过程见[内嵌月历验收](docs/inline-month-acceptance.md)。
+
 ## 四象限计划 · 1.0.1 预览版已发布
 
 1.0.1将计划首页改为四象限，每格可添加计划并手动选择归属，移除旧筛选条；月历直接显示每天的计划名称。旧优先级 HIGH／MEDIUM／LOW／NONE 依次对应四个象限，日期变化不自动改归属。安装包版本1.0.1/code4，仍为Room6及原备份格式。顶部下载已更新为1.0.1；本轮验证与交付见[四象限改版验收](docs/plan-quadrants-acceptance.md)。
