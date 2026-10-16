@@ -1,6 +1,6 @@
 # 计划精简与月历交互验收
 
-日期2026-10-16；基线de8b5c8，功能分支feat/planner-polish；按用户既有“发布并合并”授权直接交付，候选1.0.3/code6/schema6，当前尚未发布。
+日期2026-10-16；基线de8b5c8，功能分支feat/planner-polish；按用户既有“发布并合并”授权直接交付，1.0.3/code6/schema6已完成验收并公开发布。
 
 ## 需求与实现
 
@@ -13,7 +13,7 @@
 - RED `.tools/planner-polish-red.log`：43项，6项预期失败，覆盖旧元数据、时区展示、周日对齐、刷新消失与同月选日重新读取。
 - 字号测试初在Robolectric默认文本测量下未产生有意义失败，改为原生图形测量后`.tools/planner-font-red.log`8项/1失败，确认短/长名称不同字号。
 - 搜索与成功消息RED `.tools/planner-board-red.log`10项/1失败。
-- 完整回归、设备、升级与发布记录待本轮实际执行后补充。
+- 完整回归、设备、升级与发布结果见下方本轮记录。
 
 - 首轮GREEN149项/2失败：选择器已正确给出完整日期时间，测试assertTextContains需指定substring=true；另一断言同时匹配弹窗和背景输入框，改为限定弹窗祖先，未删除实际时间断言。
 - 审查发现旧enabled=true/minutes=null的无效提醒、历史固定偏移时区无法编辑、Shanghai历史夏令时空洞被自动调整。各补现有API回归：`.tools/planner-alarm-red.log`1项/1失败，`.tools/planner-compatibility-red.log`2项/2失败。
@@ -31,10 +31,16 @@
 
 ## 安装包
 
-候选1.0.3/code6/schema6，非debuggable Release，沿用原预览签名；APK v2/v3及zipalign核对通过。大小12,435,895字节，SHA-256 `1c9cf8ace0274e0a8eb8f371bc3075607a651cb7a8c244410655e34076a14701`。升级前另存独立完整备份，同签名覆盖，不卸载清数据处理签名冲突；历史Release/APK保留。真机、手动TalkBack、大库、云提供方、稳定60fps及商店正式签名未验收。
+1.0.3/code6/schema6，非debuggable Release，沿用原预览签名；APK v2/v3及zipalign核对通过。大小12,435,895字节，SHA-256 `1c9cf8ace0274e0a8eb8f371bc3075607a651cb7a8c244410655e34076a14701`。升级前另存独立完整备份，同签名覆盖，不卸载清数据处理签名冲突；历史Release/APK保留。真机、手动TalkBack、大库、云提供方、稳定60fps及商店正式签名未验收。
 
-[机器可读验收记录](evidence/planner-polish-1.0.3-validation.json)。发布完成后另补真实Release链接与公开下载核对。
+[机器可读验收记录](evidence/planner-polish-1.0.3-validation.json)。真实Release链接与公开下载核对见下方。
 
 ## 性能采样
 
 本轮同一非debuggable候选，API35模拟器、六条合成计划：五次真实冷启动TotalTime为665/733/746/927/919ms，中位746ms、最大927ms；8次实际确认的四入口切换，405帧、janky35帧（8.64%，legacy口径43.46%）。原始dumpsys、导航XML与启动记录在`.tools/planner-polish-performance`；这是系统启动与切页冒烟，不能将自动化总耗时当页面响应时间，也不作为真机/稳定60fps或月历逐帧性能结论。月历选日修复依据回归证明不再重读整月及原生连续选日保留月历。
+
+## 已合并与公开发布
+
+源码`bc260a9c240b60b5354c1ce12591c6e1fb65a721`已直接快进合并main并推送，同一已验收源码树不额外重复测试。公开[1.0.3预览Release](https://github.com/LieerTsuki/Daybud/releases/tag/v1.0.3-rizhiya-preview-20261016)，发布时间`2026-10-16T09:09:58Z`（UTC）；[下载APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.0.3-rizhiya-preview-20261016/rizhiya-1.0.3-planner-polish-preview.apk)。服务器资产摘要和实际公开下载均核对12,435,895字节及SHA-256一致，旧Release/APK保留。[发布核对](evidence/planner-polish-1.0.3-publication.json)。
+
+交付归档`rizhiya-1.0.3-planner-polish-delivery.zip`（14618123字节），SHA-256 `f54c1fcd0e7a6ce855c3f19f248f37f7c31e5bdb4f68bfe8c1220c5a228705ef`，含本轮APK、验收文档、截图、原始测试XML/日志及合成数据采证。

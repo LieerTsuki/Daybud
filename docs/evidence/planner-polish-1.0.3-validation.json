@@ -3,7 +3,7 @@
   "versionName": "1.0.3",
   "versionCode": 6,
   "schema": 6,
-  "publication": "Validated local candidate; not yet published",
+  "publication": "Published preview Release and merged main",
   "jvm": {
     "tests": 1161,
     "failures": 0,
@@ -145,5 +145,7 @@
       "99th gpu percentile: 4950ms"
     ],
     "limitation": "Emulator, synthetic small database, system launch and navigation smoke only; no physical-device or stable-60fps acceptance."
-  }
+  },
+  "sourceCommit": "bc260a9c240b60b5354c1ce12591c6e1fb65a721",
+  "publicationRecord": "planner-polish-1.0.3-publication.json"
 }

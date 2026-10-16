@@ -1,6 +1,6 @@
 # 项目架构
 
-更新：2026-10-16；当前计划界面精简候选1.0.3。
+更新：2026-10-16；当前已发布计划界面精简预览1.0.3。
 
 Android Kotlin + Jetpack Compose；生产Room数据库schema6，计划、打卡、订阅、设置四个入口。应用身份com.example.lifemanager。历史迁移、备份和统一提醒约定见README及docs/v1-delivery-acceptance.md。
 

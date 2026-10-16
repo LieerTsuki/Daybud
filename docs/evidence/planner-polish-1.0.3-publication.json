@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-16",
+  "sourceCommit": "bc260a9c240b60b5354c1ce12591c6e1fb65a721",
+  "mainMerged": true,
+  "mergeMethod": "Fast-forward of validated source; no new pull request gate",
+  "release": {
+    "id": 414752561,
+    "url": "https://github.com/LieerTsuki/Daybud/releases/tag/v1.0.3-rizhiya-preview-20261016",
+    "tag": "v1.0.3-rizhiya-preview-20261016",
+    "publishedAt": "2026-10-16T09:09:58Z",
+    "prerelease": true,
+    "coreAssets": [
+      {
+        "name": "rizhiya-1.0.3-planner-polish-preview.apk",
+        "size": 12435895,
+        "digest": "sha256:1c9cf8ace0274e0a8eb8f371bc3075607a651cb7a8c244410655e34076a14701",
+        "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.0.3-rizhiya-preview-20261016/rizhiya-1.0.3-planner-polish-preview.apk"
+      },
+      {
+        "name": "SHA256SUMS.txt",
+        "size": 108,
+        "digest": "sha256:65d79571de3f96d679f6b48521d93b120b14690f2bc5b1f4505bf34240e4b9d7",
+        "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.0.3-rizhiya-preview-20261016/SHA256SUMS.txt"
+      }
+    ]
+  },
+  "publicDownloadVerified": true,
+  "sha256": "1c9cf8ace0274e0a8eb8f371bc3075607a651cb7a8c244410655e34076a14701",
+  "validation": "1161 JVM/97 suites and70 API35 tests, builds/lint, upgrade and native UI plus performance on this same source before fast-forward; no duplicate test claim for merge",
+  "remoteTagCommit": "bc260a9c240b60b5354c1ce12591c6e1fb65a721",
+  "deliveryArchive": {
+    "name": "rizhiya-1.0.3-planner-polish-delivery.zip",
+    "bytes": 14618123,
+    "sha256": "f54c1fcd0e7a6ce855c3f19f248f37f7c31e5bdb4f68bfe8c1220c5a228705ef",
+    "serverDigestVerified": true
+  }
+}
