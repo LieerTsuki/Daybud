@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-16",
+  "sourceCommit": "1f68e3308464e6e664a590d6720c96600e0194b9",
+  "release": {
+    "id": 414547843,
+    "url": "https://github.com/LieerTsuki/Daybud/releases/tag/v1.0.1-rizhiya-preview-20261016",
+    "tag": "v1.0.1-rizhiya-preview-20261016",
+    "publishedAt": "2026-10-16T04:53:12Z",
+    "prerelease": true,
+    "assets": [
+      {
+        "name": "rizhiya-1.0.1-quadrants-preview.apk",
+        "size": 12435895,
+        "digest": "sha256:b2bae413c70e7ed6046d2b79a6cfe87d34c715a2fd8970b562878840c9762ef0",
+        "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.0.1-rizhiya-preview-20261016/rizhiya-1.0.1-quadrants-preview.apk"
+      },
+      {
+        "name": "SHA256SUMS.txt",
+        "size": 103,
+        "digest": "sha256:9baa2fbc773b9950736163783025fbae7d2dbc629668bd29a1d5cbb89e2eb378",
+        "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.0.1-rizhiya-preview-20261016/SHA256SUMS.txt"
+      }
+    ]
+  },
+  "pullRequest": {
+    "url": "https://github.com/LieerTsuki/Daybud/pull/1",
+    "merged": true,
+    "mergedAt": "2026-10-16T04:53:09Z",
+    "mergeCommit": "1f68e3308464e6e664a590d6720c96600e0194b9"
+  },
+  "mainRevalidation": {
+    "jvm": {
+      "suites": 95,
+      "tests": 1138,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "builds": [
+      "Debug",
+      "androidTest",
+      "Release"
+    ],
+    "lint": {
+      "Error": 0,
+      "Fatal": 0,
+      "Warning": 47
+    }
+  },
+  "previousSameSourceAcceptance": "70 API35 device tests, six-plan fifteen-table upgrade and performance are the preceding feature acceptance, not a repeated device run during publication"
+}

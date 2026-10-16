@@ -1,6 +1,6 @@
 # 四象限计划改版验收
 
-日期：2026-10-16。分支：`feat/plan-quadrants`，基线：`17a562cf958a5792d47b40791bc100ff87d319a8`。本轮候选为1.0.1/code4；当前公开Release仍为1.0.0，本轮不覆盖历史发布。
+日期：2026-10-16。分支：`feat/plan-quadrants`，基线：`17a562cf958a5792d47b40791bc100ff87d319a8`。本轮1.0.1/code4预览已公开发布并合并main；构建源码`1f68e3308464e6e664a590d6720c96600e0194b9`，历史发布保留。
 
 ## 范围与数据兼容
 
@@ -51,6 +51,14 @@
 
 最终非调试候选在同一专用API35模拟器、六条合成计划下采样，期间无Gradle并发。五次系统COLD/TotalTime为651／998／1033／765／1028ms，中位998ms、最大1033ms；两轮共8次切页均核对真实选中入口，gfxinfo采样414帧、21帧janky（5.07%），legacy统计173帧（41.79%）。这些是模拟器小库和系统口径采样，不作为稳定60fps或比1.0.0更快的结论；不与不同数据、轮数及宿主负载的历史采样直接比较。原始启动、XML、gfxinfo及脚本位于`.tools/quadrants-performance`和`.tools/quadrants-performance.py`。
 
-结构化证据：[plan-quadrants-1.0.1-validation.json](evidence/plan-quadrants-1.0.1-validation.json)。交付压缩包位于`.tools/rizhiya-1.0.1-quadrants-preview-delivery.zip`，含APK、摘要、本文、截图、验证汇总和可复查原始采证。当前仅功能分支本地候选，未公开发布、未合并main。
+结构化证据：[plan-quadrants-1.0.1-validation.json](evidence/plan-quadrants-1.0.1-validation.json)。交付压缩包位于`.tools/rizhiya-1.0.1-quadrants-preview-delivery.zip`，含APK、摘要、本文、截图、验证汇总和可复查原始采证。该阶段为本地候选验收，后续公开发布与合并如下。
 
 历史1.0.0的1122项JVM、70项设备、升级及性能不作为本轮新结果。真机、TalkBack人工朗读、大库及商店正式签名仍不在本轮验收范围。
+
+## 已授权公开发布与合并（2026-10-16）
+
+已沿用用户“发布并合并”的授权，main快进合并到已验收源码`1f68e3308464e6e664a590d6720c96600e0194b9`，[PR #1](https://github.com/LieerTsuki/Daybud/pull/1)已合并。主分支发布前重新强制运行1138项JVM/95 suites，0 failure/error/skipped，Debug/androidTest/Release及lint复核通过（0 error/47既有warning）；日志`.tools/quadrants-main-validation.log`。70项设备、覆盖升级与性能来自前序同源码验收，本次发布未重复执行设备测试。
+
+[1.0.1预览Release](https://github.com/LieerTsuki/Daybud/releases/tag/v1.0.1-rizhiya-preview-20261016)已公开，发布时间（UTC）`2026-10-16T04:53:12Z`；[APK下载](https://github.com/LieerTsuki/Daybud/releases/download/v1.0.1-rizhiya-preview-20261016/rizhiya-1.0.1-quadrants-preview.apk)。发布资产核对大小与服务器SHA-256一致，沿用前序实际安装过的同一签名APK，不覆盖1.0.0历史Release。完整发布核对见[结构化记录](evidence/plan-quadrants-1.0.1-publication.json)。
+
+[公开交付压缩包](https://github.com/LieerTsuki/Daybud/releases/download/v1.0.1-rizhiya-preview-20261016/rizhiya-1.0.1-quadrants-published-delivery.zip)含同一APK、摘要、验收记录、真实截图、原始采证及发布前main复验日志，13,048,523字节，SHA-256 `29160ae798995d183254888ceedcc305b8413431632a2de60d85f1e3723b7ca3`。历史本地候选压缩包保留，公开包另起文件名。
