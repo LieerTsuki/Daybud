@@ -2,7 +2,7 @@ package com.example.lifemanager.domain.backup
 
 import java.time.ZoneId
 
-enum class BackupSourceFormat { V1, V2 }
+enum class BackupSourceFormat { V1, V2, V3 }
 
 /** Provenance is a preview description, not authenticated identity or exported business data. */
 data class BackupImportResult(
@@ -14,7 +14,7 @@ data class BackupImportResult(
     val rowCounts: Map<String, Int> get() = document.payload.tables.mapValues { it.value.size }
 }
 
-/** Exports only v2, imports validated v1/v2 without file/database side effects. */
+/** Exports format3, imports validated historical formats without file/database side effects. */
 interface VersionedBackupCodec {
     fun encode(document: V2BackupDocument): ByteArray
     fun decode(bytes: ByteArray, legacyTodoZone: ZoneId): BackupImportResult

@@ -28,7 +28,7 @@ class BackupMaintenanceDeviceTest {
                 assertEquals(MaintenanceState.READY, f.coordinator.state.value)
                 assertFalse(f.database.inTransaction(), "provider/confirmation must not hold a SQLite transaction")
                 val verified = f.files.preview(protection, ZoneId.of("UTC"))
-                assertEquals(BackupSourceFormat.V2, verified.sourceFormat)
+                assertEquals(BackupSourceFormat.V3, verified.sourceFormat)
                 f.assertPayloadRows(rows, verified.document.payload)
                 assertEquals(before.settings, verified.document.payload.settings)
                 assertEquals(rows, f.rows())

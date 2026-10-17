@@ -40,7 +40,7 @@ class V1BackupSettingsViewModelTest {
     }
     @Test fun `restore preview is real v2 with protection and independent final consent`() = scenario {
         preview()
-        assertEquals(BackupSourceFormat.V2, model.uiState.value.sourceFormat)
+        assertEquals(BackupSourceFormat.V3, model.uiState.value.sourceFormat)
         assertEquals(2, model.uiState.value.rowCounts["plans"])
         assertEquals(0, commits)
         protect()
@@ -54,6 +54,15 @@ class V1BackupSettingsViewModelTest {
         model.answerFinal(operation, true); model.outputSelected(operation, "content://test/late"); advanceUntilIdle()
         assertEquals(1, commits)
         assertEquals(MaintenanceState.IDLE, coordinator.state.value)
+    }
+    @Test fun `old v2 preview retains source provenance and exposes seed initialization`() = scenario {
+        source = V2BackupJsonCodec().encode(V2BackupFixtures.document())
+        preview()
+        assertEquals(BackupSourceFormat.V2, model.uiState.value.sourceFormat)
+        assertNull(model.uiState.value.legacyTodoTimeZone)
+        assertEquals(1, model.uiState.value.rowCounts["habit_trees"])
+        assertEquals(0, model.uiState.value.rowCounts["habit_waterings"])
+        assertEquals(0, commits)
     }
     @Test fun `legacy preview describes conversion timezone and actual unified row counts`() = scenario {
         source = BackupJsonCodec().encode(BackupDocument("0.1.1", "2026-10-14T00:00:00Z", BackupFixtures.fullPayload()))
@@ -170,8 +179,8 @@ class V1BackupSettingsViewModelTest {
         val token = DataGeneration(0)
         val access = GenerationAccess(generations, coordinator)
         val codec = VersionedBackupJsonCodec()
-        val original = V2BackupFixtures.empty().copy(settings = V2BackupFixtures.full().settings)
-        val imported = V2BackupFixtures.full()
+        val original = CurrentBackupFixtures.empty().copy(settings = CurrentBackupFixtures.full().settings)
+        val imported = CurrentBackupFixtures.full()
         var payload = original
         var source = codec.encode(V2BackupFixtures.document(imported))
         val saved = mutableMapOf<String, ByteArray>()

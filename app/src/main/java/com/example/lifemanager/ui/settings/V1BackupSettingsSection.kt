@@ -59,10 +59,10 @@ fun V1BackupSettingsSection(model: V1BackupSettingsViewModel, enabled: Boolean, 
 fun V1BackupSettingsControls(state: V1BackupUiState, enabled: Boolean, onStart: (BackupAction) -> Unit,
     onCancel: () -> Unit, onInspect: () -> Unit) {
     Text("数据备份与恢复", style = MaterialTheme.typography.titleLarge)
-    Text("包含计划、打卡、订阅及设置。导出为未加密的 V2 JSON；恢复兼容已验证的旧 V1 文件。请保存到可信位置，谨慎分享。")
+    Text("包含计划、打卡、林场、订阅及设置。导出为未加密的 V3 JSON；恢复兼容已验证的旧 V1 / V2 文件。请保存到可信位置，谨慎分享。")
     val actionable = enabled && !state.busy && state.outcome != V1BackupOutcome.UNKNOWN
-    Button({ onStart(BackupAction.EXPORT) }, enabled = actionable, modifier = Modifier.fillMaxWidth()) { Text("导出完整 V2 备份") }
-    OutlinedButton({ onStart(BackupAction.RESTORE) }, enabled = actionable, modifier = Modifier.fillMaxWidth()) { Text("从 V1 / V2 备份恢复") }
+    Button({ onStart(BackupAction.EXPORT) }, enabled = actionable, modifier = Modifier.fillMaxWidth()) { Text("导出完整 V3 备份") }
+    OutlinedButton({ onStart(BackupAction.RESTORE) }, enabled = actionable, modifier = Modifier.fillMaxWidth()) { Text("从 V1 / V2 / V3 备份恢复") }
     OutlinedButton({ onStart(BackupAction.CLEAR) }, enabled = actionable, modifier = Modifier.fillMaxWidth()) { Text("清空业务数据") }
     if (state.busy) {
         LinearProgressIndicator(Modifier.fillMaxWidth())
@@ -90,17 +90,17 @@ fun V1BackupSettingsDialogs(state: V1BackupUiState, answerFirst: (String, Boolea
     val id = state.operationId ?: return
     when (state.step) {
         BackupStep.EXPORT_NOTICE -> AlertDialog(onDismissRequest = { answerFirst(id, false) },
-            title = { Text("导出明文备份") }, text = { Text("文件包含全部计划、标签、打卡、订阅及设置，任何获得文件的人都可以读取。导出只生成 V2，旧版应用不能读取；请勿安装旧版降级。") },
+            title = { Text("导出明文备份") }, text = { Text("文件包含全部计划、标签、打卡、林场、订阅及设置，任何获得文件的人都可以读取。导出只生成 V3，旧版应用不能读取；请勿安装旧版降级。") },
             confirmButton = { TextButton({ answerFirst(id, true) }) { Text("选择保存位置") } },
             dismissButton = { TextButton({ answerFirst(id, false) }) { Text("取消") } })
         BackupStep.RESTORE_PREVIEW -> AlertDialog(onDismissRequest = { answerFirst(id, false) },
             title = { Text("恢复备份预览") }, text = {
                 BackupDialogColumn {
-                    Text(if (state.sourceFormat == BackupSourceFormat.V1) "已严格验证旧 V1 文件并转换为统一计划。" else "已严格验证 V2 文件。")
+                    Text(if (state.sourceFormat == BackupSourceFormat.V1) "已严格验证旧 V1 文件并转换为统一计划。" else if (state.sourceFormat == BackupSourceFormat.V2) "已严格验证旧 V2 文件并初始化林场种子。" else "已严格验证 V3 文件及林场记录。")
                     state.legacyTodoTimeZone?.let { Text("旧待办未保存时区，本次按 $it 转换；这是恢复设备时区，不是原设备历史时区。") }
                     Text("导出时间：${state.sourceDate.orEmpty()}")
                     v1BackupTableLabels.forEach { (table, label) -> Text("$label：${state.rowCounts[table] ?: 0}") }
-                    Text("完整替换全部业务数据及设置，不合并。接下来先另存并验证当前数据的 V2 保护备份，再独立最终确认。恢复成功会使旧草稿失效；取消则保留。")
+                    Text("完整替换全部业务数据及设置，不合并。接下来先另存并验证当前数据的 V3 保护备份，再独立最终确认。恢复成功会使旧草稿失效；取消则保留。")
                 }
             }, confirmButton = { TextButton({ answerFirst(id, true) }) { Text("同意并备份当前数据") } },
             dismissButton = { TextButton({ answerFirst(id, false) }) { Text("取消") } })
@@ -113,7 +113,7 @@ fun V1BackupSettingsDialogs(state: V1BackupUiState, answerFirst: (String, Boolea
         BackupStep.FINAL_CONFIRM -> AlertDialog(onDismissRequest = { answerFinal(id, false) },
             title = { Text(if (state.action == BackupAction.RESTORE) "最终确认：替换全部数据" else "最终确认：清空业务数据") },
             text = { BackupDialogColumn {
-                Text(if (state.protectionVerified) "当前数据的独立 V2 保护备份已重读验证。" else "你已选择跳过保护备份；删除后只能使用此前备份恢复。")
+                Text(if (state.protectionVerified) "当前数据的独立 V3 保护备份已重读验证。" else "你已选择跳过保护备份；删除后只能使用此前备份恢复。")
                 Text(if (state.action == BackupAction.RESTORE) "将用 ${state.sourceDate.orEmpty()} 的备份替换全部业务数据及设置，共 ${state.rowCounts.values.sum()} 条业务及关联记录。"
                     else "将删除全部业务及关联记录，保留用户设置。")
                 Text("确认后旧草稿失效；取消则保留当前数据和草稿。请核对后再确认。")
@@ -131,5 +131,5 @@ private fun BackupDialogColumn(content: @Composable ColumnScope.() -> Unit) {
 }
 
 private val v1BackupTableLabels = listOf("plans" to "计划", "tags" to "标签", "plan_tag_cross_ref" to "计划标签关联",
-    "plan_exceptions" to "计划例外", "plan_legacy_refs" to "旧来源映射", "habits" to "习惯", "habit_records" to "打卡记录",
+    "plan_exceptions" to "计划例外", "plan_legacy_refs" to "旧来源映射", "habits" to "习惯", "habit_records" to "打卡记录", "habit_trees" to "林场树木", "habit_waterings" to "浇水记录",
     "subscriptions" to "订阅", "subscription_payments" to "扣费记录", "subscription_reminders" to "订阅提醒配置")

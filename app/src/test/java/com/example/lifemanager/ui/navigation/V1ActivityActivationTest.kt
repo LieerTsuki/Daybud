@@ -177,7 +177,7 @@ class V1ActivityActivationTest {
         compose.onNodeWithContentDescription("设置入口").performClick()
         awaitDestination(V1Destination.SETTINGS)
         compose.onNodeWithContentDescription("计划提醒").performScrollTo().assertExists()
-        compose.onNodeWithText("导出完整 V2 备份").performScrollTo().assertExists()
+        compose.onNodeWithText("导出完整 V3 备份").performScrollTo().assertExists()
     }
 
     @Test fun tabCyclesAndRotationRetainAllActualOwnersAndBackReturnsToPlan() {

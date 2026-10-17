@@ -16,7 +16,7 @@ class V2BackupMutationRepositoryImpl(private val database: RoomDatabase, private
     private val limits: BackupLimits = BackupLimits()) : V2BackupMutationRepository {
     override suspend fun replace(expected: DataGeneration, payload: V2BackupPayload): DataGeneration {
         currentCoroutineContext().ensureActive()
-        V2BackupValidator.validate(payload, limits)
+        V3BackupValidator.validate(payload, limits)
         // Own the validated source across transaction suspension; callers may hold mutable Maps/Sets.
         val owned = payload.copy(tables = payload.tables.mapValues { (_, rows) -> rows.map { BackupRow(it.fields.toMap()) } },
             settings = payload.settings.copy(defaultReminderDays = payload.settings.defaultReminderDays.toSet()))
@@ -50,7 +50,7 @@ class V2BackupMutationRepositoryImpl(private val database: RoomDatabase, private
             if (replacement != null) {
                 for (name in V2BackupSql.INSERT_ORDER) {
                     checkActive()
-                    val table = V2BackupSchema.tables.single { it.name == name }
+                    val table = V3BackupSchema.tables.single { it.name == name }
                     val columns = table.columns.joinToString(",") { "`${it.name}`" }
                     val placeholders = table.columns.joinToString(",") { "?" }
                     sqlite.compileStatement("INSERT INTO `$name` ($columns) VALUES ($placeholders)").use { statement ->
@@ -89,7 +89,7 @@ class V2BackupMutationRepositoryImpl(private val database: RoomDatabase, private
             if (replacement == null) {
                 checkBackup(actual.tables.values.all { it.isEmpty() } && actual.settings == settings, "清空结果不一致")
             } else {
-                checkBackup(actual.settings == replacement.settings && V2BackupSchema.tables.all {
+                checkBackup(actual.settings == replacement.settings && V3BackupSchema.tables.all {
                     actual.tables.getValue(it.name).toSet() == replacement.tables.getValue(it.name).toSet()
                 }, "恢复后的原始字段或设置不一致")
             }

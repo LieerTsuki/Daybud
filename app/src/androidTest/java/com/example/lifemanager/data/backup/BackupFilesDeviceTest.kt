@@ -34,15 +34,15 @@ class BackupFilesDeviceTest {
             fixture.assertPayloadRows(rows, exported.payload)
             assertEquals(before.settings, exported.payload.settings)
             val readback = fixture.codec.decode(fixture.store.read(location, BackupLimits().maxBytes), zone)
-            assertEquals(BackupSourceFormat.V2, readback.sourceFormat)
+            assertEquals(BackupSourceFormat.V3, readback.sourceFormat)
             assertEquals(exported, readback.document)
             val preview = fixture.files.preview(location, zone)
-            assertEquals(BackupSourceFormat.V2, preview.sourceFormat)
+            assertEquals(BackupSourceFormat.V3, preview.sourceFormat)
             assertNull(preview.legacyTodoTimeZone)
             assertEquals(exported, preview.document)
             assertEquals(mapOf("plans" to 2, "tags" to 1, "plan_tag_cross_ref" to 1, "plan_exceptions" to 1,
                 "plan_legacy_refs" to 2, "habits" to 1, "habit_records" to 1, "subscriptions" to 1,
-                "subscription_payments" to 1, "subscription_reminders" to 1), preview.rowCounts)
+                "subscription_payments" to 1, "subscription_reminders" to 1, "habit_trees" to 1, "habit_waterings" to 1), preview.rowCounts)
             assertEquals(rows, fixture.rows())
             assertEquals(technical, fixture.rows(V2BackupDeviceFixture.technicalTables))
             assertEquals(staging, stagedNames())

@@ -16,6 +16,9 @@ class VersionedBackupCodecTest {
     private fun target(result: BackupImportResult) = result.document
     private fun notice(result: BackupImportResult) = result.legacyTodoTimeZone
     private fun source(result: BackupImportResult) = result.sourceFormat.name
+    private fun current(payload: V2BackupPayload): V2BackupPayload = payload.copy(tables = payload.tables + mapOf(
+        "habit_trees" to payload.tables.getValue("habits").map { V2BackupFixtures.row("id" to 1L, "habitId" to 5L, "species" to "BIRCH", "plantedAt" to 7L) },
+        "habit_waterings" to emptyList<BackupRow>()))
     private fun root(bytes: ByteArray) = Json.parseToJsonElement(bytes.decodeToString()).jsonObject
     private fun rehash(root: JsonObject, payload: JsonObject): ByteArray {
         fun sorted(value: JsonElement): JsonElement = when(value) {
@@ -28,15 +31,15 @@ class VersionedBackupCodecTest {
     @Test fun `v1 original checksum passes before conversion and v2 export computes a new checksum`() {
         val input = old(); val result = decode(input); val output = encode(target(result)); val v2 = root(output)
         assertEquals("V1", source(result)); assertEquals("Asia/Shanghai", notice(result))
-        assertEquals(2, v2.getValue("formatVersion").jsonPrimitive.int); assertEquals(6, v2.getValue("schemaVersion").jsonPrimitive.int)
+        assertEquals(3, v2.getValue("formatVersion").jsonPrimitive.int); assertEquals(7, v2.getValue("schemaVersion").jsonPrimitive.int)
         assertNotEquals(root(input).getValue("payloadSha256"), v2.getValue("payloadSha256"))
-        assertEquals(target(result), V2BackupJsonCodec().decode(output))
+        assertEquals(target(result), V3BackupJsonCodec().decode(output))
         assertEquals("0.1.1", target(result).appVersion); assertEquals("2026-10-13T00:00:00Z", target(result).exportedAt)
         assertFalse(output.decodeToString().contains("legacyTodoTimeZone")); assertFalse(output.decodeToString().contains("sourceFormat"))
     }
     @Test fun `v2 direct import preserves all raw fields and never injects todo zone`() {
         val result = decode(fresh()); assertEquals("V2", source(result)); assertNull(notice(result))
-        assertEquals(V2BackupFixtures.document(V2BackupFixtures.full()), target(result))
+        assertEquals(V2BackupFixtures.document(current(V2BackupFixtures.full())), target(result))
     }
     @Test fun `empty files route by format with exact empty target counts and no timezone notice`() {
         val v1 = decode(old(BackupPayload(BackupFixtures.emptyTables, com.example.lifemanager.domain.model.AppSettings())))
@@ -44,7 +47,7 @@ class VersionedBackupCodecTest {
         for (result in listOf(v1, v2)) {
             assertNull(notice(result)); assertTrue(target(result).payload.tables.values.all { it.isEmpty() })
             val counts = result.rowCounts
-            assertEquals(V2BackupFixtures.names.associateWith { 0 }, counts)
+            assertEquals((V2BackupFixtures.names + listOf("habit_trees", "habit_waterings")).associateWith { 0 }, counts)
         }
     }
     @Test fun `unknown versions mismatched schemas and numeric strings reject without fallback`() {
@@ -111,11 +114,11 @@ class VersionedBackupCodecTest {
     @Test fun `converted row and byte expansion rejects source that alone fits input limits`() {
         val input = old(); assertFailsWith<BackupValidationException> { decode(input, BackupLimits(maxRows = 11)) }
         val size = encode(target(decode(input))).size; assertTrue(size > input.size)
-        assertEquals(12, target(decode(input, BackupLimits(maxBytes = size, maxRows = 12))).payload.tables.values.sumOf { it.size })
+        assertEquals(13, target(decode(input, BackupLimits(maxBytes = size, maxRows = 13))).payload.tables.values.sumOf { it.size })
         assertFailsWith<BackupValidationException> { decode(input, BackupLimits(maxBytes = size - 1)) }
     }
     @Test fun `input bytes limit applies before version discovery with exact v2 boundary`() {
-        val input = fresh(); assertEquals("V2", source(decode(input, BackupLimits(maxBytes = input.size))))
+        val input = encode(target(decode(fresh()))); assertEquals("V3", source(decode(input, BackupLimits(maxBytes = input.size))))
         assertFailsWith<BackupValidationException> { decode(input, BackupLimits(maxBytes = input.size - 1)) }
         val oversized = assertFailsWith<BackupValidationException> { decode(ByteArray(64 * 1024 * 1024 + 1)) }
         assertTrue(oversized.message.orEmpty().contains("字节限制"), "Reject oversized bytes before attempting JSON discovery")
@@ -132,6 +135,6 @@ class VersionedBackupCodecTest {
         val template = V2BackupFixtures.plan()
         val payload = V2BackupFixtures.empty().copy(tables = V2BackupFixtures.empty().tables + ("plans" to (1..100).map { template.with("id", BackupValue.Integer(it.toLong())) }))
         val input = fresh(payload)
-        assertEquals(payload, target(decode(input, BackupLimits(maxRows = 100))).payload)
+        assertEquals(current(payload), target(decode(input, BackupLimits(maxRows = 100))).payload)
     }
 }

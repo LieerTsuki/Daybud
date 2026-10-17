@@ -37,7 +37,7 @@ class V2BackupMaintenanceWorkflowRoomTest {
     private val source = BackupLocation("content://synthetic/source")
     private val protection = BackupLocation("content://synthetic/protection")
     private val date = "2026-10-13T00:00:00Z"
-    private val incoming = V2BackupFixtures.document(V2BackupFixtures.empty().copy(settings = V2BackupSettings(defaultCurrency = "USD")))
+    private val incoming = V2BackupFixtures.document(CurrentBackupFixtures.empty().copy(settings = V2BackupSettings(defaultCurrency = "USD")))
     private val card = PlanReminderToken(17, DataGeneration(3), LocalDate.ofEpochDay(20999), Instant.ofEpochMilli(1000))
 
     @Test fun `verified v2 protection independent confirm and captured identities precede one real commit`() = withFixture { f ->
@@ -233,7 +233,7 @@ class V2BackupMaintenanceWorkflowRoomTest {
         val preview = V2BackupFileUseCases(f.snapshots, VersionedBackupJsonCodec(), f.files, f.coordinator, Dispatchers.Unconfined)
             .preview(source, ZoneId.of("Asia/Tokyo"))
         assertEquals(BackupSourceFormat.V1, preview.sourceFormat); assertEquals("Asia/Tokyo", preview.legacyTodoTimeZone)
-        assertTrue(f.staging.listFiles()!!.isEmpty()); assertEquals(12, preview.rowCounts.values.sum())
+        assertTrue(f.staging.listFiles()!!.isEmpty()); assertEquals(13, preview.rowCounts.values.sum())
         assertTrue(f.restore(preview.document).committed)
         val payload = fixture.snapshot(f.db)
         assertEquals(listOf(BackupValue.Integer(1), BackupValue.Integer(2)), payload.tables.getValue("plans").map { it.fields.getValue("id") })

@@ -123,7 +123,7 @@ class V1BackupSettingsViewModel(
         state.update { it.copy(checkingOutcome = true) }
         viewModelScope.launch(dispatcher) {
             try {
-                access.read({ snapshots.snapshot().also { V2BackupValidator.validate(document(it)) } }) { _, _ ->
+                access.read({ snapshots.snapshot().also { V3BackupValidator.validate(document(it)) } }) { _, _ ->
                     if (state.value.operationId == id) state.value = V1BackupUiState(message = "已重新读取当前数据。请先核对记录，原操作不会自动重试。")
                 }
             } catch (error: CancellationException) { throw error }
@@ -144,7 +144,7 @@ class V1BackupSettingsViewModel(
         val output = chooseOutput(operation) ?: return unchanged(operation)
         publish(operation, BackupStep.WRITING_BACKUP)
         files.export(output, BuildConfig.VERSION_NAME, Instant.now(clock).toString(), operation.generation)
-        finish(operation, V1BackupOutcome.EXPORTED, "完整 V2 备份已导出并重读验证。文件为未加密 JSON，请保存到可信位置。")
+        finish(operation, V1BackupOutcome.EXPORTED, "完整 V3 备份已导出并重读验证。文件为未加密 JSON，请保存到可信位置。")
     }
     private suspend fun restore(operation: Operation) {
         // Capture once per operation: device zone changes must not re-interpret a confirmed source.

@@ -55,8 +55,8 @@ class V1BackupSettingsDialogsTest {
             V1BackupSettingsControls(V1BackupUiState(step=BackupStep.ERROR,outcome=V1BackupOutcome.UNKNOWN),true,
                 { starts++ },{}, { inspections++ })
         } } }
-        compose.onNodeWithText("导出完整 V2 备份").assertIsNotEnabled()
-        compose.onNodeWithText("从 V1 / V2 备份恢复").assertIsNotEnabled()
+        compose.onNodeWithText("导出完整 V3 备份").assertIsNotEnabled()
+        compose.onNodeWithText("从 V1 / V2 / V3 备份恢复").assertIsNotEnabled()
         compose.onNodeWithText("清空业务数据").assertIsNotEnabled()
         compose.onNodeWithText("重新读取当前数据，不重试操作").performClick()
         assertEquals(1,inspections);assertEquals(0,starts)

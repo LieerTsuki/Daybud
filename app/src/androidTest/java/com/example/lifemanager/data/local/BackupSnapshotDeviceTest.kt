@@ -22,7 +22,7 @@ class BackupSnapshotDeviceTest {
             val snapshot = fixture.snapshots.snapshot()
             val decoded = fixture.codec.decode(fixture.codec.encode(V2BackupDocument("1.0.0", "2026-10-15T00:00:00Z", snapshot)),
                 ZoneId.of("UTC"))
-            assertEquals(BackupSourceFormat.V2, decoded.sourceFormat)
+            assertEquals(BackupSourceFormat.V3, decoded.sourceFormat)
             fixture.assertPayloadRows(rows, decoded.document.payload)
             assertEquals(V2BackupSettings(ThemeMode.DARK, DateFormat.DMY, "EUR", false, true, setOf(1,3,7)), decoded.document.payload.settings)
             val plans = decoded.document.payload.tables.getValue("plans")

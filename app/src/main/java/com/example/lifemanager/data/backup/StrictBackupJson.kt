@@ -6,8 +6,9 @@ import com.example.lifemanager.domain.backup.checkBackup
 import com.example.lifemanager.domain.backup.checkBackupUnicode
 import kotlinx.serialization.json.*
 import com.example.lifemanager.domain.backup.V2BackupSchema
+import com.example.lifemanager.domain.backup.V3BackupSchema
 
-internal enum class BackupJsonContract { V1, V2 }
+internal enum class BackupJsonContract { V1, V2, V3 }
 
 /**
  * Strict reader with version-specific, non-input-controlled member budgets. Unlike a last-key-wins JSON tree parser, duplicate
@@ -16,7 +17,11 @@ internal enum class BackupJsonContract { V1, V2 }
  */
 internal class StrictBackupJson(private val source: String, private val limits: BackupLimits,
     contract: BackupJsonContract = BackupJsonContract.V1) {
-    private val rowMembers = if (contract == BackupJsonContract.V1) 20 else V2BackupSchema.maxRowMembers
+    private val rowMembers = when (contract) {
+        BackupJsonContract.V1 -> 20
+        BackupJsonContract.V2 -> V2BackupSchema.maxRowMembers
+        BackupJsonContract.V3 -> V3BackupSchema.maxRowMembers
+    }
     private var position = 0
     private var arrayItems = 0
     private var members = 0

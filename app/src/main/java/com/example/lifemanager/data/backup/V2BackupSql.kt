@@ -57,7 +57,7 @@ internal class V2BackupSql(private val dao: BackupSnapshotDao, private val limit
     suspend fun payload(): V2BackupPayload {
         generation() // Health check only; local generation is never exported.
         var count = 0L
-        for (table in V2BackupSchema.tables) {
+        for (table in V3BackupSchema.tables) {
             checkActive()
             val value = dao.read(SimpleSQLiteQuery("SELECT COUNT(*) FROM `${table.name}`")).use {
                 checkBackup(it.moveToFirst() && it.getType(0) == Cursor.FIELD_TYPE_INTEGER, "无法读取业务行数")
@@ -67,9 +67,9 @@ internal class V2BackupSql(private val dao: BackupSnapshotDao, private val limit
             count += value
             checkBackup(count <= limits.maxRows, "备份超过 ${limits.maxRows} 行限制")
         }
-        textPreflight(V2BackupSchema.tables.map { it.name to it.columns } + ("app_settings" to SETTINGS_COLUMNS))
+        textPreflight(V3BackupSchema.tables.map { it.name to it.columns } + ("app_settings" to SETTINGS_COLUMNS))
         val savedSettings = settings()
-        val tables = V2BackupSchema.tables.associate { it.name to rows(it.name, it.columns, it.primaryKey) }
+        val tables = V3BackupSchema.tables.associate { it.name to rows(it.name, it.columns, it.primaryKey) }
         return V2BackupPayload(tables, savedSettings).also { validatePayload(it, limits) }
     }
 
@@ -169,17 +169,17 @@ internal class V2BackupSql(private val dao: BackupSnapshotDao, private val limit
     }
 
     companion object {
-        val AUTO_TABLES = listOf("plans", "tags", "habits", "habit_records", "subscriptions", "subscription_payments")
+        val AUTO_TABLES = listOf("plans", "tags", "habits", "habit_records", "subscriptions", "subscription_payments", "habit_trees")
         val INSERT_ORDER = listOf("tags", "plans", "plan_tag_cross_ref", "plan_exceptions", "plan_legacy_refs", "habits", "habit_records",
-            "subscriptions", "subscription_payments", "subscription_reminders")
+            "subscriptions", "subscription_payments", "subscription_reminders", "habit_trees", "habit_waterings")
         private val TEXT_KINDS = setOf(BackupKind.TEXT, BackupKind.CURRENCY, BackupKind.ZONE, BackupKind.DAY_LIST)
         private val SETTINGS_COLUMNS = listOf(BackupColumn("id", BackupKind.INT), BackupColumn("theme", BackupKind.TEXT),
             BackupColumn("dateFormat", BackupKind.TEXT), BackupColumn("defaultCurrency", BackupKind.TEXT),
             BackupColumn("planReminders", BackupKind.FLAG), BackupColumn("subscriptionReminders", BackupKind.FLAG), BackupColumn("defaultReminderMask", BackupKind.INT))
         fun validatePayload(payload: V2BackupPayload, limits: BackupLimits) {
-            V2BackupValidator.validate(payload, limits)
+            V3BackupValidator.validate(payload, limits)
             // Payload-only boundary. The codec still checks the larger COMPLETE envelope at export/import.
-            CanonicalBackupJson.byteCount(V2BackupJsonMapping.toJson(payload), limits.maxBytes)
+            CanonicalBackupJson.byteCount(V3BackupJsonMapping.toJson(payload), limits.maxBytes)
         }
         fun validateRestoreIds(payload: V2BackupPayload) {
             for (name in AUTO_TABLES) checkBackup(payload.tables.getValue(name).none {

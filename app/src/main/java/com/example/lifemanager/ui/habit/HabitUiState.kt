@@ -3,6 +3,9 @@ package com.example.lifemanager.ui.habit
 import com.example.lifemanager.domain.model.Habit
 import com.example.lifemanager.domain.model.HabitFrequencyType
 import com.example.lifemanager.domain.model.HabitPeriodProgress
+import com.example.lifemanager.domain.model.HabitForest
+import com.example.lifemanager.domain.model.ForestTree
+import com.example.lifemanager.domain.model.TreeSpecies
 import com.example.lifemanager.domain.maintenance.DataGeneration
 import java.time.DayOfWeek
 import java.time.Instant
@@ -17,7 +20,8 @@ data class HabitEditorState(
     val editingId: Long? = null,
     val createdAt: Instant? = null,
     val name: String = "",
-    val iconKey: String = "Check",
+    val iconKey: String = TreeSpecies.PINE.key,
+    val species: TreeSpecies = TreeSpecies.PINE,
     val color: Int = 0xFF00695C.toInt(),
     val frequencyType: HabitFrequencyType = HabitFrequencyType.DAILY,
     val frequencyValue: String = "1",
@@ -34,6 +38,7 @@ data class HabitCard(
     val canToggleToday: Boolean,
     val currentStreak: Int,
     val progress: HabitPeriodProgress,
+    val tree: ForestTree? = null,
 )
 
 data class HabitCalendarDay(
@@ -42,18 +47,12 @@ data class HabitCalendarDay(
     val isCompleted: Boolean,
 )
 
-data class HabitHeatmapCell(
-    val date: LocalDate,
-    val count: Int,
-)
-
 data class HabitStatistics(
     val habit: Habit,
     val currentStreak: Int,
     val longestStreak: Int,
     val periodProgress: HabitPeriodProgress,
     val calendarDays: List<HabitCalendarDay>,
-    val heatmapCells: List<HabitHeatmapCell>,
 )
 
 data class HabitUiState(
@@ -62,6 +61,8 @@ data class HabitUiState(
     val isAvailable: Boolean = false,
     val habits: List<Habit> = emptyList(),
     val cards: List<HabitCard> = emptyList(),
+    val forest: HabitForest = HabitForest(),
+    val isWorking: Boolean = false,
     val selectedTab: HabitTab = HabitTab.TASKS,
     val selectedStatsHabitId: Long? = null,
     val statistics: HabitStatistics? = null,

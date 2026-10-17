@@ -11,6 +11,8 @@ import com.example.lifemanager.domain.maintenance.StaleGenerationException
 import com.example.lifemanager.domain.model.Habit
 import com.example.lifemanager.domain.model.HabitFrequencyType
 import com.example.lifemanager.domain.model.HabitRecord
+import com.example.lifemanager.domain.model.HabitForest
+import com.example.lifemanager.domain.model.TreeSpecies
 import com.example.lifemanager.domain.repository.HabitRepository
 import com.example.lifemanager.domain.usecase.HabitRules
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -63,12 +65,12 @@ class HabitViewModel @Inject constructor(
                         // Observer emissions are invalidations, not values to tag with a newer generation.
                         repository.observeHabits().flatMapLatest { habits ->
                             val (start, end) = recordRange(habits, context.month)
-                            repository.observeRecords(start, end).map { Unit }
+                            combine(repository.observeRecords(start, end), repository.observeForest()) { _, _ -> Unit }
                         }.collect {
                             access.read({
                                 val habits = repository.observeHabits().first()
                                 val (start, end) = recordRange(habits, context.month)
-                                Snapshot(habits, repository.observeRecords(start, end).first(), context.month)
+                                Snapshot(habits, repository.observeRecords(start, end).first(), repository.observeForest().first(), context.month)
                             }) { token, fresh ->
                                 if (state.value.generation != null && state.value.generation != token) invalidateSnapshot()
                                 snapshot = fresh
@@ -110,7 +112,7 @@ class HabitViewModel @Inject constructor(
     }
 
     fun openEditor(habit: Habit? = null, generation: DataGeneration? = uiState.value.generation) {
-        if (state.value.editor.isSaving || !state.value.isAvailable || generation != state.value.generation) return
+        if (state.value.editor.isSaving || state.value.isWorking || !state.value.isAvailable || generation != state.value.generation) return
         val token = eventToken(generation) ?: return
         if (habit != null && state.value.habits.none { it == habit }) return
         state.update { it.copy(editor = HabitEditorState(
@@ -119,7 +121,8 @@ class HabitViewModel @Inject constructor(
             editingId = habit?.id,
             createdAt = habit?.createdAt,
             name = habit?.name.orEmpty(),
-            iconKey = habit?.iconKey ?: "Check",
+            iconKey = habit?.iconKey ?: TreeSpecies.PINE.key,
+            species = habit?.let(TreeSpecies::fromHabit) ?: TreeSpecies.PINE,
             color = habit?.color ?: 0xFF00695C.toInt(),
             frequencyType = habit?.frequencyType ?: HabitFrequencyType.DAILY,
             frequencyValue = habit?.frequencyValue?.toString() ?: "1",
@@ -134,8 +137,7 @@ class HabitViewModel @Inject constructor(
     }
 
     fun onNameChanged(value: String, generation: DataGeneration? = state.value.editor.generation) = updateEditor(generation) { it.copy(name = value, validationMessage = null) }
-    fun onIconChanged(value: String, generation: DataGeneration? = state.value.editor.generation) = updateEditor(generation) { it.copy(iconKey = value) }
-    fun onColorChanged(value: Int, generation: DataGeneration? = state.value.editor.generation) = updateEditor(generation) { it.copy(color = value) }
+    fun onSpeciesChanged(value: TreeSpecies, generation: DataGeneration? = state.value.editor.generation) = updateEditor(generation) { it.copy(iconKey = value.key, species = value) }
     fun onFrequencyChanged(value: HabitFrequencyType, generation: DataGeneration? = state.value.editor.generation) = updateEditor(generation) {
         it.copy(frequencyType = value, validationMessage = null)
     }
@@ -148,7 +150,7 @@ class HabitViewModel @Inject constructor(
 
     fun saveHabit(generation: DataGeneration? = state.value.editor.generation) {
         val current = state.value.editor
-        if (!current.isOpen || current.isSaving || !state.value.isAvailable || generation != current.generation) return
+        if (!current.isOpen || current.isSaving || state.value.isWorking || !state.value.isAvailable || generation != current.generation) return
         val token = eventToken(current.generation) ?: return
         val frequencyValue = current.frequencyValue.toIntOrNull() ?: 0
         HabitRules.validate(
@@ -196,8 +198,9 @@ class HabitViewModel @Inject constructor(
     }
 
     fun deleteHabit(id: Long, generation: DataGeneration? = uiState.value.generation) {
-        if (!state.value.isAvailable || state.value.editor.isSaving || generation != state.value.generation) return
+        if (!state.value.isAvailable || state.value.editor.isSaving || state.value.isWorking || generation != state.value.generation) return
         val token = eventToken(generation) ?: return
+        state.update { it.copy(isWorking = true) }
         viewModelScope.launch(dispatcher) {
             try {
                 access.run(token) {
@@ -213,26 +216,62 @@ class HabitViewModel @Inject constructor(
             } catch (error: Exception) {
                 if (error is CancellationException) throw error
                 reportFailure(token, "删除习惯失败", error)
+            } finally {
+                finishWork(token)
             }
         }
     }
 
     fun toggleToday(habitId: Long, generation: DataGeneration? = uiState.value.generation) {
-        if (!state.value.isAvailable || generation != state.value.generation) return
+        if (!state.value.isAvailable || state.value.isWorking || generation != state.value.generation) return
         val token = eventToken(generation) ?: return
         val card = uiState.value.cards.firstOrNull { it.habit.id == habitId }
         if (card == null || !card.canToggleToday) {
             state.update { it.copy(errorMessage = "今天不能打卡：习惯不存在、尚未开始或不是指定打卡日") }
             return
         }
-        state.update { it.copy(errorMessage = null) }
+        state.update { it.copy(errorMessage = null, isWorking = true) }
         viewModelScope.launch(dispatcher) {
             try {
                 access.run(token) { repository.toggleRecord(habitId, LocalDate.now()) }
             } catch (error: Exception) {
                 if (error is CancellationException) throw error
                 reportFailure(token, "更新打卡失败", error)
+            } finally {
+                finishWork(token)
             }
+        }
+    }
+
+    fun waterTree(treeId: Long, generation: DataGeneration? = uiState.value.generation) {
+        val tree = state.value.forest.trees.firstOrNull { it.id == treeId } ?: return
+        if (tree.isMature || (state.value.forest.availableDrops[tree.habitId] ?: 0) <= 0) return
+        runForestAction(generation, "浇水失败") { repository.waterTree(treeId) }
+    }
+
+    fun plantTree(habitId: Long, generation: DataGeneration? = uiState.value.generation) {
+        if (state.value.habits.none { it.id == habitId }) return
+        val trees = state.value.forest.trees.filter { it.habitId == habitId }
+        if (trees.any { !it.isMature }) return
+        runForestAction(generation, "种树失败") { repository.plantTree(habitId) }
+    }
+
+    private fun runForestAction(generation: DataGeneration?, action: String, operation: suspend () -> Unit) {
+        if (!state.value.isAvailable || state.value.isWorking || state.value.editor.isSaving || generation != state.value.generation) return
+        val token = eventToken(generation) ?: return
+        state.update { it.copy(isWorking = true, errorMessage = null) }
+        viewModelScope.launch(dispatcher) {
+            try { access.run(token) { operation() } }
+            catch (error: Exception) {
+                if (error is CancellationException) throw error
+                reportFailure(token, action, error)
+            } finally { finishWork(token) }
+        }
+    }
+
+    private suspend fun finishWork(token: DataGeneration) {
+        withContext(NonCancellable + Dispatchers.Main.immediate) {
+            state.update { if (it.generation == token) it.copy(isWorking = false) else it }
         }
     }
 
@@ -265,6 +304,7 @@ class HabitViewModel @Inject constructor(
     private fun invalidateSnapshot() {
         snapshot = null
         state.update { it.copy(generation = null, habits = emptyList(), cards = emptyList(), statistics = null,
+            forest = HabitForest(), isWorking = false,
             selectedStatsHabitId = null, editor = HabitEditorState(), errorMessage = null, isAvailable = false, isLoading = true) }
     }
 
@@ -273,6 +313,7 @@ class HabitViewModel @Inject constructor(
         state.value = composeState(data.habits, data.records, data.month, controls.selectedTab,
             controls.selectedStatsHabitId, controls.editor, controls.errorMessage).copy(
             generation = controls.generation, isMaintaining = controls.isMaintaining, isAvailable = controls.isAvailable,
+            forest = data.forest, isWorking = controls.isWorking,
         )
     }
 
@@ -294,6 +335,9 @@ class HabitViewModel @Inject constructor(
                 canToggleToday = completedToday || HabitRules.isExpectedOn(habit, today),
                 currentStreak = HabitRules.currentStreak(habit, recordList, today),
                 progress = HabitRules.periodProgress(habit, recordList, today),
+                tree = snapshot?.forest?.trees?.filter { it.habitId == habit.id }?.let { trees ->
+                    trees.firstOrNull { !it.isMature } ?: trees.lastOrNull()
+                },
             )
         }
         val selectedHabit = habitList.firstOrNull { it.id == statsId } ?: habitList.firstOrNull()
@@ -321,32 +365,26 @@ class HabitViewModel @Inject constructor(
             val date = month.atDay(day)
             HabitCalendarDay(date, HabitRules.isExpectedOn(habit, date), date in dates)
         }
-        val heatmapStart = today.minusDays((52 * 7 + today.dayOfWeek.value - 1).toLong())
-        val heatmapCells = (0 until 53 * 7).map { offset ->
-            val date = heatmapStart.plusDays(offset.toLong())
-            HabitHeatmapCell(date, if (date in dates) 1 else 0)
-        }
         return HabitStatistics(
             habit = habit,
             currentStreak = HabitRules.currentStreak(habit, records, today),
             longestStreak = HabitRules.longestStreak(habit, records),
             periodProgress = HabitRules.periodProgress(habit, records, today),
             calendarDays = calendarDays,
-            heatmapCells = heatmapCells,
         )
     }
 
     private fun recordRange(habits: List<Habit>, month: YearMonth): Pair<LocalDate, LocalDate> {
         val today = LocalDate.now()
-        // Changing a start date must not hide legacy entries from the month/heatmap or today's undo.
-        val heatmapStart = today.minusDays((52 * 7 + today.dayOfWeek.value - 1).toLong())
-        val start = minOf(habits.minOfOrNull(Habit::startDate) ?: today, month.atDay(1), heatmapStart)
+        // Retain legacy pre-start records for streaks and today's undo after a start-date edit.
+        val historyStart = today.minusDays((52 * 7 + today.dayOfWeek.value - 1).toLong())
+        val start = minOf(habits.minOfOrNull(Habit::startDate) ?: today, month.atDay(1), historyStart)
         return start to maxOf(today, month.atEndOfMonth())
     }
 
     private fun Set<DayOfWeek>.toggle(day: DayOfWeek): Set<DayOfWeek> =
         if (day in this) this - day else this + day
 
-    private data class Snapshot(val habits: List<Habit>, val records: List<HabitRecord>, val month: YearMonth)
+    private data class Snapshot(val habits: List<Habit>, val records: List<HabitRecord>, val forest: HabitForest, val month: YearMonth)
     private data class ReadContext(val generation: DataGeneration, val phase: MaintenanceState, val month: YearMonth)
 }

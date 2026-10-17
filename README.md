@@ -2,9 +2,17 @@
 
 日子芽是 Kotlin + Jetpack Compose 的离线生活管理工具；V1 将待办与日程统一为计划，同时保留习惯打卡和订阅费用管理。
 
-更新日期：2026-10-16。
+更新日期：2026-10-17。
 
 每次版本更新附带[更新内容文档](CHANGELOG.md)；开发中分批结果与已发布版本分开记录，此约定已写入仓库 `AGENTS.md`。
+
+## 打卡林场 · 1.1.0候选验收通过，未公开发布
+
+当前功能分支将打卡彩色文字图标改为松树、银杏、樱花、枫树、橡树和白桦插画；新增/编辑选择树种。统计保留月历，以共享林场取代53周热力图。每条打卡获得本任务1滴水，需手动浇给本任务的树；20次浇水成熟后可再种一棵，成树保留。撤销打卡收回对应水滴或回退原树；普通编辑保留打卡与成长。删除任务会删除其全部打卡、水滴及树木，须明确确认。
+
+候选代码为1.1.0/code7/Room7，6→7只新增树木与浇水关联表；历史打卡折算为未使用水滴。完整备份升级为[format3/schema7](docs/backup-format-v3.md)，包含林场，严格校验后导入旧V1/V2。新格式需使用新版恢复，旧版应用不支持。升级仍使用原安装身份与非破坏性迁移；本轮实际测试和交付状态见[林场验收](docs/habit-forest-acceptance.md)。以下下载入口继续对应历史已发布1.0.3。
+
+本轮1187项JVM、72项API35设备测试及1.0.3→1.1.0真实APK覆盖升级通过，Debug/androidTest/Release和lint完成（0 error/50 warning）。本机候选APK及完整交付归档路径、摘要、界面截图和源码同步main的核对记录见上述验收页；APK尚未作为GitHub Release公开发布。
 
 [下载日子芽 1.0.3 计划精简预览 APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.0.3-rizhiya-preview-20261016/rizhiya-1.0.3-planner-polish-preview.apk) · [版本说明](https://github.com/LieerTsuki/Daybud/releases/tag/v1.0.3-rizhiya-preview-20261016) · [主分支代码](https://github.com/LieerTsuki/Daybud/tree/main)
 

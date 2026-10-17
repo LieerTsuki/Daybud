@@ -21,20 +21,20 @@ class BackupPickerActivityTest {
 
     @Test fun cancelledSystemSourcePickerKeepsSettingsAndReturnsToUsableActions() {
         openSettings()
-        compose.onNodeWithText("从 V1 / V2 备份恢复").performScrollTo().performClick()
+        compose.onNodeWithText("从 V1 / V2 / V3 备份恢复").performScrollTo().performClick()
         cancelSystemPicker()
         compose.onNodeWithText("已取消，原数据和草稿已保留。").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("从 V1 / V2 备份恢复").performScrollTo().assertIsEnabled()
+        compose.onNodeWithText("从 V1 / V2 / V3 备份恢复").performScrollTo().assertIsEnabled()
     }
 
     @Test fun exportShowsPrivacyConsentThenLaunchesRealSystemDestinationPicker() {
         openSettings()
-        compose.onNodeWithText("导出完整 V2 备份").performScrollTo().performClick()
+        compose.onNodeWithText("导出完整 V3 备份").performScrollTo().performClick()
         compose.onNodeWithText("导出明文备份").assertIsDisplayed()
         compose.onNodeWithText("选择保存位置").performClick()
         cancelSystemPicker()
         compose.onNodeWithText("已取消，原数据和草稿已保留。").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("导出完整 V2 备份").performScrollTo().assertIsEnabled()
+        compose.onNodeWithText("导出完整 V3 备份").performScrollTo().assertIsEnabled()
     }
 
     private fun openSettings() {

@@ -8,7 +8,7 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 
-/** Verified v2 output and bounded v1/v2 preview; UI owns consent and operation identity. */
+/** Verified current output and bounded historical preview; UI owns consent and operation identity. */
 class V2BackupFileUseCases(private val repository: V2BackupRepository, private val codec: VersionedBackupCodec,
     private val files: BackupFileStore, private val maintenance: MaintenanceCoordinator,
     private val workDispatcher: CoroutineDispatcher, private val limits: BackupLimits = BackupLimits()) {
@@ -29,8 +29,8 @@ class V2BackupFileUseCases(private val repository: V2BackupRepository, private v
             files.write(location, bytes)
             currentCoroutineContext().ensureActive()
             val reopened = codec.decode(files.read(location, limits.maxBytes), ZoneId.of("UTC"))
-            if (reopened.sourceFormat != BackupSourceFormat.V2 || reopened.document != owned) {
-                throw BackupFileException("输出不是本次导出的完整v2备份，不能视为成功备份")
+            if (reopened.sourceFormat != BackupSourceFormat.V3 || reopened.document != owned) {
+                throw BackupFileException("输出不是本次导出的完整v3备份，不能视为成功备份")
             }
             currentCoroutineContext().ensureActive()
             owned
@@ -50,9 +50,9 @@ class V2BackupFileUseCases(private val repository: V2BackupRepository, private v
 
 /** Bound/validate before allocating a private graph; own all mutable collections before suspension. */
 internal fun ownV2Document(document: V2BackupDocument, limits: BackupLimits): V2BackupDocument {
-    V2BackupValidator.validate(document, limits)
+    V3BackupValidator.validate(document, limits)
     return document.copy(payload = document.payload.copy(
         tables = document.payload.tables.mapValues { (_, rows) -> rows.map { BackupRow(it.fields.toMap()) } },
         settings = document.payload.settings.copy(defaultReminderDays = document.payload.settings.defaultReminderDays.toSet()),
-    )).also { V2BackupValidator.validate(it, limits) }
+    )).also { V3BackupValidator.validate(it, limits) }
 }

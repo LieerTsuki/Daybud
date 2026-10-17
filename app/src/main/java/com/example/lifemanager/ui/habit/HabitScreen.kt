@@ -1,7 +1,8 @@
 package com.example.lifemanager.ui.habit
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -36,6 +36,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,6 +45,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -51,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.lifemanager.domain.model.HabitFrequencyType
+import com.example.lifemanager.domain.model.TreeSpecies
 import java.time.DayOfWeek
 import java.time.LocalDate
 import com.example.lifemanager.ui.settings.displayDate
@@ -71,8 +75,9 @@ fun HabitScreen(viewModel: HabitViewModel = hiltViewModel()) {
         onPreviousMonth = viewModel::previousMonth,
         onNextMonth = viewModel::nextMonth,
         onNameChanged = { viewModel.onNameChanged(it, editorGeneration) },
-        onIconChanged = { viewModel.onIconChanged(it, editorGeneration) },
-        onColorChanged = { viewModel.onColorChanged(it, editorGeneration) },
+        onSpeciesChanged = { viewModel.onSpeciesChanged(it, editorGeneration) },
+        onWaterTree = { viewModel.waterTree(it, renderedGeneration) },
+        onPlantTree = { viewModel.plantTree(it, renderedGeneration) },
         onFrequencyChanged = { viewModel.onFrequencyChanged(it, editorGeneration) },
         onFrequencyValueChanged = { viewModel.onFrequencyValueChanged(it, editorGeneration) },
         onCustomDayToggled = { viewModel.onCustomDayToggled(it, editorGeneration) },
@@ -95,8 +100,9 @@ private fun HabitContent(
     onPreviousMonth: () -> Unit,
     onNextMonth: () -> Unit,
     onNameChanged: (String) -> Unit,
-    onIconChanged: (String) -> Unit,
-    onColorChanged: (Int) -> Unit,
+    onSpeciesChanged: (TreeSpecies) -> Unit,
+    onWaterTree: (Long) -> Unit,
+    onPlantTree: (Long) -> Unit,
     onFrequencyChanged: (HabitFrequencyType) -> Unit,
     onFrequencyValueChanged: (String) -> Unit,
     onCustomDayToggled: (DayOfWeek) -> Unit,
@@ -108,7 +114,7 @@ private fun HabitContent(
     Scaffold(
         topBar = { TopAppBar(title = { Text("打卡") }) },
         floatingActionButton = {
-            if (state.selectedTab == HabitTab.TASKS && state.isAvailable && !state.isMaintaining) {
+            if (state.selectedTab == HabitTab.TASKS && state.isAvailable && !state.isMaintaining && !state.isWorking) {
                 FloatingActionButton(onClick = { onOpenEditor(null) }, modifier = Modifier.semantics { contentDescription = "添加习惯" }) { Text("新增") }
             }
         },
@@ -132,12 +138,14 @@ private fun HabitContent(
                 )
             }
             when (state.selectedTab) {
-                HabitTab.TASKS -> HabitTaskList(state.cards, state.isAvailable && !state.isMaintaining, onOpenEditor, onToggleToday)
+                HabitTab.TASKS -> HabitTaskList(state.cards, state.isAvailable && !state.isMaintaining && !state.isWorking, onOpenEditor, onToggleToday)
                 HabitTab.STATS -> HabitStats(
                     state = state,
                     onSelectHabit = onSelectStatsHabit,
                     onPreviousMonth = onPreviousMonth,
                     onNextMonth = onNextMonth,
+                    onWaterTree = onWaterTree,
+                    onPlantTree = onPlantTree,
                 )
             }
         }
@@ -145,11 +153,10 @@ private fun HabitContent(
     if (state.editor.isOpen) {
         HabitEditorDialog(
             editor = state.editor,
-            canWrite = state.isAvailable && !state.isMaintaining,
+            canWrite = state.isAvailable && !state.isMaintaining && !state.isWorking,
             onClose = onCloseEditor,
             onNameChanged = onNameChanged,
-            onIconChanged = onIconChanged,
-            onColorChanged = onColorChanged,
+            onSpeciesChanged = onSpeciesChanged,
             onFrequencyChanged = onFrequencyChanged,
             onFrequencyValueChanged = onFrequencyValueChanged,
             onCustomDayToggled = onCustomDayToggled,
@@ -175,7 +182,7 @@ private fun HabitTaskList(
         return
     }
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().semantics { contentDescription = "打卡任务" },
         contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -186,17 +193,19 @@ private fun HabitTaskList(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Surface(
-                        color = Color(card.habit.color),
-                        modifier = Modifier.size(40.dp),
-                    ) {
-                        Box(contentAlignment = Alignment.Center) { Text(card.habit.iconKey) }
-                    }
+                    TreeIllustration(card.tree?.species ?: TreeSpecies.fromHabit(card.habit), card.tree?.wateringCount ?: 0,
+                        Modifier.size(68.dp))
                     Column(Modifier.weight(1f)) {
                         Text(card.habit.name, style = MaterialTheme.typography.titleMedium)
                         Text(frequencyLabel(card.habit.frequencyType, card.habit.frequencyValue))
                         Text("当前连续 ${card.currentStreak} 次 · ${card.progress.completed}/${card.progress.target}")
                     }
+                }
+                Row(Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
+                    horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
+                    Text("${(card.tree?.species ?: TreeSpecies.fromHabit(card.habit)).label} · ${growthLabel(card.tree?.wateringCount ?: 0)} · ${card.tree?.wateringCount ?: 0}/20",
+                        modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Button(
                         onClick = { onToggleToday(card.habit.id) },
                         enabled = card.canToggleToday && canWrite,
@@ -216,8 +225,11 @@ private fun HabitStats(
     onSelectHabit: (Long) -> Unit,
     onPreviousMonth: () -> Unit,
     onNextMonth: () -> Unit,
+    onWaterTree: (Long) -> Unit,
+    onPlantTree: (Long) -> Unit,
 ) {
     val statistics = state.statistics
+    val forestColumns = if (LocalDensity.current.fontScale > 1.2f) 1 else 2
     if (statistics == null) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text("创建习惯后即可查看打卡统计。", textAlign = TextAlign.Center)
@@ -225,7 +237,7 @@ private fun HabitStats(
         return
     }
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().semantics { contentDescription = "打卡统计与林场" },
         contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -258,7 +270,7 @@ private fun HabitStats(
                 onNext = onNextMonth,
             )
         }
-        item { Heatmap(statistics.heatmapCells) }
+        forestSection(state, forestColumns, onWaterTree, onPlantTree)
     }
 }
 
@@ -313,31 +325,6 @@ private fun RowScope.CalendarDay(day: HabitCalendarDay) {
     ) { Text(day.date.dayOfMonth.toString(), color = foreground, textAlign = TextAlign.Center) }
 }
 
-@Composable
-private fun Heatmap(cells: List<HabitHeatmapCell>) {
-    Card {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("最近 53 周热力图", style = MaterialTheme.typography.titleMedium)
-            Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                cells.chunked(7).forEach { week ->
-                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        week.forEach { cell ->
-                            val accessibleDate = displayDate(cell.date)
-                            val background = if (cell.count == 0) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primary
-                            Box(
-                                modifier = Modifier.size(12.dp).background(background).semantics {
-                                    contentDescription = "$accessibleDate，${if (cell.count == 0) "无记录" else "1 次"}"
-                                },
-                            )
-                        }
-                    }
-                }
-            }
-            Text("图例：无记录 · 1 次 · 2 次及以上（每天最多一条记录）")
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HabitEditorDialog(
@@ -345,8 +332,7 @@ private fun HabitEditorDialog(
     canWrite: Boolean,
     onClose: () -> Unit,
     onNameChanged: (String) -> Unit,
-    onIconChanged: (String) -> Unit,
-    onColorChanged: (Int) -> Unit,
+    onSpeciesChanged: (TreeSpecies) -> Unit,
     onFrequencyChanged: (HabitFrequencyType) -> Unit,
     onFrequencyValueChanged: (String) -> Unit,
     onCustomDayToggled: (DayOfWeek) -> Unit,
@@ -356,18 +342,26 @@ private fun HabitEditorDialog(
     onDelete: (Long) -> Unit,
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
+    var showDeleteConfirmation by remember(editor.editingId, editor.generation) { mutableStateOf(false) }
     AlertDialog(
         onDismissRequest = onClose,
         title = { Text(if (editor.editingId == null) "新建习惯" else "编辑习惯") },
         text = {
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            LazyColumn(modifier = Modifier.semantics { contentDescription = "习惯编辑表单" }, verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 item { OutlinedTextField(editor.name, onNameChanged, label = { Text("名称") }, modifier = Modifier.fillMaxWidth(), isError = editor.validationMessage != null) }
-                item { OutlinedTextField(editor.iconKey, onIconChanged, label = { Text("图标名称") }, modifier = Modifier.fillMaxWidth()) }
                 item {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        listOf(0xFF00695C.toInt(), 0xFF1565C0.toInt(), 0xFFC62828.toInt()).forEach { color ->
-                            FilterChip(selected = editor.color == color, onClick = { onColorChanged(color) }, label = { Text("颜色") })
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("选择一棵树", style = MaterialTheme.typography.titleSmall)
+                        TreeSpecies.entries.chunked(3).forEach { speciesRow ->
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                speciesRow.forEach { species ->
+                                    SpeciesOption(species, editor.species == species,
+                                        canWrite && !editor.isSaving, { onSpeciesChanged(species) }, Modifier.weight(1f))
+                                }
+                            }
                         }
+                        Text("未长成的树随选择更新，成树永久保留。", style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
                 item {
@@ -397,11 +391,21 @@ private fun HabitEditorDialog(
         confirmButton = { Button(onClick = onSave, enabled = canWrite && !editor.isSaving) { Text("保存") } },
         dismissButton = {
             Row {
-                if (editor.editingId != null) TextButton(onClick = { onDelete(editor.editingId) }, enabled = canWrite && !editor.isSaving) { Text("删除") }
+                if (editor.editingId != null) TextButton(onClick = { showDeleteConfirmation = true }, enabled = canWrite && !editor.isSaving) { Text("删除") }
                 TextButton(onClick = onClose, enabled = !editor.isSaving) { Text("取消") }
             }
         },
     )
+    if (showDeleteConfirmation && editor.editingId != null) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation = false },
+            title = { Text("删除这个习惯？") },
+            text = { Text("将删除“${editor.name}”的全部打卡记录、水滴和林场树木。此操作无法撤销。") },
+            confirmButton = { TextButton(onClick = { showDeleteConfirmation = false; onDelete(editor.editingId) },
+                enabled = canWrite && !editor.isSaving) { Text("确认删除") } },
+            dismissButton = { TextButton(onClick = { showDeleteConfirmation = false }) { Text("取消") } },
+        )
+    }
     if (showDatePicker) {
         val pickerState = rememberDatePickerState(initialSelectedDateMillis = editor.startDate.toEpochDay() * 86_400_000L)
         DatePickerDialog(
@@ -413,6 +417,24 @@ private fun HabitEditorDialog(
                 }) { Text("确定") }
             },
         ) { DatePicker(state = pickerState) }
+    }
+}
+
+@Composable
+private fun SpeciesOption(species: TreeSpecies, selected: Boolean, enabled: Boolean, onClick: () -> Unit, modifier: Modifier) {
+    Surface(
+        modifier = modifier.selectable(selected = selected, enabled = enabled, role = Role.RadioButton, onClick = onClick)
+            .semantics { contentDescription = "选择树种：${species.label}" },
+        shape = RoundedCornerShape(12.dp),
+        color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
+        border = BorderStroke(if (selected) 2.dp else 1.dp,
+            if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant),
+    ) {
+        Column(Modifier.padding(vertical = 6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            TreeIllustration(species, 20, Modifier.size(48.dp))
+            Text(species.label, style = MaterialTheme.typography.labelLarge,
+                color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface)
+        }
     }
 }
 

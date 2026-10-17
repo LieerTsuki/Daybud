@@ -32,7 +32,7 @@ class V1BackupSettingsRoomTest {
         f.protect();fixture.sameRows(fixture.full(),f.codec.decode(f.saved,ZoneId.of("UTC")).document.payload)
         val id=f.id();f.model.answerFinal(id,true);f.model.answerFinal(id,true);f.wait(BackupStep.FINISHED)
         assertEquals(V1BackupOutcome.COMMITTED,f.model.uiState.value.outcome)
-        assertEquals(6,fixture.generation(f.db));fixture.sameRows(V2BackupFixtures.empty(),fixture.snapshot(f.db))
+        assertEquals(6,fixture.generation(f.db));fixture.sameRows(CurrentBackupFixtures.empty(),fixture.snapshot(f.db))
         f.model.answerFinal(id,true);assertEquals(6,fixture.generation(f.db))
     }
     @Test fun `legacy source strict conversion preview and owner restore preserve original values in real Room`()=scenario { f ->
@@ -67,7 +67,7 @@ class V1BackupSettingsRoomTest {
         }
         val coordinator=MaintenanceCoordinator(generations)
         val codec=VersionedBackupJsonCodec()
-        var source=codec.encode(V2BackupFixtures.document(V2BackupFixtures.empty()))
+        var source=codec.encode(V2BackupFixtures.document(CurrentBackupFixtures.empty()))
         var saved=byteArrayOf()
         val staging=temporary.newFolder()
         val store=AndroidBackupFileStore(object:BackupStreamAccess {

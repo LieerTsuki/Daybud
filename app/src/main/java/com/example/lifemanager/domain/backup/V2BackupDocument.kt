@@ -7,6 +7,7 @@ import com.example.lifemanager.domain.model.ThemeMode
 data class V2BackupSettings(val theme: ThemeMode = ThemeMode.SYSTEM, val dateFormat: DateFormat = DateFormat.YMD,
     val defaultCurrency: String = "CNY", val planReminders: Boolean = true, val subscriptionReminders: Boolean = true,
     val defaultReminderDays: Set<Int> = emptySet())
+/** Shared raw carrier; external formats are selected only by their explicit schema/codec. */
 data class V2BackupPayload(val tables: Map<String, List<BackupRow>>, val settings: V2BackupSettings)
 data class V2BackupDocument(val appVersion: String, val exportedAt: String, val payload: V2BackupPayload)
 interface V2BackupCodec {

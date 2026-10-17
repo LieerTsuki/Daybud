@@ -17,7 +17,7 @@ class V2BackupFileUseCasesTest {
     @get:Rule val temporary = TemporaryFolder()
     private val destination = BackupLocation("content://synthetic/output")
     private val zone = ZoneId.of("Asia/Shanghai")
-    private val document = V2BackupFixtures.document()
+    private val document = CurrentBackupFixtures.document()
     private val codec = VersionedBackupJsonCodec()
 
     @Test fun `export writes v2 closes and independently rereads all raw fields`() = runTest {
@@ -34,6 +34,12 @@ class V2BackupFileUseCasesTest {
     }
     @Test fun `converted equivalent v1 output is not accepted as v2 protection`() = runTest {
         val old = BackupJsonCodec().encode(BackupDocument("0.1.1", document.exportedAt, BackupFixtures.fullPayload()))
+        val converted = codec.decode(old, zone).document
+        val f = Fixture(UnconfinedTestDispatcher(testScheduler)); f.streams.reopened = old
+        assertFailsWith<BackupFileException> { f.cases.writeVerified(destination, converted) }
+    }
+    @Test fun `converted equivalent old v2 cannot substitute current forest protection`() = runTest {
+        val old = V2BackupJsonCodec().encode(V2BackupFixtures.document())
         val converted = codec.decode(old, zone).document
         val f = Fixture(UnconfinedTestDispatcher(testScheduler)); f.streams.reopened = old
         assertFailsWith<BackupFileException> { f.cases.writeVerified(destination, converted) }
@@ -61,7 +67,7 @@ class V2BackupFileUseCasesTest {
         assertEquals("Asia/Shanghai", preview.legacyTodoTimeZone)
         assertEquals(mapOf("plans" to 2, "tags" to 1, "plan_tag_cross_ref" to 1, "plan_exceptions" to 1,
             "plan_legacy_refs" to 2, "habits" to 1, "habit_records" to 1, "subscriptions" to 1,
-            "subscription_payments" to 1, "subscription_reminders" to 1), preview.rowCounts)
+            "subscription_payments" to 1, "subscription_reminders" to 1, "habit_trees" to 1, "habit_waterings" to 0), preview.rowCounts)
         assertEquals(BackupValue.Text("  旧待办\n\"🏠\"  "), preview.document.payload.tables.getValue("plans").first().fields["title"])
         assertEquals(listOf("open-read", "close-read"), f.events)
         assertTrue(f.staging.listFiles()!!.isEmpty())
@@ -69,7 +75,7 @@ class V2BackupFileUseCasesTest {
     @Test fun `native v2 preview has no invented legacy description and preserves extreme longs`() = runTest {
         val f = Fixture(UnconfinedTestDispatcher(testScheduler)); f.streams.reopened = codec.encode(document)
         val preview = f.cases.preview(destination, zone)
-        assertEquals(document, preview.document); assertEquals(BackupSourceFormat.V2, preview.sourceFormat)
+        assertEquals(document, preview.document); assertEquals(BackupSourceFormat.V3, preview.sourceFormat)
         assertNull(preview.legacyTodoTimeZone); assertTrue(f.staging.listFiles()!!.isEmpty())
     }
     @Test fun `invalid and oversized unknown length input cleans private stage without touching database`() = runTest {

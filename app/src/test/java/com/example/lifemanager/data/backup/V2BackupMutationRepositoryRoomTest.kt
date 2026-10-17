@@ -29,14 +29,14 @@ class V2BackupMutationRepositoryRoomTest {
     @Test fun `clear removes all business rows preserves settings inventory and high water ids`() = f.withDatabase { db ->
         f.seed(db); f.inventory(db)
         assertEquals(DataGeneration(6), f.clear(db))
-        assertEquals(V2BackupFixtures.empty().copy(settings=f.full().settings), f.snapshot(db))
+        assertEquals(CurrentBackupFixtures.empty().copy(settings=f.full().settings), f.snapshot(db))
         assertEquals(listOf(listOf(17L,4L,21000L,Long.MAX_VALUE,2L)), f.technical(db))
         assertEquals(9007199254740993L, f.scalar(db,"SELECT seq FROM sqlite_sequence WHERE name='plans'"))
     }
     @Test fun `empty restore replaces preferences unlike clear and inventory survives reused ids`() = f.withDatabase { db ->
         f.seed(db); f.inventory(db)
-        assertEquals(DataGeneration(6), f.replace(db,V2BackupFixtures.empty()))
-        assertEquals(V2BackupFixtures.empty(), f.snapshot(db)); assertEquals(1,f.technical(db).size)
+        assertEquals(DataGeneration(6), f.replace(db,CurrentBackupFixtures.empty()))
+        assertEquals(CurrentBackupFixtures.empty(), f.snapshot(db)); assertEquals(1,f.technical(db).size)
         assertEquals(DataGeneration(7), f.replace(db,f.full(),6)); f.sameRows(f.full(),f.snapshot(db))
         assertEquals(listOf(listOf(17L,4L,21000L,Long.MAX_VALUE,2L)),f.technical(db))
     }
@@ -58,12 +58,12 @@ class V2BackupMutationRepositoryRoomTest {
         f.seed(db)
         db.openHelper.writableDatabase.execSQL("CREATE TRIGGER no_delete BEFORE DELETE ON plans BEGIN SELECT RAISE(ABORT,'deletion reached'); END")
         for (name in f.autoTables) {
-            var value = if(name=="plans") V2BackupFixtures.full() else f.full().table(name,listOf(f.full().tables.getValue(name).single().with("id",BackupValue.Integer(Long.MAX_VALUE))))
+            var value = if(name=="plans") CurrentBackupFixtures.full() else f.full().table(name,listOf(f.full().tables.getValue(name).single().with("id",BackupValue.Integer(Long.MAX_VALUE))))
             val fk = when(name) { "tags"->"tagId"; "habits"->"habitId"; "subscriptions"->"subscriptionId"; else->null }
             if(fk!=null) for(table in listOf("plan_tag_cross_ref","habit_records","subscription_payments","subscription_reminders")) {
                 value=value.table(table,value.tables.getValue(table).map { if(fk in it.fields) it.with(fk,BackupValue.Integer(Long.MAX_VALUE)) else it })
             }
-            V2BackupJsonCodec().encode(V2BackupFixtures.document(value))
+            V3BackupJsonCodec().encode(V2BackupFixtures.document(value))
             val error=assertFailsWith<BackupValidationException> { f.replace(db,value) }
             assertTrue(error.message.orEmpty().contains(name)); assertEquals(5L,f.generation(db)); f.sameRows(f.full(),f.snapshot(db))
         }
@@ -73,7 +73,7 @@ class V2BackupMutationRepositoryRoomTest {
         for (name in f.autoTables) {
             val before=f.scalar(db,"SELECT seq FROM sqlite_sequence WHERE name='$name'")
             db.openHelper.writableDatabase.execSQL("UPDATE sqlite_sequence SET seq=9223372036854775807 WHERE name=?",arrayOf(name))
-            assertFailsWith<BackupValidationException> { f.replace(db,V2BackupFixtures.empty()) }
+            assertFailsWith<BackupValidationException> { f.replace(db,CurrentBackupFixtures.empty()) }
             assertFailsWith<BackupValidationException> { f.clear(db) }
             assertEquals(Long.MAX_VALUE,f.scalar(db,"SELECT seq FROM sqlite_sequence WHERE name='$name'"))
             assertEquals(5L,f.generation(db)); f.sameRows(f.full(),f.snapshot(db))
@@ -88,7 +88,7 @@ class V2BackupMutationRepositoryRoomTest {
         }
         db.openHelper.writableDatabase.execSQL("UPDATE sqlite_sequence SET seq=9007199254740993 WHERE name='plans'")
         db.openHelper.writableDatabase.execSQL("INSERT INTO sqlite_sequence(name,seq) VALUES ('plans',9007199254740993)")
-        assertFailsWith<BackupValidationException> { f.replace(db,V2BackupFixtures.empty()) }
+        assertFailsWith<BackupValidationException> { f.replace(db,CurrentBackupFixtures.empty()) }
         db.openHelper.writableDatabase.execSQL("DELETE FROM sqlite_sequence WHERE name='plans'")
         assertFailsWith<BackupValidationException> { f.clear(db) }; f.sameRows(f.full(),f.snapshot(db))
     }
@@ -110,7 +110,7 @@ class V2BackupMutationRepositoryRoomTest {
         assertFailsWith<IllegalStateException> { f.replace(db,f.full(),Long.MAX_VALUE) }; assertFailsWith<IllegalStateException> { f.clear(db,Long.MAX_VALUE) }
         db.openHelper.writableDatabase.execSQL("UPDATE app_maintenance SET generation=5")
         db.openHelper.writableDatabase.execSQL("UPDATE app_settings SET defaultReminderMask=8")
-        assertFailsWith<BackupValidationException> { f.replace(db,V2BackupFixtures.empty()) }; assertFailsWith<BackupValidationException> { f.clear(db) }
+        assertFailsWith<BackupValidationException> { f.replace(db,CurrentBackupFixtures.empty()) }; assertFailsWith<BackupValidationException> { f.clear(db) }
         assertEquals(5L,f.generation(db)); assertEquals(2L,f.scalar(db,"SELECT count(*) FROM plans"))
     }
     @Test fun `insert failure rolls back deleted rows preferences inventory sequence and generation`() = f.withDatabase { db ->
@@ -128,7 +128,7 @@ class V2BackupMutationRepositoryRoomTest {
     @Test fun `late generation advance failure rolls back all replacement data and preferences`() = f.withDatabase { db ->
         f.seed(db)
         db.openHelper.writableDatabase.execSQL("CREATE TRIGGER fail_generation BEFORE UPDATE ON app_maintenance BEGIN SELECT RAISE(ABORT,'late synthetic'); END")
-        assertFailsWith<Exception> { f.replace(db,V2BackupFixtures.empty()) }; f.sameRows(f.full(),f.snapshot(db)); assertEquals(5L,f.generation(db))
+        assertFailsWith<Exception> { f.replace(db,CurrentBackupFixtures.empty()) }; f.sameRows(f.full(),f.snapshot(db)); assertEquals(5L,f.generation(db))
     }
     @Test fun `silent trigger mutation after generation advance rejects and rolls back`() = f.withDatabase { db ->
         f.seed(db)
@@ -154,7 +154,7 @@ class V2BackupMutationRepositoryRoomTest {
                 }
             }
             assertFailsWith<CancellationException> { withContext(operation+Dispatchers.IO) {
-                if(clear) f.clear(db,dao=dao) else f.replace(db,V2BackupFixtures.empty(),dao=dao)
+                if(clear) f.clear(db,dao=dao) else f.replace(db,CurrentBackupFixtures.empty(),dao=dao)
             } }
             assertTrue(reached); f.sameRows(f.full(),f.snapshot(db)); assertEquals(5L,f.generation(db)); assertEquals(1,f.technical(db).size)
         }
@@ -185,14 +185,14 @@ class V2BackupMutationRepositoryRoomTest {
             V2BackupFixtures.plan(2).with("timeMode",BackupValue.Text("DEADLINE")).with("dueDate",BackupValue.Null),
             V2BackupFixtures.plan(3).with("timeMode",BackupValue.Text("TIMED")),
             V2BackupFixtures.plan(4).with("timeMode",BackupValue.Text("ALL_DAY")))
-        val source=V2BackupFixtures.empty().table("plans",plans)
+        val source=CurrentBackupFixtures.empty().table("plans",plans)
         f.replace(db,source); f.sameRows(source,f.snapshot(db))
         assertEquals(listOf("NONE","DEADLINE","TIMED","ALL_DAY"),f.snapshot(db).tables.getValue("plans").map { (it.fields.getValue("timeMode") as BackupValue.Text).value })
     }
     @Test fun `all reminder day combinations write exact sqlite mask with initially absent sequences`() = f.withDatabase { db ->
         val days=listOf(emptySet(),setOf(1),setOf(3),setOf(1,3),setOf(7),setOf(1,7),setOf(3,7),setOf(1,3,7))
         for((mask, selected) in days.withIndex()) {
-            val source=V2BackupFixtures.empty().copy(settings=V2BackupSettings(planReminders=false,subscriptionReminders=true,defaultReminderDays=selected))
+            val source=CurrentBackupFixtures.empty().copy(settings=V2BackupSettings(planReminders=false,subscriptionReminders=true,defaultReminderDays=selected))
             assertEquals(DataGeneration(6+mask.toLong()),f.replace(db,source,5+mask.toLong()))
             assertEquals(mask.toLong(),f.scalar(db,"SELECT defaultReminderMask FROM app_settings")); assertEquals(source,f.snapshot(db))
         }

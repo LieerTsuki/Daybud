@@ -28,6 +28,10 @@ import com.example.lifemanager.data.plan.PlanConverters
 import com.example.lifemanager.data.plan.PlanDao
 import com.example.lifemanager.data.plan.PlanReminderStateDao
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.example.lifemanager.data.local.entity.HabitTreeEntity
+import com.example.lifemanager.data.local.entity.HabitWateringEntity
+import com.example.lifemanager.data.local.dao.HabitForestDao
+import com.example.lifemanager.data.local.migration.HabitForestMigration
 
 @Database(
     entities = [
@@ -38,6 +42,8 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         PlanLegacyRefEntity::class,
         HabitEntity::class,
         HabitRecordEntity::class,
+        HabitTreeEntity::class,
+        HabitWateringEntity::class,
         SubscriptionEntity::class,
         SubscriptionPaymentEntity::class,
         SubscriptionReminderEntity::class,
@@ -45,7 +51,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         MaintenanceEntity::class,
         PlanReminderStateEntity::class,
     ],
-    version = 6,
+    version = 7,
     exportSchema = true,
 )
 @TypeConverters(Converters::class, PlanConverters::class)
@@ -54,6 +60,7 @@ abstract class LifeManagerDatabase : RoomDatabase() {
     abstract fun planReminderStateDao(): PlanReminderStateDao
     abstract fun tagDao(): TagDao
     abstract fun habitDao(): HabitDao
+    abstract fun habitForestDao(): HabitForestDao
     abstract fun subscriptionDao(): SubscriptionDao
     abstract fun maintenanceDao(): MaintenanceDao
     abstract fun backupSnapshotDao(): BackupSnapshotDao
@@ -160,6 +167,6 @@ abstract class LifeManagerDatabase : RoomDatabase() {
             },
         )
 
-        val MIGRATIONS: Array<Migration> = LEGACY_MIGRATIONS + PlanMigration()
+        val MIGRATIONS: Array<Migration> = LEGACY_MIGRATIONS + arrayOf(PlanMigration(), HabitForestMigration())
     }
 }

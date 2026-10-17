@@ -45,6 +45,8 @@ internal class V2BackupDeviceFixture : Closeable {
             "INSERT INTO plan_legacy_refs VALUES ('SCHEDULE',9223372036854775807,42)",
             "INSERT INTO habits VALUES (5,'合成习惯','book',-123,'CUSTOM',1,'7,1,1',20000,NULL,7,8)",
             "INSERT INTO habit_records VALUES (9,5,19999,7)",
+            "INSERT INTO habit_trees VALUES (31,5,'MAPLE',7)",
+            "INSERT INTO habit_waterings VALUES (9,31)",
             "INSERT INTO subscriptions VALUES (8,'合成订阅',9223372036854775807,'CNY','MONTHLY',20000,19900,NULL,'',0,20001,7,8)",
             "INSERT INTO subscription_payments VALUES (3,8,9007199254740993,'EUR',19999,'合成历史')",
             "INSERT INTO subscription_reminders VALUES (8,3)",
@@ -84,7 +86,7 @@ internal class V2BackupDeviceFixture : Closeable {
     companion object {
         val context: Context get() = ApplicationProvider.getApplicationContext()
         val businessTables = listOf("plans","tags","plan_tag_cross_ref","plan_exceptions","plan_legacy_refs",
-            "habits","habit_records","subscriptions","subscription_payments","subscription_reminders")
+            "habits","habit_records","subscriptions","subscription_payments","subscription_reminders","habit_trees","habit_waterings")
         val technicalTables = listOf("app_maintenance", "plan_reminder_state", "sqlite_sequence")
         fun newDocument(): Uri = requireNotNull(context.contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI,
             ContentValues().apply {

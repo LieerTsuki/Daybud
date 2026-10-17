@@ -24,14 +24,14 @@ class V2BackupRepositoryRoomTest {
         f.seed(db); f.inventory(db)
         val result = f.snapshot(db)
         f.sameRows(f.full(), result)
-        assertEquals(12, result.tables.values.sumOf { it.size }); assertEquals(10, result.tables.size)
+        assertEquals(12, result.tables.values.sumOf { it.size }); assertEquals(12, result.tables.size)
         assertEquals(BackupValue.Text("7,01,1"), result.tables.getValue("plans")[0].fields["repeatDaysOfWeek"])
         assertEquals(BackupValue.Integer(9007199254740993), result.tables.getValue("subscription_payments").single().fields["amountMinor"])
         assertEquals(BackupValue.Integer(Long.MAX_VALUE), result.tables.getValue("subscriptions").single().fields["amountMinor"])
         assertEquals(5L, f.generation(db)); assertEquals(listOf(listOf(17L,4L,21000L,Long.MAX_VALUE,2L)), f.technical(db))
     }
     @Test fun `empty snapshot returns actual defaults and every empty table`() = f.withDatabase { db ->
-        assertEquals(V2BackupFixtures.empty(), f.snapshot(db)); assertEquals(5L, f.generation(db))
+        assertEquals(CurrentBackupFixtures.empty(), f.snapshot(db)); assertEquals(5L, f.generation(db))
     }
     @Test fun `settings mask decodes all eight combinations without inventing flags`() = f.withDatabase { db ->
         val expected = listOf(emptySet(), setOf(1), setOf(3), setOf(1,3), setOf(7), setOf(1,7), setOf(3,7), setOf(1,3,7))
@@ -69,12 +69,12 @@ class V2BackupRepositoryRoomTest {
     }
     @Test fun `exact payload byte budget passes one less fails while envelope still needs extra space`() = f.withDatabase { db ->
         f.seed(db)
-        val bytes = V2BackupJsonCodec().encode(V2BackupFixtures.document(f.full()))
+        val bytes = V3BackupJsonCodec().encode(V2BackupFixtures.document(f.full()))
         val size = Json.parseToJsonElement(bytes.decodeToString()).jsonObject.getValue("payload").toString().toByteArray().size
         val result = f.snapshot(db, BackupLimits(maxBytes = size))
         f.sameRows(f.full(), result)
         assertFailsWith<BackupValidationException> { f.snapshot(db, BackupLimits(maxBytes = size - 1)) }
-        assertFailsWith<BackupValidationException> { V2BackupJsonCodec(BackupLimits(maxBytes = size)).encode(V2BackupFixtures.document(result)) }
+        assertFailsWith<BackupValidationException> { V3BackupJsonCodec(BackupLimits(maxBytes = size)).encode(V2BackupFixtures.document(result)) }
     }
     @Test fun `invalid stored sqlite type and active configuration reject instead of empty success`() = f.withDatabase { db ->
         f.seed(db)
@@ -96,17 +96,17 @@ class V2BackupRepositoryRoomTest {
     }
     @Test fun `missing or corrupt local generation rejects but exhausted readable generation may export`() = f.withDatabase { db ->
         db.openHelper.writableDatabase.execSQL("UPDATE app_maintenance SET generation=9223372036854775807")
-        assertEquals(V2BackupFixtures.empty(), f.snapshot(db))
+        assertEquals(CurrentBackupFixtures.empty(), f.snapshot(db))
         db.openHelper.writableDatabase.execSQL("UPDATE app_maintenance SET generation=0.5")
         assertFailsWith<BackupValidationException> { f.snapshot(db) }
         db.openHelper.writableDatabase.execSQL("DELETE FROM app_maintenance")
         assertFailsWith<BackupValidationException> { f.snapshot(db) }
     }
     @Test fun `max primary key can be read and encoded for rescue even though restore refuses it`() = f.withDatabase { db ->
-        f.seed(db, V2BackupFixtures.full())
-        val result = f.snapshot(db); f.sameRows(V2BackupFixtures.full(), result)
-        val decoded = V2BackupJsonCodec().decode(V2BackupJsonCodec().encode(V2BackupFixtures.document(result)))
-        f.sameRows(V2BackupFixtures.full(), decoded.payload)
+        f.seed(db, CurrentBackupFixtures.full())
+        val result = f.snapshot(db); f.sameRows(CurrentBackupFixtures.full(), result)
+        val decoded = V3BackupJsonCodec().decode(V3BackupJsonCodec().encode(V2BackupFixtures.document(result)))
+        f.sameRows(CurrentBackupFixtures.full(), decoded.payload)
     }
     @Test fun `invalid settings cardinality rejects before loading any settings cells`() = f.withDatabase { db ->
         db.openHelper.writableDatabase.execSQL("INSERT INTO app_settings VALUES (2,'SYSTEM','YMD','CNY',1,1,0)")
@@ -135,12 +135,12 @@ class V2BackupRepositoryRoomTest {
             try {
                 assertTrue(reached.await(5,TimeUnit.SECONDS))
                 val entered=CompletableDeferred<Unit>()
-                val write=async(Dispatchers.IO) { entered.complete(Unit); f.replace(db,V2BackupFixtures.empty()) }
+                val write=async(Dispatchers.IO) { entered.complete(Unit); f.replace(db,CurrentBackupFixtures.empty()) }
                 entered.await()
                 assertFailsWith<TimeoutCancellationException> { withTimeout(150) { write.await() } }
                 release.countDown()
                 f.sameRows(f.full(),read.await()); assertEquals(com.example.lifemanager.domain.maintenance.DataGeneration(6),write.await())
-                assertEquals(V2BackupFixtures.empty(),f.snapshot(db))
+                assertEquals(CurrentBackupFixtures.empty(),f.snapshot(db))
             } finally { release.countDown() }
         }
     }

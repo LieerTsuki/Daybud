@@ -6,6 +6,7 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.hasAnyAncestor
@@ -120,6 +121,7 @@ class HabitScreenRegressionTest {
         } } }
         compose.waitUntil(5000) { compose.waitForIdle(); viewModel.uiState.value.cards.size == 1 }
         compose.runOnIdle { viewModel.openEditor(habit) }
+        compose.onNodeWithContentDescription("习惯编辑表单").performScrollToNode(hasText("开始日期：02-10-2026"))
         compose.onNodeWithText("开始日期：02-10-2026").assertExists()
     }
 

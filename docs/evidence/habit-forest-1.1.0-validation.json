@@ -1,0 +1,144 @@
+{
+  "date": "2026-10-17",
+  "versionName": "1.1.0",
+  "versionCode": 7,
+  "schema": 7,
+  "publication": "Preview APK not published as GitHub Release; source synchronization tracked separately",
+  "branch": "feat/habit-forest",
+  "base": "bec8c8a",
+  "jvm": {
+    "tests": 1187,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 103
+  },
+  "device": {
+    "tests": 72,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "api": 35,
+    "avd": "Rizhiya_Branding"
+  },
+  "lint": {
+    "Fatal": 0,
+    "Error": 0,
+    "Warning": 50
+  },
+  "builds": {
+    "Debug": true,
+    "androidTest": true,
+    "Release": true
+  },
+  "upgrade": {
+    "availableDrops": [
+      {
+        "availableDrops": 2,
+        "id": 41
+      },
+      {
+        "availableDrops": 1,
+        "id": 42
+      },
+      {
+        "availableDrops": 1,
+        "id": 43
+      }
+    ],
+    "avd": "Rizhiya_Forest_Upgrade_20261017",
+    "evidence": "D:\\codex_work\\app\\app\\.tools\\forest-upgrade-20261017-final",
+    "foreignKeyViolations": 0,
+    "generation": [
+      {
+        "generation": 0,
+        "id": 1
+      }
+    ],
+    "habitsPreserved": 3,
+    "newCode": 7,
+    "newSchema": 7,
+    "newVersion": "1.1.0",
+    "oldCode": 6,
+    "oldFullColumnTablesUnchanged": [
+      "android_metadata",
+      "app_maintenance",
+      "app_settings",
+      "habit_records",
+      "habits",
+      "plan_exceptions",
+      "plan_legacy_refs",
+      "plan_reminder_state",
+      "plan_tag_cross_ref",
+      "plans",
+      "subscription_payments",
+      "subscription_reminders",
+      "subscriptions",
+      "tags"
+    ],
+    "oldSchema": 6,
+    "oldVersion": "1.0.3",
+    "recordsPreserved": 5,
+    "seeds": [
+      {
+        "habitId": 41,
+        "id": 1,
+        "plantedAt": 7,
+        "species": "BIRCH"
+      },
+      {
+        "habitId": 42,
+        "id": 2,
+        "plantedAt": 9,
+        "species": "MAPLE"
+      },
+      {
+        "habitId": 43,
+        "id": 3,
+        "plantedAt": 11,
+        "species": "GINKGO"
+      }
+    ],
+    "serial": "emulator-5558",
+    "status": "verified",
+    "wateringCount": 0
+  },
+  "apk": {
+    "name": "rizhiya-1.1.0-habit-forest-preview.apk",
+    "bytes": 12472560,
+    "sha256": "0be059f914b5bf36916783da7e660261c9aef8d95fab62e49d4198b4ae56ff1d",
+    "certificateSha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+    "debuggable": false,
+    "v2": true,
+    "v3": true,
+    "zipalign16KiB": true
+  },
+  "review": {
+    "score": 8,
+    "unresolved": 0,
+    "scope": "Independent source review after date-refresh, raw-key and first-tree fixes"
+  },
+  "screenshots": [
+    "assets/habit-forest-editor.png",
+    "assets/habit-forest-tasks.png",
+    "assets/habit-forest-watered.png"
+  ],
+  "logs": [
+    ".tools/forest-verification.log",
+    ".tools/forest-device-verified.log",
+    ".tools/forest-upgrade-20261017-final/verified.json"
+  ],
+  "limitations": [
+    "Synthetic data on dedicated API35 emulators; no physical-device acceptance",
+    "Light/dark and large-font Compose host regression; no manual TalkBack or full device matrix",
+    "Eligibility date refresh is bounded to 60 seconds; no stable60fps/large-forest performance claim",
+    "Existing preview certificate; no store-distribution/formal-signing acceptance",
+    "No full cloud-file-provider matrix; new backup format requires the new app to restore"
+  ],
+  "sourceSync": {
+    "target": "main",
+    "status": "pending",
+    "remote": "https://github.com/lieer-12/app.git",
+    "validatedSourceFilesMatched": 59
+  }
+}

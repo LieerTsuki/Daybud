@@ -10,15 +10,20 @@ import org.robolectric.RuntimeEnvironment
 
 internal object V2BackupRoomFixtures {
     val order = listOf("tags", "plans", "plan_tag_cross_ref", "plan_exceptions", "plan_legacy_refs", "habits", "habit_records",
-        "subscriptions", "subscription_payments", "subscription_reminders")
+        "subscriptions", "subscription_payments", "subscription_reminders", "habit_trees", "habit_waterings")
     val autoTables = listOf("plans", "tags", "habits", "habit_records", "subscriptions", "subscription_payments")
-    fun full(): V2BackupPayload = V2BackupFixtures.full().let { value -> value.table("plans", listOf(
+    fun full(): V2BackupPayload = CurrentBackupFixtures.full().let { value -> value.table("plans", listOf(
         V2BackupFixtures.plan(17, 9007199254740993L), V2BackupFixtures.plan(9007199254740993L)))
         .table("plan_legacy_refs", listOf(V2BackupFixtures.row("source" to "TODO", "legacyId" to Long.MIN_VALUE, "planId" to 17L),
             V2BackupFixtures.row("source" to "SCHEDULE", "legacyId" to Long.MAX_VALUE, "planId" to 9007199254740993L))) }
     fun withDatabase(block: suspend (PlanMigrationTestDatabase) -> Unit): Unit = runBlocking {
         val database = Room.inMemoryDatabaseBuilder(RuntimeEnvironment.getApplication(), PlanMigrationTestDatabase::class.java)
             .allowMainThreadQueries().build()
+        // Add current backup tables locally; the historical migration fixture and schema6 stay frozen.
+        database.openHelper.writableDatabase.execSQL("CREATE TABLE habit_trees (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, habitId INTEGER NOT NULL, species TEXT NOT NULL, plantedAt INTEGER NOT NULL, FOREIGN KEY(habitId) REFERENCES habits(id) ON DELETE CASCADE)")
+        database.openHelper.writableDatabase.execSQL("CREATE INDEX index_habit_trees_habitId ON habit_trees(habitId)")
+        database.openHelper.writableDatabase.execSQL("CREATE TABLE habit_waterings (recordId INTEGER PRIMARY KEY NOT NULL, treeId INTEGER NOT NULL, FOREIGN KEY(recordId) REFERENCES habit_records(id) ON DELETE CASCADE, FOREIGN KEY(treeId) REFERENCES habit_trees(id) ON DELETE CASCADE)")
+        database.openHelper.writableDatabase.execSQL("CREATE INDEX index_habit_waterings_treeId ON habit_waterings(treeId)")
         database.openHelper.writableDatabase.execSQL("INSERT INTO app_settings VALUES (1,'SYSTEM','YMD','CNY',1,1,0)")
         database.openHelper.writableDatabase.execSQL("INSERT INTO app_maintenance VALUES (1,5)")
         try { block(database) } finally { database.close() }

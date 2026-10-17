@@ -75,7 +75,7 @@ class SettingsMigrationTest {
 
     private fun assertSettings(database: LifeManagerDatabase, generation: Long) {
         val sqlite = database.openHelper.readableDatabase
-        assertEquals(6, sqlite.version, "production settings require the unified schema")
+        assertEquals(7, sqlite.version, "production settings require the unified schema")
         sqlite.query("SELECT name FROM sqlite_master WHERE type='table'").use { cursor ->
             val names = buildSet { while (cursor.moveToNext()) add(cursor.getString(0)) }
             assertTrue("app_settings" in names)
