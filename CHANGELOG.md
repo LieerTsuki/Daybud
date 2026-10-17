@@ -8,7 +8,7 @@
 - 统计保留月历，热力图替换为共享林场；每条打卡获得本任务1滴水，手动浇水，20次成熟后可再种一棵。
 - 浇水关联具体打卡，撤销精确回退原树；重复点击、维护与数据替换沿用保护。删除任务会连同该任务记录、水滴和树木一起删除，界面需明确确认。
 - Room6显式升级到7，只新增林场/浇水表；旧记录折算未使用水滴。新完整备份为format3/schema7，包含全部树木与浇水，严格兼容旧V1/V2导入；旧版应用不能读取新格式。不清库、不改写原图标/颜色等历史字段。
-- 本轮1187项JVM/103 suites及72项API35设备测试全部通过，构建成功，lint0 error/50 warning；实际1.0.3同签名覆盖升级，旧13张应用表及Android元数据逐值一致。已生成可安装的1.1.0预览候选，APK尚未作为GitHub Release公开发布；源码同步main的状态、APK摘要、截图、原始证据和限制见[林场验收记录](docs/habit-forest-acceptance.md)。
+- 本轮1187项JVM/103 suites及72项API35设备测试全部通过，构建成功，lint0 error/50 warning；实际1.0.3同签名覆盖升级，旧13张应用表及Android元数据逐值一致。源码[8bc71db](https://github.com/LieerTsuki/Daybud/commit/8bc71db5f0de03c3c46677a559ddf21139f219ed)已按用户要求快进合并main并推送GitHub，APK尚未作为GitHub Release公开发布；APK摘要、截图、原始证据和限制见[林场验收记录](docs/habit-forest-acceptance.md)。
 
 ## 1.0.3 / code6 · 计划界面精简（2026-10-16已发布）
 

@@ -4,7 +4,7 @@
   "versionCode": 7,
   "schema": 7,
   "publication": "Preview APK not published as GitHub Release; source synchronization tracked separately",
-  "branch": "feat/habit-forest",
+  "branch": "main",
   "base": "bec8c8a",
   "jvm": {
     "tests": 1187,
@@ -137,8 +137,12 @@
   ],
   "sourceSync": {
     "target": "main",
-    "status": "pending",
-    "remote": "https://github.com/lieer-12/app.git",
-    "validatedSourceFilesMatched": 59
+    "status": "pushed",
+    "remote": "https://github.com/LieerTsuki/Daybud.git",
+    "sourceCommit": "8bc71db5f0de03c3c46677a559ddf21139f219ed",
+    "remoteHeadVerified": "8bc71db5f0de03c3c46677a559ddf21139f219ed",
+    "validatedSourceFilesMatched": 59,
+    "method": "fast-forward merge, successful git push, canonical remote ls-remote equality",
+    "applicationCodeChangedSinceValidation": false
   }
 }

@@ -44,6 +44,8 @@
 
 ## 源码同步main
 
-用户在本轮候选交付后另行要求推送GitHub并指定main。已核对远程main与开发基线bec8c8a一致，59个代码/构建/schema/测试文件与已验收交付归档逐文件摘要一致，无新增代码或合并冲突；沿用同一源码的1187项JVM与72项设备证据，不将其称作再次执行。当前开始提交、快进合并及远程推送，最终核对结果另行记录。此次授权仅涉及源码同步，APK Release保持候选状态。
+用户在本轮候选交付后另行要求推送GitHub并指定main。推送前远程main与开发基线bec8c8a一致，59个代码/构建/schema/测试文件与已验收交付归档逐文件摘要一致，无新增代码或合并冲突；沿用同一源码的1187项JVM与72项设备证据，不将其称作再次执行。
+
+源码[8bc71db5f0de03c3c46677a559ddf21139f219ed](https://github.com/LieerTsuki/Daybud/commit/8bc71db5f0de03c3c46677a559ddf21139f219ed)已快进合并本地main并成功推送GitHub；服务端确认bec8c8a..8bc71db，随后对正式仓库地址执行ls-remote，refs/heads/main与本地源码提交完全一致。GitHub确认原lieer-12/app仓库已迁移至[LieerTsuki/Daybud](https://github.com/LieerTsuki/Daybud/tree/main)。本次补充同步记录仅修改文档，不改变已验收APK对应的应用源码。此次授权仅涉及源码同步，APK尚未发布为GitHub Release，历史Release/APK保留。
 
 手机升级前保留独立完整备份并同签名覆盖；不卸载清数据解决签名冲突。新导出V3需新版恢复，旧V1/V2仍严格兼容导入。水滴日期资格最多60秒刷新；真机、手动TalkBack、大林场/稳定60fps、全部云文件提供方、正式商店签名尚未验收。
