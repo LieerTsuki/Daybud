@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-17",
+  "sourceCommit": "3811291f6254aac6e4cd00e2b886c10fb6d6b4c1",
+  "applicationSourceCommit": "8bc71db5f0de03c3c46677a559ddf21139f219ed",
+  "mainMerged": true,
+  "release": {
+    "id": 415814135,
+    "url": "https://github.com/LieerTsuki/Daybud/releases/tag/v1.1.0-rizhiya-preview-20261017",
+    "tag": "v1.1.0-rizhiya-preview-20261017",
+    "publishedAt": "2026-10-17T13:19:20Z",
+    "publishedAtShanghai": "2026-10-17T21:19:20+08:00",
+    "draft": false,
+    "prerelease": true,
+    "coreAssets": [
+      {
+        "name": "rizhiya-1.1.0-habit-forest-preview.apk",
+        "size": 12472560,
+        "digest": "sha256:0be059f914b5bf36916783da7e660261c9aef8d95fab62e49d4198b4ae56ff1d",
+        "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.1.0-rizhiya-preview-20261017/rizhiya-1.1.0-habit-forest-preview.apk"
+      },
+      {
+        "name": "SHA256SUMS.txt",
+        "size": 106,
+        "digest": "sha256:4b9143a9923e233d607bfa503014a76c41344520953d55b673fdc69ee351ef81",
+        "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.1.0-rizhiya-preview-20261017/SHA256SUMS.txt"
+      }
+    ]
+  },
+  "publicDownloadVerified": true,
+  "sha256": "0be059f914b5bf36916783da7e660261c9aef8d95fab62e49d4198b4ae56ff1d",
+  "remoteTagCommit": "3811291f6254aac6e4cd00e2b886c10fb6d6b4c1",
+  "validatedSourceFilesMatched": 59,
+  "applicationCodeChangedSinceValidation": false,
+  "sourceHashMethod": "Verified exact archived manifest hashes; all59 archived files match committed blobs and working files after CRLF/LF normalization (core.autocrlf=true)",
+  "publicationVerification": "Fresh local APK hash, v2/v3 certificate, non-debuggable version1.1.0/code7, zipalign16KiB, uploaded size/digest, anonymous public download hash, remote tag equality and59 archived source file hashes; no new full test run",
+  "validationEvidence": "habit-forest-1.1.0-validation.json"
+}

@@ -2,13 +2,15 @@
 
 本文件随每次版本更新维护。未发布区是开发进度，不代表手机安装包已经包含新功能。
 
-## 未发布 · 1.1.0 / code7 · 打卡林场（2026-10-17候选验收通过）
+## 1.1.0 / code7 · 打卡林场（2026-10-17已发布预览版）
 
 - 打卡任务改为六种树木插画；编辑移除图标名称和颜色输入，改为树种选择。
 - 统计保留月历，热力图替换为共享林场；每条打卡获得本任务1滴水，手动浇水，20次成熟后可再种一棵。
 - 浇水关联具体打卡，撤销精确回退原树；重复点击、维护与数据替换沿用保护。删除任务会连同该任务记录、水滴和树木一起删除，界面需明确确认。
 - Room6显式升级到7，只新增林场/浇水表；旧记录折算未使用水滴。新完整备份为format3/schema7，包含全部树木与浇水，严格兼容旧V1/V2导入；旧版应用不能读取新格式。不清库、不改写原图标/颜色等历史字段。
-- 本轮1187项JVM/103 suites及72项API35设备测试全部通过，构建成功，lint0 error/50 warning；实际1.0.3同签名覆盖升级，旧13张应用表及Android元数据逐值一致。源码[8bc71db](https://github.com/LieerTsuki/Daybud/commit/8bc71db5f0de03c3c46677a559ddf21139f219ed)已按用户要求快进合并main并推送GitHub，APK尚未作为GitHub Release公开发布；APK摘要、截图、原始证据和限制见[林场验收记录](docs/habit-forest-acceptance.md)。
+- 本轮1187项JVM/103 suites及72项API35设备测试全部通过，构建成功，lint0 error/50 warning；实际1.0.3同签名覆盖升级，旧13张应用表及Android元数据逐值一致。源码[8bc71db](https://github.com/LieerTsuki/Daybud/commit/8bc71db5f0de03c3c46677a559ddf21139f219ed)已按用户要求快进合并main并推送GitHub，已于2026-10-17T21:19:20+08:00公开发布[1.1.0预览Release](https://github.com/LieerTsuki/Daybud/releases/tag/v1.1.0-rizhiya-preview-20261017)，tag固定在源码同步记录提交`3811291`，应用代码与验收源码一致。公开APK字节数和SHA-256已回下载核对；APK摘要、截图、原始证据和限制见[林场验收记录](docs/habit-forest-acceptance.md)。
+
+- 发布沿用原已验收签名APK；本次重新核对摘要、版本、签名、非debuggable与对齐、tag及59个归档源码文件，未重跑全部测试。[下载APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.1.0-rizhiya-preview-20261017/rizhiya-1.1.0-habit-forest-preview.apk) · [发布回执](docs/evidence/habit-forest-1.1.0-publication.json)。升级前独立备份，同签名覆盖，不降级旧schema；新V3备份需新版恢复。仍使用预览证书，真机、手动TalkBack、大林场性能、全部云文件提供方及正式商店签名未验收。
 
 ## 1.0.3 / code6 · 计划界面精简（2026-10-16已发布）
 

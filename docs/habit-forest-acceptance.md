@@ -1,6 +1,6 @@
 # 打卡林场改版验收
 
-日期：2026-10-17；基线bec8c8a；功能分支feat/habit-forest。用户确认手动浇水方案后要求继续实现。候选1.1.0/code7/Room7；未公开发布，历史1.0.3下载不变。
+日期：2026-10-17；基线bec8c8a；功能分支feat/habit-forest。用户确认手动浇水方案后要求继续实现。1.1.0/code7/Room7已于2026-10-17T21:19:20+08:00公开发布预览版；历史1.0.3 Release和APK保留。
 
 ## 需求与实现
 
@@ -40,12 +40,20 @@
 
 候选1.1.0/code7/schema7，安装身份com.example.lifemanager不变，沿用既有预览证书；非debuggable、APK v2/v3签名与16KiB zipalign检查通过。APK为.tools/delivery-habit-forest/rizhiya-1.1.0-habit-forest-preview.apk，12,472,560字节，SHA-256 `0be059f914b5bf36916783da7e660261c9aef8d95fab62e49d4198b4ae56ff1d`；证书SHA-256 `55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c`，与1.0.3一致。
 
-完整交付归档为.tools/rizhiya-1.1.0-habit-forest-delivery.zip，包含初次候选验收时的APK、更新说明、验收、截图、变更源码与本轮原始测试证据。[机器可读验收](evidence/habit-forest-1.1.0-validation.json)。本轮候选APK尚未作为GitHub Release公开发布，历史Release/APK保留。
+完整交付归档为.tools/rizhiya-1.1.0-habit-forest-delivery.zip，包含初次候选验收时的APK、更新说明、验收、截图、变更源码与本轮原始测试证据。[机器可读验收](evidence/habit-forest-1.1.0-validation.json)。本轮原候选APK已作为[1.1.0预览Release](https://github.com/LieerTsuki/Daybud/releases/tag/v1.1.0-rizhiya-preview-20261017)公开发布；归档继续保留初次候选时的文档快照，当前发布状态见下文及[发布回执](evidence/habit-forest-1.1.0-publication.json)。
 
 ## 源码同步main
 
 用户在本轮候选交付后另行要求推送GitHub并指定main。推送前远程main与开发基线bec8c8a一致，59个代码/构建/schema/测试文件与已验收交付归档逐文件摘要一致，无新增代码或合并冲突；沿用同一源码的1187项JVM与72项设备证据，不将其称作再次执行。
 
-源码[8bc71db5f0de03c3c46677a559ddf21139f219ed](https://github.com/LieerTsuki/Daybud/commit/8bc71db5f0de03c3c46677a559ddf21139f219ed)已快进合并本地main并成功推送GitHub；服务端确认bec8c8a..8bc71db，随后对正式仓库地址执行ls-remote，refs/heads/main与本地源码提交完全一致。GitHub确认原lieer-12/app仓库已迁移至[LieerTsuki/Daybud](https://github.com/LieerTsuki/Daybud/tree/main)。本次补充同步记录仅修改文档，不改变已验收APK对应的应用源码。此次授权仅涉及源码同步，APK尚未发布为GitHub Release，历史Release/APK保留。
+源码[8bc71db5f0de03c3c46677a559ddf21139f219ed](https://github.com/LieerTsuki/Daybud/commit/8bc71db5f0de03c3c46677a559ddf21139f219ed)已快进合并本地main并成功推送GitHub；服务端确认bec8c8a..8bc71db，随后对正式仓库地址执行ls-remote，refs/heads/main与本地源码提交完全一致。GitHub确认原lieer-12/app仓库已迁移至[LieerTsuki/Daybud](https://github.com/LieerTsuki/Daybud/tree/main)。本次补充同步记录仅修改文档，不改变已验收APK对应的应用源码。该阶段授权仅涉及源码同步；随后用户明确要求发布APK Release，结果见下文。历史Release/APK保留。
 
 手机升级前保留独立完整备份并同签名覆盖；不卸载清数据解决签名冲突。新导出V3需新版恢复，旧V1/V2仍严格兼容导入。水滴日期资格最多60秒刷新；真机、手动TalkBack、大林场/稳定60fps、全部云文件提供方、正式商店签名尚未验收。
+
+## GitHub Release发布核对
+
+用户明确要求“apk发布release”，已于2026-10-17T21:19:20+08:00发布[日子芽1.1.0打卡林场预览版](https://github.com/LieerTsuki/Daybud/releases/tag/v1.1.0-rizhiya-preview-20261017)，非草稿、prerelease=true。tag `v1.1.0-rizhiya-preview-20261017`固定在main提交`3811291f6254aac6e4cd00e2b886c10fb6d6b4c1`，应用源码与已验收`8bc71db5f0de03c3c46677a559ddf21139f219ed`一致，后续仅补充文档。
+
+上传原已验收APK及SHA256SUMS.txt，不重新签名或替换中间包；本次现场检查1.1.0/code7、包名、非debuggable、v2/v3签名、原证书、16KiB对齐通过，SHA-256与候选一致。GitHub返回资产size/digest匹配；匿名从公开APK地址实际回下载12,472,560字节，SHA-256再次相同；远程tag等于发布提交，59个归档文件的原始字节摘要与归档manifest一致；应用/构建/schema/测试的已提交blob、候选归档和本地文件经CRLF/LF换行归一化后全部一致。初次直接摘要比较因core.autocrlf检出和归档中的换行差异而拒绝，明确核对换行归一化内容后通过，未修改应用文件。
+
+1187项JVM、72项设备、构建/lint和真实覆盖升级沿用同应用源码的前序验收，不宣称发布时再次运行。当前README和CHANGELOG入口更新到1.1.0，既有预览签名和前述未验收限制保持。[机器可读发布回执](evidence/habit-forest-1.1.0-publication.json)。

@@ -3,7 +3,7 @@
   "versionName": "1.1.0",
   "versionCode": 7,
   "schema": 7,
-  "publication": "Preview APK not published as GitHub Release; source synchronization tracked separately",
+  "publication": "Published GitHub prerelease; original validated APK unchanged",
   "branch": "main",
   "base": "bec8c8a",
   "jvm": {
@@ -144,5 +144,12 @@
     "validatedSourceFilesMatched": 59,
     "method": "fast-forward merge, successful git push, canonical remote ls-remote equality",
     "applicationCodeChangedSinceValidation": false
+  },
+  "release": {
+    "url": "https://github.com/LieerTsuki/Daybud/releases/tag/v1.1.0-rizhiya-preview-20261017",
+    "tag": "v1.1.0-rizhiya-preview-20261017",
+    "publishedAt": "2026-10-17T13:19:20Z",
+    "sourceCommit": "3811291f6254aac6e4cd00e2b886c10fb6d6b4c1",
+    "receipt": "habit-forest-1.1.0-publication.json"
   }
 }
