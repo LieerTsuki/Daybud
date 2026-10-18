@@ -2,13 +2,15 @@
 
 本文件随每次版本更新维护。未发布区是开发进度，不代表手机安装包已经包含新功能。
 
-## 未发布 · 1.1.1 / code8 · 互动森林（2026-10-18候选验收通过）
+## 1.1.1 / code8 · 互动森林（2026-10-18已发布预览版）
 
 - 所有任务的种子、成长树和历代成树共同种在连续的卡通森林里，替换逐任务树木卡片；奶油色天空、薄荷绿山丘、草地、小路、池塘和花草沿用日子芽风格。
 - 单击树木打开底部详情面板，查看对应任务、水滴与成长，再手动浇水。成熟树保留；该任务全部树成熟后可再种一棵。仅在实际成长写入后显示水滴动效。
 - 支持拖动、双指缩放、缩放/复位按钮与树木查找定位；统计页优先展示共享森林，月历与任务统计保留。
-- 安装身份、原预览证书、Room7及format3备份保持，不修改现有任务、记录、树木或浇水关联。验收和发布完成前不将本节视作已发布。
+- 安装身份、原预览证书、Room7及format3备份保持，不修改现有任务、记录、树木或浇水关联。已于2026-10-18T13:44:10+08:00发布[1.1.1预览Release](https://github.com/LieerTsuki/Daybud/releases/tag/v1.1.1-rizhiya-preview-20261018)，源码`8cdf1c25800a8758121363feb244ec9d29326dc0`已合并main。
 - 本轮1194项JVM/104套件、73项API35设备测试均通过，failure/error/skipped均0；Debug/androidTest/Release构建通过，lint0 error/29 warning。实际1.1.0同签名覆盖升级，16张表全部字段和自增序列一致；六任务、七树与46个浇水关联保留。失败轮次、测试同步修正、APK摘要、截图和限制见[互动森林验收](docs/interactive-forest-acceptance.md)。
+
+- [下载APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.1.1-rizhiya-preview-20261018/rizhiya-1.1.1-interactive-forest-preview.apk)，12,501,431字节，SHA-256 `105eaa52fe81ca632fa947e2ce005a68258ecd1b30f2266eefbb00c896600acf`；公开回下载与本地摘要一致，tag固定在上述已验收源码。发布沿用原签名候选，应用代码未再变更。[发布回执](docs/evidence/interactive-forest-1.1.1-publication.json)。
 
 ## 1.1.0 / code7 · 打卡林场（2026-10-17已发布预览版）
 

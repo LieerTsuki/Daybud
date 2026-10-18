@@ -6,17 +6,19 @@
 
 每次版本更新附带[更新内容文档](CHANGELOG.md)；开发中分批结果与已发布版本分开记录，此约定已写入仓库 `AGENTS.md`。
 
-## 互动森林 · 1.1.1候选验收通过
+## 互动森林 · 1.1.1预览版已发布
 
 所有任务的种子、成长树和历代成树共同种在一片连续的卡通森林里，点击树木后打开该任务的浇水面板；每次打卡获得本任务1滴水，20次浇水成熟，成树保留后可再种。森林支持拖动、双指缩放、缩放/复位按钮和树木查找，沿用奶油白、薄荷绿与珊瑚色的日子芽风格。森林优先展示，原任务统计与月历保留。
 
-1.1.1/code8/Room7候选完成1194项JVM/104套件和73项API35设备测试（均0 failure/error/skipped），Debug/androidTest/Release构建及lint核对通过（0 error/29 warning）。真实1.1.0同签名覆盖升级保留16张表的全部字段与自增序列，备份格式保持format3/schema7。截图、实际APK摘要、失败轮修正与限制见[互动森林验收](docs/interactive-forest-acceptance.md)。当前尚未公开发布1.1.1，以下历史下载仍指向1.1.0。
+1.1.1/code8/Room7完成1194项JVM/104套件和73项API35设备测试（均0 failure/error/skipped），Debug/androidTest/Release构建及lint核对通过（0 error/29 warning）。真实1.1.0同签名覆盖升级保留16张表的全部字段与自增序列，备份格式保持format3/schema7。截图、实际APK摘要、失败轮修正与限制见[互动森林验收](docs/interactive-forest-acceptance.md)。已于2026-10-18T13:44:10+08:00公开发布，源码`8cdf1c25800a8758121363feb244ec9d29326dc0`已合并main；公开APK回下载字节数与SHA-256核对一致。[发布回执](docs/evidence/interactive-forest-1.1.1-publication.json)。
 
-## 打卡林场 · 1.1.0预览版已发布
+[下载日子芽1.1.1互动森林预览APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.1.1-rizhiya-preview-20261018/rizhiya-1.1.1-interactive-forest-preview.apk) · [Release说明](https://github.com/LieerTsuki/Daybud/releases/tag/v1.1.1-rizhiya-preview-20261018)
+
+## 历史打卡林场 · 1.1.0预览版已发布
 
 本轮将打卡彩色文字图标改为松树、银杏、樱花、枫树、橡树和白桦插画；新增/编辑选择树种。统计保留月历，以共享林场取代53周热力图。每条打卡获得本任务1滴水，需手动浇给本任务的树；20次浇水成熟后可再种一棵，成树保留。撤销打卡收回对应水滴或回退原树；普通编辑保留打卡与成长。删除任务会删除其全部打卡、水滴及树木，须明确确认。
 
-已发布1.1.0/code7/Room7，6→7只新增树木与浇水关联表；历史打卡折算为未使用水滴。完整备份升级为[format3/schema7](docs/backup-format-v3.md)，包含林场，严格校验后导入旧V1/V2。新格式需使用新版恢复，旧版应用不支持。升级仍使用原安装身份与非破坏性迁移；本轮实际测试和交付状态见[林场验收](docs/habit-forest-acceptance.md)。以下下载入口已更新为1.1.0打卡林场预览版。
+已发布1.1.0/code7/Room7，6→7只新增树木与浇水关联表；历史打卡折算为未使用水滴。完整备份升级为[format3/schema7](docs/backup-format-v3.md)，包含林场，严格校验后导入旧V1/V2。新格式需使用新版恢复，旧版应用不支持。升级仍使用原安装身份与非破坏性迁移；本轮实际测试和交付状态见[林场验收](docs/habit-forest-acceptance.md)。该版历史下载保留在下方；当前新版入口见顶部1.1.1。
 
 本轮1187项JVM、72项API35设备测试及1.0.3→1.1.0真实APK覆盖升级通过，Debug/androidTest/Release和lint完成（0 error/50 warning）。已按用户要求将源码[8bc71db](https://github.com/LieerTsuki/Daybud/commit/8bc71db5f0de03c3c46677a559ddf21139f219ed)快进合并main并推送GitHub；本机候选APK及完整交付归档路径、摘要、截图和核对记录见上述验收页。已于2026-10-17T21:19:20+08:00发布[1.1.0预览Release](https://github.com/LieerTsuki/Daybud/releases/tag/v1.1.0-rizhiya-preview-20261017)；公开APK回下载字节数与SHA-256一致，[发布核对](docs/evidence/habit-forest-1.1.0-publication.json)。
 
@@ -32,7 +34,7 @@
 
 ## 计划界面精简 · 1.0.3预览版已发布
 
-本轮移除搜索和成功操作记录，月历周日首列、任务统一字号并保留单行象限配色，修复同月选日短暂隐藏月历。详情/编辑改为分组卡片和日期、时间选择器，上海时间不显示时区，仅展示有效安排、备注、重复与编辑闹钟开关。1.0.3/code6/schema6已完成1161项JVM、70项API35设备与覆盖升级验收，本轮结果见[验收记录](docs/planner-polish-acceptance.md)，该版已直接合并main并公开发布；当前顶部入口为1.1.0。
+本轮移除搜索和成功操作记录，月历周日首列、任务统一字号并保留单行象限配色，修复同月选日短暂隐藏月历。详情/编辑改为分组卡片和日期、时间选择器，上海时间不显示时区，仅展示有效安排、备注、重复与编辑闹钟开关。1.0.3/code6/schema6已完成1161项JVM、70项API35设备与覆盖升级验收，本轮结果见[验收记录](docs/planner-polish-acceptance.md)，该版已直接合并main并公开发布；当前顶部入口为1.1.1。
 
 ## 内嵌月历 · 1.0.2 预览版已发布
 

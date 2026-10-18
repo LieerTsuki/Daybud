@@ -4,8 +4,8 @@
   "versionCode": 8,
   "schema": 7,
   "base": "3c9af21",
-  "branch": "feat/interactive-forest",
-  "publication": "Verified local preview candidate; not yet published",
+  "branch": "main",
+  "publication": "Published GitHub prerelease; original validated APK unchanged",
   "jvm": {
     "tests": 1194,
     "failures": 0,
@@ -106,5 +106,12 @@
     "Viewport culls offscreen tree nodes; no very large forest/stable60fps claim",
     "Existing preview certificate, no store-signing acceptance",
     "Room7/backup format3 unchanged; new backups still require compatible app; no downgrade acceptance"
-  ]
+  ],
+  "release": {
+    "url": "https://github.com/LieerTsuki/Daybud/releases/tag/v1.1.1-rizhiya-preview-20261018",
+    "tag": "v1.1.1-rizhiya-preview-20261018",
+    "publishedAt": "2026-10-18T05:44:10Z",
+    "sourceCommit": "8cdf1c25800a8758121363feb244ec9d29326dc0",
+    "receipt": "interactive-forest-1.1.1-publication.json"
+  }
 }

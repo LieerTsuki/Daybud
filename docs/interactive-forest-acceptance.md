@@ -1,6 +1,6 @@
 # 互动森林验收
 
-日期：2026-10-18；基线`3c9af21`；功能分支`feat/interactive-forest`；版本1.1.1/code8/Room7。用户确认统一森林、点树浇水、拖动缩放设计，并授权完成后推送main及发布APK。本页记录本轮候选验收；发布结果在确认成功后另行补充。
+日期：2026-10-18；基线`3c9af21`；功能分支`feat/interactive-forest`；版本1.1.1/code8/Room7。用户确认统一森林、点树浇水、拖动缩放设计，并授权完成后推送main及发布APK。本轮已于2026-10-18T13:44:10+08:00公开发布预览版，发布核对见文末。
 
 ## 实现与兼容
 
@@ -41,3 +41,9 @@ SHA-256：`105eaa52fe81ca632fa947e2ce005a68258ecd1b30f2266eefbb00c896600acf`。
 证书SHA-256：`55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c`，与1.1.0相同的既有预览证书。实际界面已目视检查：[森林全景](assets/interactive-forest-overview.png)、[选树浇水](assets/interactive-forest-watering.png)、[成熟后重种](assets/interactive-forest-replanted.png)。[机器可读验收](evidence/interactive-forest-1.1.1-validation.json)。
 
 升级前另存独立完整备份，同签名覆盖，不卸载清数据、不降级旧schema。真机、手动TalkBack、超大林场稳定60fps、全部云文件提供方和正式商店签名未验收；本轮不扩大前述模拟器/字体/文件格式结果的适用范围。
+
+## 源码与发布回执
+
+用户已授权推送main和发布APK。已将验收源码`8cdf1c25800a8758121363feb244ec9d29326dc0`无冲突快进合并并推送main，随后发布[日子芽1.1.1互动森林预览版](https://github.com/LieerTsuki/Daybud/releases/tag/v1.1.1-rizhiya-preview-20261018)；tag `v1.1.1-rizhiya-preview-20261018`固定在该提交，GitHub状态非草稿、prerelease=true，历史Release及APK保留。
+
+上传原已验收APK及SHA256SUMS.txt，GitHub资产字节数和digest与本地一致；匿名从公开下载地址实际回下载12,501,431字节，SHA-256再次相同，远程tag与发布源码一致。六个应用/构建变更文件与构建验收时的摘要逐项核对（CRLF/LF归一化），应用代码没有在验收后更改。后续main仅补充发布文档，不将这次文档同步当作新增全量测试。已更新README与CHANGELOG下载入口。[机器可读发布回执](evidence/interactive-forest-1.1.1-publication.json)。

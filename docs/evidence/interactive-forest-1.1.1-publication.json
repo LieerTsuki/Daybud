@@ -1,0 +1,42 @@
+{
+  "date": "2026-10-18",
+  "sourceCommit": "8cdf1c25800a8758121363feb244ec9d29326dc0",
+  "mainMerged": true,
+  "release": {
+    "id": 416259980,
+    "tag": "v1.1.1-rizhiya-preview-20261018",
+    "url": "https://github.com/LieerTsuki/Daybud/releases/tag/v1.1.1-rizhiya-preview-20261018",
+    "publishedAt": "2026-10-18T05:44:10Z",
+    "publishedAtShanghai": "2026-10-18T13:44:10+08:00",
+    "draft": false,
+    "prerelease": true,
+    "assets": [
+      {
+        "name": "rizhiya-1.1.1-interactive-forest-preview.apk",
+        "bytes": 12501431,
+        "digest": "sha256:105eaa52fe81ca632fa947e2ce005a68258ecd1b30f2266eefbb00c896600acf",
+        "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.1.1-rizhiya-preview-20261018/rizhiya-1.1.1-interactive-forest-preview.apk"
+      },
+      {
+        "name": "SHA256SUMS.txt",
+        "bytes": 112,
+        "digest": "sha256:9482c4ece855cc422b31ec5c2ec32e00dc4ec5f91464a46c07ab7188ec5d23ec",
+        "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.1.1-rizhiya-preview-20261018/SHA256SUMS.txt"
+      }
+    ]
+  },
+  "publicDownloadVerified": true,
+  "bytes": 12501431,
+  "sha256": "105eaa52fe81ca632fa947e2ce005a68258ecd1b30f2266eefbb00c896600acf",
+  "remoteTagCommit": "8cdf1c25800a8758121363feb244ec9d29326dc0",
+  "applicationCodeChangedSinceValidation": false,
+  "validatedApplicationFiles": {
+    "app/build.gradle.kts": "ce90fd4845aae8ee734bedac5cc7d4d03f1af3e36a2b1c1ed6b7d8935d69cbd6",
+    "app/src/main/java/com/example/lifemanager/ui/habit/ForestLandscape.kt": "c6f3d4a4648b4e2bb6dcabd7e825a3aac83a7cbf9fc428d79c64e78f0744a297",
+    "app/src/main/java/com/example/lifemanager/ui/habit/ForestScene.kt": "1f20617467f0da86142b3e690c56a3d3b2229fb5daeffaa04a36ed79ea82c9c9",
+    "app/src/main/java/com/example/lifemanager/ui/habit/ForestSection.kt": "605b46ee4da3893da994731c9693418a50e6357b8f3a93db870b401b1531b0eb",
+    "app/src/main/java/com/example/lifemanager/ui/habit/HabitScreen.kt": "321955d228eac4bc90cacd9e5df52c32a0b0c688da2767c92e580d4272c192be",
+    "app/src/main/java/com/example/lifemanager/ui/habit/TreeIllustration.kt": "d5b05a690654c31bc073f967074d58c62c118679ed8f54f0ad9968421a25a37a"
+  },
+  "sourceHashMethod": "Normalized CRLF/LF source content versus the already tested build snapshot"
+}

@@ -1,6 +1,6 @@
 # 项目架构
 
-更新：2026-10-18；已公开发布打卡林场预览1.1.0，当前互动森林1.1.1候选验收通过，尚未发布。
+更新：2026-10-18；已公开发布互动森林预览1.1.1，源码已合并main。
 
 Android Kotlin + Jetpack Compose；当前源码Room数据库schema7，计划、打卡、订阅、设置四个入口。应用身份com.example.lifemanager。已发布1.1.0为schema7；互动森林不改数据库或备份格式。6→7只增加habit_trees/habit_waterings，历史迁移保持。历史交付见docs/v1-delivery-acceptance.md。
 
