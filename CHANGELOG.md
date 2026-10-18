@@ -2,13 +2,13 @@
 
 本文件随每次版本更新维护。未发布区是开发进度，不代表手机安装包已经包含新功能。
 
-## 未发布 · 1.1.2 / code9 · 订阅账单改版
+## 1.1.2 / code9 · 订阅账单（2026-10-18已发布预览版）
 
 - 订阅列表沿用奶油白、薄荷绿和圆角卡片，显示本月预计费用、使用中订阅及扣费日期；移除CSV导出和多币种说明。
 - 新建固定人民币；订阅表单移除币种选择、分类、备注和提前提醒选择，按订阅信息、周期和扣费安排分组，提供日期选择器。旧外币金额保留原币种，不换算或重新标记人民币。
 - “统计”改为“账单”：按月切换、预计总额和日期分组明细，突出今天及临近扣费；实际扣费记录单独展示，不自动将预计标为已支付；移除趋势、分类和周期分布图。
 - 所有有效订阅改为设备当地扣费当天09:00提醒，沿用系统授权、全局开关和世代保护；旧提前闹钟/通知退役。旧提醒数据不改写，Room7及format3/schema7备份格式保持。
-- 本轮1206项JVM/107套件、74项API35设备测试/27套件全部通过（failure/error/skipped均0），Debug/androidTest/Release及lint成功（0错误/29警告）；真实1.1.1覆盖升级核对16张表全部字段和自增序列一致，真实AlarmManager在09:00观察到通知。已验收，尚未发布；失败轮修正、截图及限制见[订阅账单验收](docs/subscription-bills-acceptance.md)和[验证汇总](docs/evidence/subscription-bills-1.1.2-validation.json)。
+- 本轮1206项JVM/107套件、74项API35设备测试/27套件全部通过（failure/error/skipped均0），Debug/androidTest/Release及lint成功（0错误/29警告）；真实1.1.1覆盖升级核对16张表全部字段和自增序列一致，真实AlarmManager在09:00观察到通知。已于2026-10-18T23:56:24+08:00发布[预览Release](https://github.com/LieerTsuki/Daybud/releases/tag/v1.1.2-rizhiya-preview-20261018)，源码`0bc4d0661b5731e924893a087cd5b33f9effc167`已直接推送main，公开APK回下载与本地12,517,815字节及SHA-256一致。[下载APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.1.2-rizhiya-preview-20261018/rizhiya-1.1.2-subscription-bills-preview.apk) · [发布回执](docs/evidence/subscription-bills-1.1.2-publication.json)。失败轮修正、截图及限制见[订阅账单验收](docs/subscription-bills-acceptance.md)和[验证汇总](docs/evidence/subscription-bills-1.1.2-validation.json)。
 
 ## 1.1.1 / code8 · 互动森林（2026-10-18已发布预览版）
 

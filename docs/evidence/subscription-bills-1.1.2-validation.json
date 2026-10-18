@@ -4,8 +4,8 @@
   "versionCode": 9,
   "schema": 7,
   "base": "5b69285",
-  "branch": "feat/subscription-bills",
-  "publication": "Validated; not yet published",
+  "branch": "main",
+  "publication": "Published GitHub prerelease; original validated signed APK unchanged",
   "jvm": {
     "suites": 107,
     "tests": 1206,
@@ -127,5 +127,7 @@
   "limits": [
     "Dedicated API35 emulator with synthetic data; physical devices and OEM background restrictions unverified",
     "Manual TalkBack, large datasets, all cloud file providers and production store signing unverified"
-  ]
+  ],
+  "sourceCommit": "0bc4d0661b5731e924893a087cd5b33f9effc167",
+  "publicationReceipt": "subscription-bills-1.1.2-publication.json"
 }

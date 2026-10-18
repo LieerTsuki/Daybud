@@ -1,6 +1,6 @@
 # 订阅账单改版验收
 
-2026-10-18；基线`5b69285`，分支`feat/subscription-bills`；候选1.1.2/code9/Room7。用户确认采用月度账单并授权直接推送GitHub main和发布APK。开发与验收已完成，尚未发布；[机器汇总](evidence/subscription-bills-1.1.2-validation.json)。
+2026-10-18；基线`5b69285`，分支`feat/subscription-bills`；1.1.2/code9/Room7。用户确认采用月度账单并授权直接推送GitHub main和发布APK。已于2026-10-18T23:56:24+08:00公开发布预览版；[机器汇总](evidence/subscription-bills-1.1.2-validation.json)。
 
 ## 实现范围
 
@@ -62,3 +62,9 @@ Room7、安装身份和format3/schema7完整备份保持；历史提前量仍原
 ## 验证边界
 
 设备与升级验证均在API35专用模拟器、合成数据上完成。真实手机、厂商后台限制、手动TalkBack、大数据量、全部云文件提供方及正式商店签名未验收。通知需开启模块总开关并授予系统通知权限；缺少精确闹钟权限或受到后台限制时可能延迟。
+
+## 发布核对
+
+用户明确要求直接推送main；384个文件的规范化内容与实际已测试快照、提交`0bc4d0661b5731e924893a087cd5b33f9effc167`逐文件匹配后，快进main并成功推送。发布前GitHub main核对为同一提交；标签`v1.1.2-rizhiya-preview-20261018`也指向该已验收源码。后续仅补发布文档，不重建或重签APK。
+
+[1.1.2预览Release](https://github.com/LieerTsuki/Daybud/releases/tag/v1.1.2-rizhiya-preview-20261018)于2026-10-18T23:56:24+08:00公开，保留历史Release和资产。[APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.1.2-rizhiya-preview-20261018/rizhiya-1.1.2-subscription-bills-preview.apk)匿名回下载12,517,815字节，SHA-256 `7423e40c3a54cbb1aa3ea5a4614f08b9008ac62ec52ee7d5f538d00ef97a4981`与本地已签名、已升级/通知验收的安装包完全一致；SHA256SUMS.txt也匿名回下载逐字节相等。首次匿名GitHub API查询返回403限额，改用认证发布响应核对公开状态及资产元数据，未将限额视作发布失败；资产下载不带凭据。实际回执见[publication.json](evidence/subscription-bills-1.1.2-publication.json)。
