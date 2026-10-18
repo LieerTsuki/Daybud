@@ -60,15 +60,17 @@ class SettingsScreenTest {
         compose.onNodeWithText("跟随系统").assertIsSelected()
     }
 
-    @Test fun datePreferenceSelectionIsAccessibleAndUsesItsSaveCallback() {
-        val state = mutableStateOf(presentation(settings = values(), isLoading = false, isAvailable = true))
+    @Test fun legacyDatePreferenceDoesNotExposeDateFormatControlsOrFeatureDescriptions() {
+        val state = mutableStateOf(presentation(settings = values(dateFormat = DateFormat.DMY), isLoading = false, isAvailable = true))
         compose.setContent { LifeManagerTheme {
             content(state.value, {}, {}, {}, onDateFormatChanged = { format ->
                 state.value = state.value.copy(settings = state.value.settings!!.copy(dateFormat = format))
             })
         } }
-        compose.onNodeWithText("DD-MM-YYYY").performScrollTo().performClick()
-        compose.onNodeWithText("DD-MM-YYYY").assertIsSelected()
+        listOf("日期格式", "YYYY-MM-DD", "MM-DD-YYYY", "DD-MM-YYYY", "已完成模块",
+            "仅改变日期展示，不影响已保存的日期。").forEach { compose.onNodeWithText(it).assertDoesNotExist() }
+        compose.onNodeWithText("主题").assertExists()
+        compose.onNodeWithContentDescription("订阅提醒").assertExists()
     }
 
     @Test fun subscriptionPolicyCannotBeChangedThroughObsoleteCurrencyAndAdvanceReminderControls() {
@@ -81,7 +83,8 @@ class SettingsScreenTest {
         listOf(1, 3, 7).forEach { day ->
             compose.onNodeWithText("提前 $day 天").assertDoesNotExist()
         }
-        compose.onNodeWithText("订阅以人民币计费，扣费当天 09:00 提醒").performScrollTo().assertExists()
+        compose.onNodeWithText("订阅以人民币计费，扣费当天 09:00 提醒").assertDoesNotExist()
+        compose.onNodeWithContentDescription("订阅提醒").assertExists()
     }
 
     @Test fun subscriptionReminderSwitchStillControlsOnlySubscriptionReminders() {
@@ -105,7 +108,7 @@ class SettingsScreenTest {
         } }
         compose.onNodeWithText("深色").assertIsNotEnabled()
         compose.onNodeWithText("重新读取设置").assertIsNotEnabled()
-        compose.onNodeWithText("DD-MM-YYYY").performScrollTo().assertIsNotEnabled()
+        compose.onNodeWithText("DD-MM-YYYY").assertDoesNotExist()
         compose.onNodeWithContentDescription("订阅提醒").performScrollTo().assertIsNotEnabled()
     }
 

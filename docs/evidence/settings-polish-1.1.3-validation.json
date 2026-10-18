@@ -1,0 +1,136 @@
+{
+  "date": "2026-10-19",
+  "versionName": "1.1.3",
+  "versionCode": 10,
+  "schema": 7,
+  "base": "f71121e",
+  "branch": "main",
+  "publication": "Validated; not yet published",
+  "jvm": {
+    "suites": 107,
+    "tests": 1210,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "device": {
+    "tests": 74,
+    "suites": 27,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "api": 35,
+    "avd": "Rizhiya_Settings_Polish",
+    "serial": "emulator-5564",
+    "buildType": "Debug",
+    "method": "Full package via adb shell am instrument -w -r AndroidJUnitRunner"
+  },
+  "lint": {
+    "Fatal": 0,
+    "Error": 0,
+    "Warning": 29
+  },
+  "builds": {
+    "Debug": true,
+    "androidTest": true,
+    "Release": true
+  },
+  "upgrade": {
+    "avd": "Rizhiya_Settings_Polish",
+    "evidence": "D:\\codex_work\\app\\app\\.tools\\settings-upgrade-20261019",
+    "foreignKeyViolations": 0,
+    "fullColumnsAndValuesUnchanged": true,
+    "generationUnchanged": true,
+    "legacyCurrencyCategoryNoteUnchanged": true,
+    "newCode": 10,
+    "newVersion": "1.1.3",
+    "oldCode": 9,
+    "oldVersion": "1.1.2",
+    "schema": 7,
+    "selectedReminderOffsetsUnchanged": true,
+    "sequencesUnchanged": true,
+    "serial": "emulator-5564",
+    "settingsUnchanged": true,
+    "status": "verified",
+    "tablesUnchanged": [
+      "android_metadata",
+      "app_maintenance",
+      "app_settings",
+      "habit_records",
+      "habit_trees",
+      "habit_waterings",
+      "habits",
+      "plan_exceptions",
+      "plan_legacy_refs",
+      "plan_reminder_state",
+      "plan_tag_cross_ref",
+      "plans",
+      "subscription_payments",
+      "subscription_reminders",
+      "subscriptions",
+      "tags"
+    ],
+    "tables": 16,
+    "subscriptions": 8,
+    "payments": 5,
+    "legacyReminderPreferences": 9,
+    "legacyDateFormat": "DMY",
+    "legacyDateFormatPreserved": true
+  },
+  "apk": {
+    "name": "rizhiya-1.1.3-settings-polish-preview.apk",
+    "bytes": 12517815,
+    "sha256": "5c0a987e8138d87a1ed630cf0f1973c57d607aa25e20a4944d62f1dfd3683b00",
+    "certificateSha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+    "debuggable": false,
+    "v2": true,
+    "v3": true,
+    "zipalign16KiB": true
+  },
+  "sourceManifest": {
+    "files": 384,
+    "finalSha256": "1376452bed6b310b986fc1b385763c333bdbe80bc92d8aed38a8b05c954cd841",
+    "initialSha256": "7544c9aeb30b53dee77294868e2463e916f6ad129f9880224d57cbc19acde9dd",
+    "changedAfterFirstFullBuild": [
+      "app/src/test/java/com/example/lifemanager/ui/navigation/V1ActivityActivationTest.kt",
+      "app/src/test/java/com/example/lifemanager/ui/navigation/V1NavigationComposeTest.kt"
+    ],
+    "productionSourcesUnchanged": true
+  },
+  "screenshots": {
+    "settings-polish-home.png": {
+      "bytes": 139376,
+      "sha256": "093e12434a10606c792a85683b6063f34babc333cad5dbb50b243b26c32b0859"
+    },
+    "settings-polish-permissions.png": {
+      "bytes": 187518,
+      "sha256": "933bd3b99300e5e068ea58673927ff2971d582653ea6ab49c7ce0c3dd6625fc9"
+    },
+    "settings-polish-about.png": {
+      "bytes": 170857,
+      "sha256": "e2efa75878674c95d3ef3460ebb766db26d990fa32e9097595c971c9655eec11"
+    }
+  },
+  "evidenceLogs": {
+    "red": {
+      "path": ".tools/settings-polish-red.log",
+      "sha256": "edb23ce4d13ef7f5daeaeca93477be9ab8f6277e0bcf81c928e5357bc074a345"
+    },
+    "firstFullBuildAndJvm": {
+      "path": ".tools/settings-polish-full-first.log",
+      "sha256": "50b0883768e2fbb938e1eacee2db395ff416a7fd30f36a534d62c2a04ff9c324"
+    },
+    "fullBuildAndJvm": {
+      "path": ".tools/settings-polish-full.log",
+      "sha256": "ec876e1c19e61ca10db09420251262d8d3fa45459be602d09c38f81106bcd7a7"
+    },
+    "device": {
+      "path": ".tools/settings-polish-device-final.log",
+      "sha256": "bf3f39744e1c3280a57289007528f622fbb976d085a486f7bb7b483784b09d32"
+    }
+  },
+  "limits": [
+    "Dedicated API35 emulator with synthetic data; physical devices and OEM background restrictions unverified",
+    "Manual TalkBack, large datasets, all cloud file providers and production store signing unverified"
+  ]
+}

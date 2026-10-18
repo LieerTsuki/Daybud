@@ -1,99 +1,110 @@
 package com.example.lifemanager.ui.settings
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.Scaffold
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.dp
 import com.example.lifemanager.domain.model.ThemeMode
 import com.example.lifemanager.domain.model.DateFormat
 import com.example.lifemanager.domain.maintenance.DataGeneration
 
-internal data class PreferenceValues(val theme:ThemeMode,val dateFormat:DateFormat,val defaultCurrency:String,
-    val defaultReminderDays:Set<Int>,val reminders:List<PreferenceReminder>)
-internal data class PreferenceReminder(val module:String,val label:String,val checked:Boolean)
-internal data class PreferenceState(val settings:PreferenceValues?,val generation:DataGeneration?,
-    val isAvailable:Boolean,val isLoading:Boolean,val isSaving:Boolean,val isMaintaining:Boolean,val errorMessage:String?)
+// Retired preferences remain in the adapter for historical storage/backup compatibility.
+internal data class PreferenceValues(val theme: ThemeMode, val dateFormat: DateFormat, val defaultCurrency: String,
+    val defaultReminderDays: Set<Int>, val reminders: List<PreferenceReminder>)
+internal data class PreferenceReminder(val module: String, val label: String, val checked: Boolean)
+internal data class PreferenceState(val settings: PreferenceValues?, val generation: DataGeneration?,
+    val isAvailable: Boolean, val isLoading: Boolean, val isSaving: Boolean, val isMaintaining: Boolean, val errorMessage: String?)
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun PreferenceContent(state:PreferenceState,onThemeChanged:(ThemeMode)->Unit,onRetry:()->Unit,onBack:()->Unit,
-    onDateFormatChanged:(DateFormat)->Unit,
-    onReminderEnabledChanged:(String,Boolean)->Unit,operationBusy:Boolean=false,backupSection:@Composable ()->Unit={},
-    modulesDescription:String="当前已启用统一计划、打卡、订阅费用管理和设置。打卡提醒、暂停和归档尚未实现。",backLabel:String="返回计划") {
+internal fun PreferenceContent(state: PreferenceState, onThemeChanged: (ThemeMode) -> Unit, onRetry: () -> Unit, onBack: () -> Unit,
+    onDateFormatChanged: (DateFormat) -> Unit,
+    onReminderEnabledChanged: (String, Boolean) -> Unit, operationBusy: Boolean = false, backupSection: @Composable () -> Unit = {},
+    modulesDescription: String = "", backLabel: String = "返回计划") {
+    val editable = state.isAvailable && !state.isLoading && !state.isSaving && !state.isMaintaining && !operationBusy
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween) {
+            Text("设置", style = MaterialTheme.typography.headlineMedium)
+            Surface(shape = RoundedCornerShape(18.dp), color = MaterialTheme.colorScheme.primaryContainer) {
+                Icon(Icons.Outlined.Settings, null, Modifier.padding(14.dp).size(28.dp), tint = MaterialTheme.colorScheme.onPrimaryContainer)
+            }
+        }
+        if (state.isLoading || state.isSaving) LinearProgressIndicator(Modifier.fillMaxWidth())
+        state.errorMessage?.let {
+            Text(it, color = MaterialTheme.colorScheme.error)
+            TextButton(onRetry, enabled = !state.isSaving && !state.isMaintaining && !operationBusy) { Text("重新读取设置") }
+        }
+        if (state.isMaintaining) Text("数据维护中，请稍候", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        state.settings?.let { saved ->
+            SettingsGroup("主题") {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf(ThemeMode.SYSTEM to "跟随系统", ThemeMode.LIGHT to "浅色", ThemeMode.DARK to "深色").forEach { (mode, label) ->
+                        val selected = saved.theme == mode
+                        Surface(modifier = Modifier.heightIn(min = 48.dp).selectable(selected, enabled = editable,
+                            role = Role.RadioButton, onClick = { onThemeChanged(mode) }),
+                            shape = RoundedCornerShape(14.dp),
+                            color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+                            border = BorderStroke(1.dp, if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant)) {
+                            Box(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), contentAlignment = Alignment.Center) {
+                                Text(label, style = MaterialTheme.typography.labelLarge)
+                            }
+                        }
+                    }
+                }
+            }
+            SettingsGroup("提醒") {
+                saved.reminders.forEachIndexed { index, item ->
+                    if (index > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    Row(Modifier.fillMaxWidth().heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Text(item.label, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                        Switch(item.checked, { onReminderEnabledChanged(item.module, it) }, enabled = editable,
+                            modifier = Modifier.semantics { contentDescription = item.label })
+                    }
+                }
+            }
+        }
+        backupSection()
+        SettingsPlatformSection(enabled = editable)
+        TextButton(onBack, enabled = !operationBusy && !state.isMaintaining, modifier = Modifier.align(Alignment.CenterHorizontally)) {
+            Text(backLabel)
+        }
+    }
+}
 
-    Scaffold(
-        topBar = { TopAppBar(title = { Text("设置") }) },
-    ) { padding ->
-        Column(
-            modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            if (state.isLoading || state.isSaving) LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-            state.errorMessage?.let {
-                Text(it, color = MaterialTheme.colorScheme.error)
-                Button(onClick = onRetry, enabled = !state.isSaving && !state.isMaintaining) { Text("重新读取设置") }
-            }
-            state.settings?.let { saved ->
-                Text("主题", style = MaterialTheme.typography.titleLarge)
-                val editable = state.isAvailable && !state.isLoading && !state.isSaving && !state.isMaintaining && !operationBusy
-                listOf(ThemeMode.SYSTEM to "跟随系统", ThemeMode.LIGHT to "浅色", ThemeMode.DARK to "深色").forEach { (mode, label) ->
-                    Row(modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).selectable(
-                        selected = saved.theme == mode, enabled = editable, role = Role.RadioButton,
-                        onClick = { onThemeChanged(mode) },
-                    ), verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(selected = saved.theme == mode, onClick = null, enabled = editable)
-                        Text(label, modifier = Modifier.padding(start = 8.dp))
-                    }
-                }
-                Text("日期格式", style = MaterialTheme.typography.titleLarge)
-                listOf(DateFormat.YMD to "YYYY-MM-DD", DateFormat.MDY to "MM-DD-YYYY", DateFormat.DMY to "DD-MM-YYYY").forEach { (format, label) ->
-                    Row(modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).selectable(
-                        selected = saved.dateFormat == format, enabled = editable, role = Role.RadioButton,
-                        onClick = { onDateFormatChanged(format) },
-                    ), verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(selected = saved.dateFormat == format, onClick = null, enabled = editable)
-                        Text(label, modifier = Modifier.padding(start = 8.dp))
-                    }
-                }
-                Text("仅改变日期展示，不影响已保存的日期。", style = MaterialTheme.typography.bodySmall)
-                Text("订阅以人民币计费，扣费当天 09:00 提醒", style = MaterialTheme.typography.bodyMedium)
-                Text("模块提醒", style = MaterialTheme.typography.titleLarge)
-                saved.reminders.forEach { (module, label, checked) ->
-                    Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Text(label, modifier = Modifier.weight(1f))
-                        androidx.compose.material3.Switch(checked = checked, enabled = editable,
-                            onCheckedChange = { onReminderEnabledChanged(module, it) },
-                            modifier = Modifier.semantics { contentDescription = label })
-                    }
-                }
-                Text("关闭会撤销该模块的提醒与通知；重新开启将从本地记录重建。打卡提醒尚未实现。", style = MaterialTheme.typography.bodySmall)
-            }
-            backupSection()
-            Text("已完成模块", style = MaterialTheme.typography.titleLarge)
-            Text(modulesDescription)
-            SettingsPlatformSection()
-            Button(onClick = onBack, enabled = !operationBusy && !state.isMaintaining) { Text(backLabel) }
+@Composable
+internal fun SettingsGroup(title: String, content: @Composable ColumnScope.() -> Unit) {
+    Surface(Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp),
+        color = MaterialTheme.colorScheme.surface, border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)) {
+        Column(Modifier.padding(horizontal = 20.dp, vertical = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(title, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+            content()
+        }
+    }
+}
+
+@Composable
+internal fun SettingsAction(label: String, onClick: () -> Unit, enabled: Boolean, tint: Color = MaterialTheme.colorScheme.onSurface) {
+    Surface(onClick = onClick, enabled = enabled, color = Color.Transparent,
+        modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp), shape = RoundedCornerShape(12.dp)) {
+        Row(Modifier.padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(label, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, color = if (enabled) tint else tint.copy(alpha = .38f))
+            Icon(Icons.Outlined.ChevronRight, null, tint = if (enabled) tint else tint.copy(alpha = .38f))
         }
     }
 }

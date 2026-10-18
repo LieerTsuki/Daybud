@@ -65,7 +65,7 @@ class SubscriptionScreenTest {
         assertEquals(1500L, repository.list.value.single().amountMinor)
     }
 
-    @Test fun subscriptionDetailsUseDatePreferenceButDoNotRewriteStoredDates() {
+    @Test fun subscriptionDetailsKeepYearMonthDayDespiteLegacyPreferenceWithoutRewritingDates() {
         val date = java.time.LocalDate.of(2026, 10, 2)
         repository.list.value = listOf(Subscription(id = 42, appName = "日期测试", amountMinor = 1250,
             billingCycle = com.example.lifemanager.domain.model.BillingCycle.MONTHLY,
@@ -74,8 +74,11 @@ class SubscriptionScreenTest {
         show(DateFormat.DMY)
         compose.waitUntil(5000) { model.uiState.value.subscriptions.size == 1 }
         compose.runOnIdle { model.openDetail(42) }
-        compose.onNodeWithText("开始：02-10-2026").assertExists()
+        compose.onNodeWithText("开始：2026-10-02").assertExists()
+        compose.onNodeWithText("取消日期：2026-10-02").assertExists()
         assertEquals(date, repository.list.value.single().startDate)
+        assertEquals(date, repository.list.value.single().nextBillingDate)
+        assertEquals(date, repository.list.value.single().cancelDate)
     }
 
     private class NoAlarms : SubscriptionReminderSchedulerContract {

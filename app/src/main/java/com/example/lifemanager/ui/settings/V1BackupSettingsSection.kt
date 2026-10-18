@@ -58,12 +58,14 @@ fun V1BackupSettingsSection(model: V1BackupSettingsViewModel, enabled: Boolean, 
 @Composable
 fun V1BackupSettingsControls(state: V1BackupUiState, enabled: Boolean, onStart: (BackupAction) -> Unit,
     onCancel: () -> Unit, onInspect: () -> Unit) {
-    Text("数据备份与恢复", style = MaterialTheme.typography.titleLarge)
-    Text("包含计划、打卡、林场、订阅及设置。导出为未加密的 V3 JSON；恢复兼容已验证的旧 V1 / V2 文件。请保存到可信位置，谨慎分享。")
     val actionable = enabled && !state.busy && state.outcome != V1BackupOutcome.UNKNOWN
-    Button({ onStart(BackupAction.EXPORT) }, enabled = actionable, modifier = Modifier.fillMaxWidth()) { Text("导出完整 V3 备份") }
-    OutlinedButton({ onStart(BackupAction.RESTORE) }, enabled = actionable, modifier = Modifier.fillMaxWidth()) { Text("从 V1 / V2 / V3 备份恢复") }
-    OutlinedButton({ onStart(BackupAction.CLEAR) }, enabled = actionable, modifier = Modifier.fillMaxWidth()) { Text("清空业务数据") }
+    SettingsGroup("数据") {
+        SettingsAction("备份数据", { onStart(BackupAction.EXPORT) }, actionable)
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        SettingsAction("恢复备份", { onStart(BackupAction.RESTORE) }, actionable)
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        SettingsAction("清空数据", { onStart(BackupAction.CLEAR) }, actionable, MaterialTheme.colorScheme.error)
+    }
     if (state.busy) {
         LinearProgressIndicator(Modifier.fillMaxWidth())
         Text(when {

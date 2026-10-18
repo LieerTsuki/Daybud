@@ -43,8 +43,15 @@ class SettingsPlatformSectionAccessibilityDeviceTest {
                 }
             }
         }
+        compose.onNodeWithText("系统通知设置").assertDoesNotExist()
+        compose.onNodeWithText("查看离线第三方许可证").assertDoesNotExist()
+        compose.onNodeWithText("通知与权限").performScrollTo().assertHeightIsAtLeast(48.dp).performClick()
         compose.onNodeWithText("系统通知设置").performScrollTo().assertIsDisplayed().assertHeightIsAtLeast(48.dp)
         assertTextNotClipped("系统通知设置")
+        compose.onNodeWithText("权限关闭不影响离线保存；省电限制、通知渠道设置也可能影响投递。")
+            .performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("关闭权限").assertIsDisplayed().assertHeightIsAtLeast(48.dp).performClick()
+        compose.onNodeWithText("关于日子芽").performScrollTo().assertHeightIsAtLeast(48.dp).performClick()
         val version = "版本 ${BuildConfig.VERSION_NAME}（${BuildConfig.VERSION_CODE}）"
         compose.onNodeWithText(version).performScrollTo().assertIsDisplayed()
         assertTextNotClipped(version)
@@ -62,7 +69,10 @@ class SettingsPlatformSectionAccessibilityDeviceTest {
         compose.onNodeWithText("返回依赖清单").assertIsDisplayed().assertHeightIsAtLeast(48.dp).performClick()
         compose.onNodeWithText("关闭许可证").assertIsDisplayed().assertHeightIsAtLeast(48.dp).performClick()
         compose.onNodeWithText("关闭许可证").assertDoesNotExist()
-        compose.onNodeWithText("查看离线第三方许可证").assertIsDisplayed()
+        compose.onNodeWithText("查看离线第三方许可证").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("关闭关于").assertIsDisplayed().assertHeightIsAtLeast(48.dp).performClick()
+        compose.onNodeWithText("查看离线第三方许可证").assertDoesNotExist()
+        compose.onNodeWithText("通知与权限").performScrollTo().assertIsEnabled()
     }
 
     private fun assertTextNotClipped(label: String) {

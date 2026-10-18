@@ -17,8 +17,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.core.app.ActivityOptionsCompat
@@ -27,6 +31,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.test.core.app.ApplicationProvider
+import com.example.lifemanager.BuildConfig
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -37,6 +42,7 @@ import org.robolectric.annotation.LooperMode
 import org.robolectric.shadows.ShadowAlarmManager
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 /** Simulated OS boundaries, not proof of a real device granting permissions. */
 @RunWith(RobolectricTestRunner::class)
@@ -47,10 +53,89 @@ class SettingsPlatformSectionBehaviorTest {
     private val application get() = ApplicationProvider.getApplicationContext<Application>()
 
     @Test
+    fun homeShowsOnlyTwoEntriesAndClosingDetailsReturnsToTheSameHome() {
+        show()
+        compose.onNodeWithText("通知与权限").assertIsDisplayed().assertIsEnabled()
+        compose.onNodeWithText("关于日子芽").assertIsDisplayed().assertIsEnabled()
+        compose.onNodeWithText("系统通知设置").assertDoesNotExist()
+        compose.onNodeWithText("权限关闭不影响离线保存；省电限制、通知渠道设置也可能影响投递。").assertDoesNotExist()
+        compose.onNodeWithText("版本 ${BuildConfig.VERSION_NAME}（${BuildConfig.VERSION_CODE}）").assertDoesNotExist()
+        compose.onNodeWithText("查看离线第三方许可证").assertDoesNotExist()
+
+        openPermissions()
+        compose.onNodeWithText("系统通知设置").performScrollTo().assertIsEnabled()
+        compose.onNodeWithText("关闭权限").performClick()
+        compose.onNodeWithText("系统通知设置").assertDoesNotExist()
+        compose.onNodeWithText("关于日子芽").performClick()
+        compose.onNodeWithText("版本 ${BuildConfig.VERSION_NAME}（${BuildConfig.VERSION_CODE}）").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("查看离线第三方许可证").performScrollTo().assertIsEnabled()
+        compose.onNodeWithText("关闭关于").performClick()
+        compose.onNodeWithText("查看离线第三方许可证").assertDoesNotExist()
+        compose.onNodeWithText("通知与权限").assertIsDisplayed().assertIsEnabled()
+    }
+
+    @Test
+    fun closingOfflineLicenseReturnsToAboutInsteadOfDismissingTheWholeSection() {
+        show()
+        compose.onNodeWithText("关于日子芽").performClick()
+        compose.onNodeWithText("查看离线第三方许可证").performScrollTo().performClick()
+        compose.waitUntil(5_000) {
+            compose.onAllNodesWithText("Apache License 2.0 原文").fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithText("关闭许可证").performClick()
+        compose.onNodeWithText("查看离线第三方许可证").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("版本 ${BuildConfig.VERSION_NAME}（${BuildConfig.VERSION_CODE}）").assertExists()
+        compose.onNodeWithText("关闭关于").performClick()
+        compose.onNodeWithText("查看离线第三方许可证").assertDoesNotExist()
+    }
+
+    @Test
+    fun busySectionDisablesBothHomeEntries() {
+        show(enabled = { false })
+        compose.onNodeWithText("通知与权限").assertIsNotEnabled()
+        compose.onNodeWithText("关于日子芽").assertIsNotEnabled()
+        compose.onNodeWithText("系统通知设置").assertDoesNotExist()
+        compose.onNodeWithText("查看离线第三方许可证").assertDoesNotExist()
+    }
+
+    @Test
+    fun becomingBusyBlocksAlreadyOpenedAndCapturedSystemActionsButStillAllowsClosing() {
+        var enabled by mutableStateOf(true)
+        var launched = 0
+        val registry = ResultRegistry()
+        shadowOf(application).denyPermissions(Manifest.permission.POST_NOTIFICATIONS)
+        show(registry = registry, startActivity = { launched++ }, enabled = { enabled })
+        openPermissions()
+        val notificationAction = compose.onNodeWithText("系统通知设置").fetchSemanticsNode().config[SemanticsActions.OnClick].action
+        val exactAction = compose.onNodeWithText("精确提醒设置").fetchSemanticsNode().config[SemanticsActions.OnClick].action
+        val requestAction = compose.onNodeWithText("申请通知权限").fetchSemanticsNode().config[SemanticsActions.OnClick].action
+        compose.runOnIdle { enabled = false }
+        compose.onNodeWithText("系统通知设置").assertIsNotEnabled()
+        compose.onNodeWithText("精确提醒设置").assertIsNotEnabled()
+        compose.onNodeWithText("申请通知权限").assertIsNotEnabled()
+        // Simulate callbacks captured before the busy transition; the runtime guard must reread enabled.
+        compose.runOnIdle {
+            notificationAction?.invoke()
+            exactAction?.invoke()
+            requestAction?.invoke()
+        }
+        assertEquals(0, launched)
+        assertNull(registry.requestCode)
+        compose.onNodeWithText("关闭权限").assertIsEnabled().performClick()
+        compose.onNodeWithText("通知与权限").assertIsNotEnabled()
+        compose.runOnIdle { enabled = true }
+        compose.onNodeWithText("关于日子芽").performClick()
+        compose.runOnIdle { enabled = false }
+        compose.onNodeWithText("关闭关于").assertIsEnabled().performClick()
+        compose.onNodeWithText("关于日子芽").assertIsNotEnabled()
+    }
+
+    @Test
     @Config(sdk = [28])
     fun preAndroid13StillReportsAppWideNotificationBlocking() {
         shadowOf(application.getSystemService(NotificationManager::class.java)).setNotificationsEnabled(false)
         show()
+        openPermissions()
         compose.onNodeWithText("应用通知：已关闭").assertExists()
         compose.onNodeWithText("申请通知权限").assertDoesNotExist()
         compose.onNodeWithText("精确提醒：此系统无需单独授权").assertExists()
@@ -65,6 +150,7 @@ class SettingsPlatformSectionBehaviorTest {
         ShadowAlarmManager.setCanScheduleExactAlarms(true)
         compose.runOnIdle { owner.registry.currentState = Lifecycle.State.RESUMED }
         show(owner)
+        openPermissions()
         compose.onNodeWithText("应用通知：已开启").assertExists()
         compose.onNodeWithText("精确提醒：已允许").assertExists()
         compose.runOnIdle {
@@ -84,6 +170,7 @@ class SettingsPlatformSectionBehaviorTest {
         val registry = ResultRegistry()
         shadowOf(application).denyPermissions(Manifest.permission.POST_NOTIFICATIONS)
         show(registry = registry)
+        openPermissions()
         compose.onNodeWithText("申请通知权限").performScrollTo().performClick()
         assertEquals(Manifest.permission.POST_NOTIFICATIONS, registry.requestedPermission)
         compose.runOnIdle {
@@ -102,6 +189,7 @@ class SettingsPlatformSectionBehaviorTest {
         shadowOf(application).denyPermissions(Manifest.permission.POST_NOTIFICATIONS)
         shadowOf(application.getSystemService(NotificationManager::class.java)).setNotificationsEnabled(false)
         show(registry = registry)
+        openPermissions()
         compose.onNodeWithText("申请通知权限").performScrollTo().performClick()
         compose.runOnIdle { registry.dispatchResult(assertNotNull(registry.requestCode), true) }
         compose.onNodeWithText("通知权限：未允许").assertExists()
@@ -114,6 +202,7 @@ class SettingsPlatformSectionBehaviorTest {
         val registry = ResultRegistry()
         shadowOf(application).denyPermissions(Manifest.permission.POST_NOTIFICATIONS)
         show(registry = registry)
+        openPermissions()
         compose.onNodeWithText("申请通知权限").performScrollTo().performClick()
         compose.runOnIdle { registry.dispatchResult(assertNotNull(registry.requestCode), false) }
         compose.onNodeWithText("通知权限：未允许").assertExists()
@@ -124,6 +213,7 @@ class SettingsPlatformSectionBehaviorTest {
     fun notificationSettingsTargetsOnlyThisApplication() {
         var launched: Intent? = null
         show(startActivity = { launched = it })
+        openPermissions()
         compose.onNodeWithText("系统通知设置").performScrollTo().performClick()
         assertEquals(Settings.ACTION_APP_NOTIFICATION_SETTINGS, assertNotNull(launched).action)
         assertEquals(application.packageName, launched!!.getStringExtra(Settings.EXTRA_APP_PACKAGE))
@@ -133,6 +223,7 @@ class SettingsPlatformSectionBehaviorTest {
     fun exactAlarmSettingsTargetsOnlyThisApplication() {
         var launched: Intent? = null
         show(startActivity = { launched = it })
+        openPermissions()
         compose.onNodeWithText("精确提醒设置").performScrollTo().performClick()
         assertEquals(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, assertNotNull(launched).action)
         assertEquals("package:${application.packageName}", launched!!.dataString)
@@ -141,6 +232,7 @@ class SettingsPlatformSectionBehaviorTest {
     @Test
     fun missingSettingsActivityShowsRecoveryMessage() {
         show(startActivity = { throw ActivityNotFoundException() })
+        openPermissions()
         compose.onNodeWithText("系统通知设置").performScrollTo().performClick()
         compose.onNodeWithText("此设备未提供该设置入口，请在系统设置中找到本应用并调整权限。离线数据操作不受影响。")
             .performScrollTo().assertIsDisplayed()
@@ -149,15 +241,21 @@ class SettingsPlatformSectionBehaviorTest {
     @Test
     fun restrictedSettingsActivityShowsRecoveryMessage() {
         show(startActivity = { throw SecurityException() })
+        openPermissions()
         compose.onNodeWithText("精确提醒设置").performScrollTo().performClick()
         compose.onNodeWithText("系统限制了此操作，请在系统设置中检查本应用权限。离线数据操作不受影响。")
             .performScrollTo().assertIsDisplayed()
+    }
+
+    private fun openPermissions() {
+        compose.onNodeWithText("通知与权限").performScrollTo().performClick()
     }
 
     private fun show(
         owner: LifecycleOwner? = null,
         registry: ResultRegistry? = null,
         startActivity: ((Intent) -> Unit)? = null,
+        enabled: () -> Boolean = { true },
     ) {
         compose.setContent {
             val original = LocalContext.current
@@ -170,7 +268,7 @@ class SettingsPlatformSectionBehaviorTest {
                 LocalActivityResultRegistryOwner provides (registry ?: requireNotNull(LocalActivityResultRegistryOwner.current)),
             ) {
                 MaterialTheme {
-                    Column(Modifier.verticalScroll(rememberScrollState())) { SettingsPlatformSection() }
+                    Column(Modifier.verticalScroll(rememberScrollState())) { SettingsPlatformSection(enabled = enabled()) }
                 }
             }
         }

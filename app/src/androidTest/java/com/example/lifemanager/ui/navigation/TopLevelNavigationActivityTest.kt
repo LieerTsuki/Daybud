@@ -84,7 +84,8 @@ class TopLevelNavigationActivityTest {
 
     private fun notificationWaitsForBackup(extra:String,target:String) {
         selectTab("设置")
-        compose.onNodeWithText("导出完整 V3 备份").performScrollTo().performClick()
+        compose.onNodeWithText("备份数据", useUnmergedTree = true).performScrollTo()
+        compose.onNode(hasText("备份数据") and hasClickAction()).assertIsDisplayed().assertIsEnabled().performClick()
         compose.onNodeWithText("导出明文备份").assertIsDisplayed()
         val owners=ViewModelProvider(compose.activity,compose.activity.v1Factory)
         val backup=owners[V1BackupSettingsViewModel::class.java]

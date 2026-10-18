@@ -11,17 +11,17 @@ import androidx.compose.runtime.compositionLocalOf
 
 val LocalDateFormat = compositionLocalOf { DateFormat.YMD }
 
-private fun DateFormat.pattern(): String = when (this) {
-    DateFormat.YMD -> "uuuu-MM-dd"
-    DateFormat.MDY -> "MM-dd-uuuu"
-    DateFormat.DMY -> "dd-MM-uuuu"
-}
+private val dateFormatter = DateTimeFormatter.ofPattern("uuuu-MM-dd", Locale.ROOT)
+private val dateTimeFormatter = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm", Locale.ROOT)
 
+// Keep the legacy preference argument compatible without applying it to current presentation.
+@Suppress("UNUSED_PARAMETER")
 fun formatDisplayDate(date: LocalDate, format: DateFormat): String =
-    date.format(DateTimeFormatter.ofPattern(format.pattern(), Locale.ROOT))
+    date.format(dateFormatter)
 
+@Suppress("UNUSED_PARAMETER")
 fun formatDisplayDateTime(instant: Instant, format: DateFormat, zone: ZoneId): String =
-    instant.atZone(zone).format(DateTimeFormatter.ofPattern("${format.pattern()} HH:mm", Locale.ROOT))
+    instant.atZone(zone).format(dateTimeFormatter)
 
 @Composable fun displayDate(date: LocalDate): String = formatDisplayDate(date, LocalDateFormat.current)
 @Composable fun displayDate(instant: Instant, zone: ZoneId = ZoneId.systemDefault()): String =

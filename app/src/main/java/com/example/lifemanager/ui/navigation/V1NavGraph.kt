@@ -58,7 +58,7 @@ fun V1NavGraph(navigation:PlanNavigationViewModel,list:PlanViewModel,editor:Plan
         if(liveNavigationAllowed())navigation.requestDestination(V1Destination.PLAN,stamp)
     }
     LifeManagerTheme(themeMode=prefs.settings?.theme) {
-        CompositionLocalProvider(LocalDateFormat provides (prefs.settings?.dateFormat ?: DateFormat.YMD)) {
+        CompositionLocalProvider(LocalDateFormat provides DateFormat.YMD) {
             Scaffold(bottomBar={ Surface(Modifier.windowInsetsPadding(WindowInsets.navigationBars).padding(8.dp),
                 shape=RoundedCornerShape(24.dp),border=BorderStroke(1.dp,MaterialTheme.colorScheme.outlineVariant),shadowElevation=3.dp) {
                 NavigationBar(windowInsets=WindowInsets(0,0,0,0)) {

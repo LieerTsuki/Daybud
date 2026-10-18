@@ -27,7 +27,7 @@ fun V1SettingsScreen(model:V1SettingsViewModel,backup:V1BackupSettingsViewModel,
                 if(preferencesAllowed() && canStartBackup())backup.start(action,generation)
             }
             if(state.remindersPending) {
-            Text("偏好已保存，提醒尚未确认；此操作不会重新保存偏好")
-            TextButton({ if(preferencesAllowed())model.retryReminders(generation) },enabled=preferencesAllowed()) { Text("仅重试提醒") }
-        } },modulesDescription="统一计划、打卡、订阅与设置。打卡提醒、暂停和归档尚未实现。",backLabel="返回计划")
+            Text("提醒需要重新同步")
+            TextButton({ if(preferencesAllowed())model.retryReminders(generation) },enabled=preferencesAllowed()) { Text("重试同步") }
+        } },backLabel="返回计划")
 }

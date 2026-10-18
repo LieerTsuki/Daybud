@@ -142,7 +142,8 @@ class V1NavigationComposeTest {
     }
     @Test fun `unified settings exposes actual backup controls`() {
         show();compose.onNodeWithContentDescription("设置入口").performClick();waitFor { nav.uiState.value.destination==V1Destination.SETTINGS }
-        compose.onNodeWithText("导出完整 V3 备份").performScrollTo().assertIsDisplayed().performClick()
+        compose.onNodeWithText("备份数据", useUnmergedTree = true).performScrollTo()
+        compose.onNode(hasText("备份数据") and hasClickAction()).assertIsDisplayed().assertIsEnabled().performClick()
         waitFor { backup.uiState.value.step==BackupStep.EXPORT_NOTICE }
         compose.onNodeWithText("取消").performClick();waitFor { !backup.uiState.value.busy }
         assertTrue(backupWorld.saved.isEmpty())
@@ -164,8 +165,8 @@ class V1NavigationComposeTest {
     }
     @Test fun `pending notification delivery excludes backup start even from a retained action`() {
         show();compose.onNodeWithContentDescription("设置入口").performClick();waitFor { nav.uiState.value.destination==V1Destination.SETTINGS }
-        compose.onNodeWithText("导出完整 V3 备份").performScrollTo()
-        val old=compose.onNodeWithText("导出完整 V3 备份").fetchSemanticsNode().config[SemanticsActions.OnClick].action!!
+        compose.onNodeWithText("备份数据", useUnmergedTree = true).performScrollTo()
+        val old=compose.onNode(hasText("备份数据") and hasClickAction()).fetchSemanticsNode().config[SemanticsActions.OnClick].action!!
         val entered=CompletableDeferred<Unit>();val release=CompletableDeferred<Unit>()
         var reads=0
         // Legacy receive captures and then rechecks; the third read is final delivery admission.

@@ -112,7 +112,7 @@ class HabitScreenRegressionTest {
         compose.onNodeWithContentDescription("打卡：阅读").assertIsNotEnabled()
     }
 
-    @Test fun habitStartDateButtonUsesSelectedFormat() {
+    @Test fun habitStartDateButtonKeepsYearMonthDayDespiteLegacyPreference() {
         val habit = Habit(id = 1, name = "阅读", startDate = LocalDate.of(2026, 10, 2))
         val viewModel = HabitViewModel(ScreenRepository(habit, emptyList()), Dispatchers.IO, access)
         model = viewModel
@@ -121,11 +121,11 @@ class HabitScreenRegressionTest {
         } } }
         compose.waitUntil(5000) { compose.waitForIdle(); viewModel.uiState.value.cards.size == 1 }
         compose.runOnIdle { viewModel.openEditor(habit) }
-        compose.onNodeWithContentDescription("习惯编辑表单").performScrollToNode(hasText("开始日期：02-10-2026"))
-        compose.onNodeWithText("开始日期：02-10-2026").assertExists()
+        compose.onNodeWithContentDescription("习惯编辑表单").performScrollToNode(hasText("开始日期：2026-10-02"))
+        compose.onNodeWithText("开始日期：2026-10-02").assertExists()
     }
 
-    @Test fun calendarCellAccessibilityDateUsesTheSelectedFormat() {
+    @Test fun calendarCellAccessibilityDateKeepsYearMonthDayDespiteLegacyPreference() {
         val today = LocalDate.now()
         val repository = ScreenRepository(Habit(id = 1, name = "阅读", startDate = today), emptyList())
         val viewModel = HabitViewModel(repository, Dispatchers.IO, access)
@@ -135,7 +135,7 @@ class HabitScreenRegressionTest {
         } } }
         compose.waitUntil(5000) { compose.waitForIdle(); viewModel.uiState.value.cards.size == 1 }
         compose.onNodeWithText("统计").performClick()
-        val expected = today.format(java.time.format.DateTimeFormatter.ofPattern("dd-MM-uuuu"))
+        val expected = today.toString()
         compose.onNodeWithContentDescription("打卡统计与林场").performScrollToNode(hasContentDescription("$expected，应打卡，未完成"))
         compose.onNodeWithContentDescription("$expected，应打卡，未完成").assertExists()
     }

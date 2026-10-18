@@ -1,5 +1,8 @@
 # 代码索引
 
+- ui/settings/SettingsScreen.kt、V1SettingsScreen.kt、V1BackupSettingsSection.kt：紧凑主题、模块提醒、数据操作卡片，保留维护/备份状态保护。
+- ui/settings/SettingsPlatformSection.kt、DatePresentation.kt：按需打开权限/关于/完整离线许可证，固定YYYY-MM-DD展示并保持旧偏好存储兼容。
+
 - ui/subscription/SubscriptionWorkspace.kt、SubscriptionBillCards.kt、SubscriptionBills.kt：订阅列表与按月/日期账单、人民币预计/实际分离，替代旧统计图表。
 - ui/subscription/SubscriptionDialogs.kt、SubscriptionDateInput.kt、SubscriptionViewModel.kt：精简表单、日期选择、人民币新建及历史字段保护。
 - notification/SubscriptionReminderRules.kt、SubscriptionReminderScheduler.kt、SubscriptionNotificationHelper.kt：自动扣费当天09:00、旧提前身份清理和通知点击；不向持久偏好写0。
