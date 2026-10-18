@@ -1,0 +1,110 @@
+{
+  "date": "2026-10-18",
+  "versionName": "1.1.1",
+  "versionCode": 8,
+  "schema": 7,
+  "base": "3c9af21",
+  "branch": "feat/interactive-forest",
+  "publication": "Verified local preview candidate; not yet published",
+  "jvm": {
+    "tests": 1194,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 104
+  },
+  "device": {
+    "tests": 73,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 26,
+    "api": 35,
+    "avd": "Rizhiya_Interactive_Forest",
+    "serial": "emulator-5560",
+    "method": "Full package via adb shell am instrument -w -r AndroidJUnitRunner",
+    "buildType": "Debug"
+  },
+  "lint": {
+    "Fatal": 0,
+    "Error": 0,
+    "Warning": 29
+  },
+  "builds": {
+    "Debug": true,
+    "androidTest": true,
+    "Release": true
+  },
+  "upgrade": {
+    "avd": "Rizhiya_Interactive_Forest",
+    "foreignKeyViolations": 0,
+    "habits": 6,
+    "newCode": 8,
+    "newVersion": "1.1.1",
+    "oldCode": 7,
+    "oldVersion": "1.1.0",
+    "schema": 7,
+    "sequencesUnchanged": true,
+    "serial": "emulator-5560",
+    "status": "verified",
+    "tablesUnchanged": [
+      "android_metadata",
+      "app_maintenance",
+      "app_settings",
+      "habit_records",
+      "habit_trees",
+      "habit_waterings",
+      "habits",
+      "plan_exceptions",
+      "plan_legacy_refs",
+      "plan_reminder_state",
+      "plan_tag_cross_ref",
+      "plans",
+      "subscription_payments",
+      "subscription_reminders",
+      "subscriptions",
+      "tags"
+    ],
+    "trees": 7,
+    "waterings": 46
+  },
+  "apk": {
+    "name": "rizhiya-1.1.1-interactive-forest-preview.apk",
+    "bytes": 12501431,
+    "sha256": "105eaa52fe81ca632fa947e2ce005a68258ecd1b30f2266eefbb00c896600acf",
+    "certificateSha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+    "debuggable": false,
+    "v2": true,
+    "v3": true,
+    "zipalign16KiB": true
+  },
+  "review": {
+    "status": "Read-only independent review completed",
+    "unresolvedImportant": 0,
+    "scope": "Repeated locator, generation camera, measured label fixes and Initial-pass gesture loop reviewed"
+  },
+  "screenshots": [
+    "assets/interactive-forest-overview.png",
+    "assets/interactive-forest-watering.png",
+    "assets/interactive-forest-replanted.png"
+  ],
+  "logs": [
+    ".tools/interactive-forest-red.log",
+    ".tools/interactive-forest-green.log",
+    ".tools/interactive-forest-focused.log",
+    ".tools/interactive-forest-build.log",
+    ".tools/interactive-forest-first-full.log",
+    ".tools/interactive-forest-full.log",
+    ".tools/interactive-forest-device-focused.log",
+    ".tools/interactive-forest-device-retry.log",
+    ".tools/interactive-forest-device.log",
+    ".tools/interactive-forest-device-results.json"
+  ],
+  "limitations": [
+    "Dedicated API35 synthetic emulator; no physical-device acceptance",
+    "Dark and enlarged-font JVM Compose regression; no manual TalkBack acceptance",
+    "Viewport culls offscreen tree nodes; no very large forest/stable60fps claim",
+    "Existing preview certificate, no store-signing acceptance",
+    "Room7/backup format3 unchanged; new backups still require compatible app; no downgrade acceptance"
+  ]
+}

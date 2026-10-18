@@ -1,8 +1,10 @@
 # 项目架构
 
-更新：2026-10-17；已公开发布计划界面精简预览1.0.3，当前打卡林场1.1.0候选未发布。
+更新：2026-10-18；已公开发布打卡林场预览1.1.0，当前互动森林1.1.1候选验收通过，尚未发布。
 
-Android Kotlin + Jetpack Compose；当前源码Room数据库schema7，计划、打卡、订阅、设置四个入口。应用身份com.example.lifemanager。已发布1.0.3为schema6；6→7只增加habit_trees/habit_waterings，历史迁移保持。历史交付见docs/v1-delivery-acceptance.md。
+Android Kotlin + Jetpack Compose；当前源码Room数据库schema7，计划、打卡、订阅、设置四个入口。应用身份com.example.lifemanager。已发布1.1.0为schema7；互动森林不改数据库或备份格式。6→7只增加habit_trees/habit_waterings，历史迁移保持。历史交付见docs/v1-delivery-acceptance.md。
+
+互动森林由ForestSection组合共享ForestScene、树木查找和底部详情；ForestLandscape绘制连续山丘草地、小路池塘，TreeIllustration在场景中省去独立徽章背景。视角和选中状态只属于UI，按数据世代失效，不写数据库；所有浇水/种植仍走原ViewModel世代保护与Room事务。
 
 打卡沿用HabitRepository与受世代保护的HabitViewModel。树种选择保存在既有iconKey的tree:前缀值中，未展示颜色保留。树与打卡记录通过habit_waterings(recordId主键)关联，一条记录只能浇水一次，成长由COUNT关联记录推导，上限20；撤销记录级联回退对应树。新建任务和种子、手动浇水、成熟后重种均用Room事务，水滴不能跨任务使用。统计保留月历并用全部任务的林场替换热力图。Compose Canvas绘制六树种及五阶段，不依赖网络图片或字母占位。
 

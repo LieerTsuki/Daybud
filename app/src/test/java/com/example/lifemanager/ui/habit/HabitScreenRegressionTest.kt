@@ -136,6 +136,7 @@ class HabitScreenRegressionTest {
         compose.waitUntil(5000) { compose.waitForIdle(); viewModel.uiState.value.cards.size == 1 }
         compose.onNodeWithText("统计").performClick()
         val expected = today.format(java.time.format.DateTimeFormatter.ofPattern("dd-MM-uuuu"))
+        compose.onNodeWithContentDescription("打卡统计与林场").performScrollToNode(hasContentDescription("$expected，应打卡，未完成"))
         compose.onNodeWithContentDescription("$expected，应打卡，未完成").assertExists()
     }
 
@@ -168,6 +169,7 @@ class HabitScreenRegressionTest {
         compose.waitUntil(5000) { compose.waitForIdle(); viewModel.uiState.value.cards.size == 1 }
         compose.onNodeWithText("统计").performClick()
         compose.waitUntil(5000) { compose.waitForIdle(); viewModel.uiState.value.statistics != null }
+        compose.onNodeWithContentDescription("打卡统计与林场").performScrollToNode(hasContentDescription("$today，已打卡"))
         val layouts = mutableListOf<TextLayoutResult>()
         compose.onNode(hasText(today.dayOfMonth.toString()) and
             hasAnyAncestor(hasContentDescription("$today，已打卡")), useUnmergedTree = true)

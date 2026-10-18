@@ -45,7 +45,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -229,7 +228,6 @@ private fun HabitStats(
     onPlantTree: (Long) -> Unit,
 ) {
     val statistics = state.statistics
-    val forestColumns = if (LocalDensity.current.fontScale > 1.2f) 1 else 2
     if (statistics == null) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text("创建习惯后即可查看打卡统计。", textAlign = TextAlign.Center)
@@ -241,6 +239,7 @@ private fun HabitStats(
         contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        forestSection(state, onWaterTree, onPlantTree)
         item {
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(state.habits, key = { it.id }) { habit ->
@@ -270,7 +269,6 @@ private fun HabitStats(
                 onNext = onNextMonth,
             )
         }
-        forestSection(state, forestColumns, onWaterTree, onPlantTree)
     }
 }
 

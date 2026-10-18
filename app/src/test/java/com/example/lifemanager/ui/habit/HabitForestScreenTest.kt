@@ -47,11 +47,13 @@ class HabitForestScreenTest {
     @Test fun forestWateringSpendsOnlyItsTasksDropInDarkLargeText() {
         val repository = show(dark = true, largeText = true)
         compose.onNodeWithText("统计").performClick()
-        compose.onNodeWithContentDescription("打卡统计与林场").performScrollToNode(hasContentDescription("浇水：阅读，第1棵树"))
+        compose.onNodeWithContentDescription("打卡统计与林场").performScrollToNode(hasContentDescription("选择树木：阅读，第1棵树"))
+        compose.onNodeWithContentDescription("选择树木：阅读，第1棵树").performClick()
         compose.onNodeWithContentDescription("浇水：阅读，第1棵树").assertIsEnabled().performClick()
         compose.waitUntil(5000) { repository.forest.value.availableDrops[1L] == 0 }
         compose.onNodeWithContentDescription("浇水：阅读，第1棵树").assertIsNotEnabled()
-        compose.onNodeWithContentDescription("打卡统计与林场").performScrollToNode(hasContentDescription("浇水：运动，第1棵树"))
+        compose.onNodeWithContentDescription("关闭树木详情").performClick()
+        compose.onNodeWithContentDescription("选择树木：运动，第1棵树").performClick()
         compose.onNodeWithContentDescription("浇水：运动，第1棵树").assertIsNotEnabled()
         compose.onNodeWithText("最近 53 周热力图").assertDoesNotExist()
     }

@@ -26,11 +26,11 @@ internal fun growthLabel(waterings: Int): String = when {
 
 /** Native, density-independent artwork using the same ink, mint and coral as the launcher. */
 @Composable
-internal fun TreeIllustration(species: TreeSpecies, waterings: Int, modifier: Modifier = Modifier) {
+internal fun TreeIllustration(species: TreeSpecies, waterings: Int, modifier: Modifier = Modifier, inLandscape: Boolean = false) {
     Canvas(modifier.semantics { contentDescription = "${species.label}，${growthLabel(waterings)}，已浇水${waterings}次" }) {
         val side = minOf(size.width, size.height)
         translate((size.width - side) / 2, (size.height - side) / 2) {
-            scale(side / 100f, side / 100f, Offset.Zero) { drawTree(species, waterings) }
+            scale(side / 100f, side / 100f, Offset.Zero) { drawTree(species, waterings, inLandscape) }
         }
     }
 }
@@ -41,10 +41,12 @@ private val ForestLeaf = Color(0xFF80C59D)
 private val ForestCoral = Color(0xFFFFB69F)
 private val ForestCream = Color(0xFFFFF8ED)
 
-private fun DrawScope.drawTree(species: TreeSpecies, waterings: Int) {
-    drawCircle(ForestCream, 46f, Offset(50f, 50f))
-    drawOval(ForestMint, Offset(17f, 83f), Size(66f, 8f))
-    drawLine(ForestInk.copy(alpha = .45f), Offset(28f, 87f), Offset(72f, 87f), 1.3f, StrokeCap.Round)
+private fun DrawScope.drawTree(species: TreeSpecies, waterings: Int, inLandscape: Boolean) {
+    if (!inLandscape) {
+        drawCircle(ForestCream, 46f, Offset(50f, 50f))
+        drawOval(ForestMint, Offset(17f, 83f), Size(66f, 8f))
+        drawLine(ForestInk.copy(alpha = .45f), Offset(28f, 87f), Offset(72f, 87f), 1.3f, StrokeCap.Round)
+    }
     if (waterings <= 0) {
         drawSeed(species)
         drawCircle(ForestLeaf, 2f, Offset(33f, 79f))

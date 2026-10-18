@@ -48,8 +48,11 @@ class HabitForestDeviceTest {
     }
 
     private fun forestAction(description: String) {
+        if (compose.onAllNodesWithContentDescription(description).fetchSemanticsNodes().isNotEmpty()) return
+        val selection = description.replace("浇水：", "选择树木：")
         compose.onNodeWithContentDescription("打卡统计与林场")
-            .performScrollToNode(hasContentDescription(description))
+            .performScrollToNode(hasContentDescription(selection))
+        compose.onNodeWithContentDescription(selection).performClick()
     }
 
     private fun screenshot(filename: String) {
@@ -136,11 +139,7 @@ class HabitForestDeviceTest {
             compose.onNodeWithText("最近 53 周热力图").assertDoesNotExist()
             forestAction(waterAction)
             compose.onNodeWithContentDescription(waterAction).assertIsDisplayed().assertIsEnabled()
-            compose.onNode(
-                hasContentDescription("樱花，种子，已浇水0次") and
-                    hasParent(hasAnyChild(hasContentDescription(waterAction))),
-                useUnmergedTree = true,
-            ).assertExists()
+            compose.onNodeWithText("种子 · 0/20").assertExists()
             compose.onNodeWithContentDescription("再种一棵：$title").assertDoesNotExist()
             compose.onNodeWithContentDescription(waterAction).performClick()
             waitFor {
@@ -151,15 +150,13 @@ class HabitForestDeviceTest {
             }
             forestAction(waterAction)
             compose.onNodeWithContentDescription(waterAction).assertIsNotEnabled()
-            compose.onNode(
-                hasText("萌芽 · 1/20") and hasParent(hasAnyChild(hasContentDescription(waterAction))),
-                useUnmergedTree = true,
-            ).assertExists()
+            compose.onNodeWithText("萌芽 · 1/20").assertExists()
             val watered = storedForest()
             assertEquals(1, watered.trees.single { it.id == seed.id }.wateringCount)
             assertEquals(0, watered.availableDrops[habitId])
             screenshot("forest-watered.png")
 
+            compose.onNodeWithContentDescription("关闭树木详情").performClick()
             compose.onNodeWithText("任务").performClick()
             waitFor { model().uiState.value.selectedTab == HabitTab.TASKS }
             taskAction("撤销打卡：$title")
@@ -174,11 +171,7 @@ class HabitForestDeviceTest {
             compose.onNodeWithText("统计").performClick()
             forestAction(waterAction)
             compose.onNodeWithContentDescription(waterAction).assertIsNotEnabled()
-            compose.onNode(
-                hasContentDescription("樱花，种子，已浇水0次") and
-                    hasParent(hasAnyChild(hasContentDescription(waterAction))),
-                useUnmergedTree = true,
-            ).assertExists()
+            compose.onNodeWithText("种子 · 0/20").assertExists()
         } catch (error: Throwable) {
             failure = error
             throw error

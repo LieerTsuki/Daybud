@@ -207,9 +207,14 @@ class V1NavigationComposeTest {
     @Test fun `tab dialog cancels without losing input and explicit discard switches`() {
         show();compose.runOnIdle { f.model.openNew(f.token) };waitFor { f.model.uiState.value.draft!=null && f.model.uiState.value.isAvailable }
         compose.onNodeWithContentDescription("计划标题").performTextReplacement("切页保留")
-        compose.onNodeWithContentDescription("设置入口").performClick();compose.onNodeWithText("继续编辑").performClick()
+        compose.onNodeWithContentDescription("设置入口").performClick()
+        waitFor { nav.uiState.value.confirmation!=null }
+        compose.onNodeWithText("继续编辑").performClick()
+        waitFor { nav.uiState.value.confirmation==null && nav.uiState.value.pending==null }
         assertEquals("切页保留",f.model.uiState.value.draft!!.title);assertEquals(V1Destination.PLAN,nav.uiState.value.destination)
-        compose.onNodeWithContentDescription("设置入口").performClick();compose.onNodeWithText("放弃草稿并继续").performClick()
+        compose.onNodeWithContentDescription("设置入口").performClick()
+        waitFor { nav.uiState.value.confirmation!=null }
+        compose.onNodeWithText("放弃草稿并继续").performClick()
         waitFor { nav.uiState.value.destination==V1Destination.SETTINGS };assertEquals(0,f.repo.writes)
     }
     @Test fun `unified reminder control persists real preference independently`() {
