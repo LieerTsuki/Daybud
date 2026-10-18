@@ -6,11 +6,13 @@
 
 每次版本更新附带[更新内容文档](CHANGELOG.md)；开发中分批结果与已发布版本分开记录，此约定已写入仓库 `AGENTS.md`。
 
-## 设置页精简 · 1.1.3已验收，待发布
+## 设置页精简 · 1.1.3预览版已发布
 
-设置主页精简为主题、提醒、数据操作和两个详情入口，沿用现有奶油白、薄荷绿与圆角卡片。取消日期格式调整，日期统一YYYY-MM-DD；通知权限、关于和许可证在点击后查看。旧日期偏好保留于存储和备份，不再改变当前展示。候选1.1.3/code10，Room7及format3/schema7保持。本轮1210项JVM/107套件、74项API35设备测试/27套件全部通过，failure/error/skipped均0；Debug/androidTest/Release及lint成功（0错误/29警告）。真实1.1.2覆盖升级核对16张表所有字段和自增序列一致，历史DMY设置原样保留。尚未发布；[验证汇总](docs/evidence/settings-polish-1.1.3-validation.json)，本轮验证见[设置改版验收](docs/settings-polish-acceptance.md)。当前公开下载仍为下方1.1.2。
+设置主页精简为主题、提醒、数据操作和两个详情入口，沿用现有奶油白、薄荷绿与圆角卡片。取消日期格式调整，日期统一YYYY-MM-DD；通知权限、关于和许可证在点击后查看。旧日期偏好保留于存储和备份，不再改变当前展示。当前1.1.3/code10，Room7及format3/schema7保持。本轮1210项JVM/107套件、74项API35设备测试/27套件全部通过，failure/error/skipped均0；Debug/androidTest/Release及lint成功（0错误/29警告）。真实1.1.2覆盖升级核对16张表所有字段和自增序列一致，历史DMY设置原样保留。已于2026-10-19T00:54:02+08:00公开发布，已验收源码`86e228c3d7b0feb50e9a6afd31712cb13904ac32`直接推送main，公开APK及校验文件回下载一致；[验证汇总](docs/evidence/settings-polish-1.1.3-validation.json)，本轮验证见[设置改版验收](docs/settings-polish-acceptance.md)。[发布回执](docs/evidence/settings-polish-1.1.3-publication.json)。
 
-## 订阅账单 · 1.1.2预览版已发布
+[下载日子芽1.1.3简洁设置预览APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.1.3-rizhiya-preview-20261019/rizhiya-1.1.3-settings-polish-preview.apk) · [Release说明](https://github.com/LieerTsuki/Daybud/releases/tag/v1.1.3-rizhiya-preview-20261019)
+
+## 历史订阅账单 · 1.1.2预览版已发布
 
 本轮将订阅页改为简洁费用手账，新建固定人民币，移除CSV、币种选择、分类、备注及提前提醒选项；统计改为可切换月份的账单，按日期查看预计扣费，实际记录单独显示。所有有效订阅统一在设备当地扣费当天09:00提醒，保留设置总开关与系统权限要求。
 
@@ -30,7 +32,7 @@
 
 本轮将打卡彩色文字图标改为松树、银杏、樱花、枫树、橡树和白桦插画；新增/编辑选择树种。统计保留月历，以共享林场取代53周热力图。每条打卡获得本任务1滴水，需手动浇给本任务的树；20次浇水成熟后可再种一棵，成树保留。撤销打卡收回对应水滴或回退原树；普通编辑保留打卡与成长。删除任务会删除其全部打卡、水滴及树木，须明确确认。
 
-已发布1.1.0/code7/Room7，6→7只新增树木与浇水关联表；历史打卡折算为未使用水滴。完整备份升级为[format3/schema7](docs/backup-format-v3.md)，包含林场，严格校验后导入旧V1/V2。新格式需使用新版恢复，旧版应用不支持。升级仍使用原安装身份与非破坏性迁移；本轮实际测试和交付状态见[林场验收](docs/habit-forest-acceptance.md)。该版历史下载保留在下方；当前新版入口见顶部1.1.2。
+已发布1.1.0/code7/Room7，6→7只新增树木与浇水关联表；历史打卡折算为未使用水滴。完整备份升级为[format3/schema7](docs/backup-format-v3.md)，包含林场，严格校验后导入旧V1/V2。新格式需使用新版恢复，旧版应用不支持。升级仍使用原安装身份与非破坏性迁移；本轮实际测试和交付状态见[林场验收](docs/habit-forest-acceptance.md)。该版历史下载保留在下方；当前新版入口见顶部1.1.3。
 
 本轮1187项JVM、72项API35设备测试及1.0.3→1.1.0真实APK覆盖升级通过，Debug/androidTest/Release和lint完成（0 error/50 warning）。已按用户要求将源码[8bc71db](https://github.com/LieerTsuki/Daybud/commit/8bc71db5f0de03c3c46677a559ddf21139f219ed)快进合并main并推送GitHub；本机候选APK及完整交付归档路径、摘要、截图和核对记录见上述验收页。已于2026-10-17T21:19:20+08:00发布[1.1.0预览Release](https://github.com/LieerTsuki/Daybud/releases/tag/v1.1.0-rizhiya-preview-20261017)；公开APK回下载字节数与SHA-256一致，[发布核对](docs/evidence/habit-forest-1.1.0-publication.json)。
 
@@ -46,7 +48,7 @@
 
 ## 计划界面精简 · 1.0.3预览版已发布
 
-本轮移除搜索和成功操作记录，月历周日首列、任务统一字号并保留单行象限配色，修复同月选日短暂隐藏月历。详情/编辑改为分组卡片和日期、时间选择器，上海时间不显示时区，仅展示有效安排、备注、重复与编辑闹钟开关。1.0.3/code6/schema6已完成1161项JVM、70项API35设备与覆盖升级验收，本轮结果见[验收记录](docs/planner-polish-acceptance.md)，该版已直接合并main并公开发布；当前顶部入口为1.1.2。
+本轮移除搜索和成功操作记录，月历周日首列、任务统一字号并保留单行象限配色，修复同月选日短暂隐藏月历。详情/编辑改为分组卡片和日期、时间选择器，上海时间不显示时区，仅展示有效安排、备注、重复与编辑闹钟开关。1.0.3/code6/schema6已完成1161项JVM、70项API35设备与覆盖升级验收，本轮结果见[验收记录](docs/planner-polish-acceptance.md)，该版已直接合并main并公开发布；当前顶部入口为1.1.3。
 
 ## 内嵌月历 · 1.0.2 预览版已发布
 

@@ -1,0 +1,38 @@
+{
+  "date": "2026-10-19",
+  "sourceCommit": "86e228c3d7b0feb50e9a6afd31712cb13904ac32",
+  "mainMerged": true,
+  "release": {
+    "id": 416576870,
+    "tag": "v1.1.3-rizhiya-preview-20261019",
+    "url": "https://github.com/LieerTsuki/Daybud/releases/tag/v1.1.3-rizhiya-preview-20261019",
+    "publishedAt": "2026-10-18T16:54:02Z",
+    "publishedAtShanghai": "2026-10-19T00:54:02+08:00",
+    "draft": false,
+    "prerelease": true,
+    "assets": [
+      {
+        "name": "rizhiya-1.1.3-settings-polish-preview.apk",
+        "bytes": 12517815,
+        "digest": "sha256:5c0a987e8138d87a1ed630cf0f1973c57d607aa25e20a4944d62f1dfd3683b00",
+        "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.1.3-rizhiya-preview-20261019/rizhiya-1.1.3-settings-polish-preview.apk"
+      },
+      {
+        "name": "SHA256SUMS.txt",
+        "bytes": 109,
+        "digest": "sha256:c0c1b2b5fc0479f0dfe341bf07197aae7e5a249c255ba1e734a6426370a66acf",
+        "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.1.3-rizhiya-preview-20261019/SHA256SUMS.txt"
+      }
+    ]
+  },
+  "publicDownloadVerified": true,
+  "checksumDownloadVerified": true,
+  "releaseMetadataVerification": "Authenticated GitHub publication response; APK and checksum downloaded without credentials.",
+  "bytes": 12517815,
+  "sha256": "5c0a987e8138d87a1ed630cf0f1973c57d607aa25e20a4944d62f1dfd3683b00",
+  "remoteTagCommit": "86e228c3d7b0feb50e9a6afd31712cb13904ac32",
+  "applicationCodeChangedSinceValidation": false,
+  "validatedSourceFiles": 384,
+  "sourceManifestSha256": "1376452bed6b310b986fc1b385763c333bdbe80bc92d8aed38a8b05c954cd841",
+  "sourceHashMethod": "Normalized CRLF/LF content for all 384 app/build/schema/test files versus final tested snapshot"
+}

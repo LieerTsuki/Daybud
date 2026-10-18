@@ -1,6 +1,6 @@
 # 设置页精简验收
 
-2026-10-19；基线main `f71121e`，候选1.1.3/code10/Room7。用户要求设置页与计划、打卡及订阅风格一致，信息简洁，取消日期格式调整并默认YYYY-MM-DD；沿用会话中直接推送main、发布APK及Release的交付要求。开发与验收完成，尚未发布；[机器汇总](evidence/settings-polish-1.1.3-validation.json)。
+2026-10-19；基线main `f71121e`，1.1.3/code10/Room7。用户要求设置页与计划、打卡及订阅风格一致，信息简洁，取消日期格式调整并默认YYYY-MM-DD；沿用会话中直接推送main、发布APK及Release的交付要求。已于2026-10-19T00:54:02+08:00公开发布预览版；[机器汇总](evidence/settings-polish-1.1.3-validation.json)。
 
 ## 实现范围
 
@@ -39,3 +39,9 @@
 | 设置主页 | 通知与权限 | 关于日子芽 |
 | --- | --- | --- |
 | ![设置主页](assets/settings-polish-home.png) | ![通知与权限](assets/settings-polish-permissions.png) | ![关于日子芽](assets/settings-polish-about.png) |
+
+## 发布核对
+
+用户要求直接推送main。全部384个应用/构建/schema/测试文件与实际已测快照、提交`86e228c3d7b0feb50e9a6afd31712cb13904ac32`逐文件核对一致后提交并推送；发布前GitHub main与标签`v1.1.3-rizhiya-preview-20261019`均核对为该源码。后续只补发布文档，应用源不再改变、APK不重签。
+
+[1.1.3预览Release](https://github.com/LieerTsuki/Daybud/releases/tag/v1.1.3-rizhiya-preview-20261019)于2026-10-19T00:54:02+08:00公开；[APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.1.3-rizhiya-preview-20261019/rizhiya-1.1.3-settings-polish-preview.apk)匿名回下载12,517,815字节，SHA-256 `5c0a987e8138d87a1ed630cf0f1973c57d607aa25e20a4944d62f1dfd3683b00`与已签名、已覆盖升级验收的候选相同；SHA256SUMS.txt也回下载逐字节一致。发布状态与资产元数据来自GitHub认证发布响应，回下载不带凭据。历史Release与APK保留。[实际发布回执](evidence/settings-polish-1.1.3-publication.json)。

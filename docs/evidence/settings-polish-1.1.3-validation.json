@@ -5,7 +5,7 @@
   "schema": 7,
   "base": "f71121e",
   "branch": "main",
-  "publication": "Validated; not yet published",
+  "publication": "Published GitHub prerelease; validated signed APK unchanged",
   "jvm": {
     "suites": 107,
     "tests": 1210,
@@ -132,5 +132,7 @@
   "limits": [
     "Dedicated API35 emulator with synthetic data; physical devices and OEM background restrictions unverified",
     "Manual TalkBack, large datasets, all cloud file providers and production store signing unverified"
-  ]
+  ],
+  "sourceCommit": "86e228c3d7b0feb50e9a6afd31712cb13904ac32",
+  "publicationReceipt": "settings-polish-1.1.3-publication.json"
 }
