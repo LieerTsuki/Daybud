@@ -21,26 +21,42 @@ class BackupPickerActivityTest {
 
     @Test fun cancelledSystemSourcePickerKeepsSettingsAndReturnsToUsableActions() {
         openSettings()
-        compose.onNodeWithText("从 V1 / V2 / V3 备份恢复").performScrollTo().performClick()
+        backupAction("从 V1 / V2 / V3 备份恢复").performClick()
         cancelSystemPicker()
         compose.onNodeWithText("已取消，原数据和草稿已保留。").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("从 V1 / V2 / V3 备份恢复").performScrollTo().assertIsEnabled()
+        backupAction("从 V1 / V2 / V3 备份恢复")
     }
 
     @Test fun exportShowsPrivacyConsentThenLaunchesRealSystemDestinationPicker() {
         openSettings()
-        compose.onNodeWithText("导出完整 V3 备份").performScrollTo().performClick()
+        backupAction("导出完整 V3 备份").performClick()
         compose.onNodeWithText("导出明文备份").assertIsDisplayed()
         compose.onNodeWithText("选择保存位置").performClick()
         cancelSystemPicker()
         compose.onNodeWithText("已取消，原数据和草稿已保留。").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("导出完整 V3 备份").performScrollTo().assertIsEnabled()
+        backupAction("导出完整 V3 备份")
     }
 
     private fun openSettings() {
-        compose.waitUntil(5_000) { ViewModelProvider(compose.activity)[V1SettingsViewModel::class.java].uiState.value.isAvailable }
+        compose.waitUntil(5_000) { settingsReady() }
         compose.onNodeWithContentDescription("设置入口").performClick()
+        compose.waitUntil(5_000) {
+            settingsReady() && compose.onAllNodes(hasText("深色") and isEnabled()).fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithText("深色").assertIsDisplayed()
     }
+
+    private fun settingsReady(): Boolean =
+        ViewModelProvider(compose.activity)[V1SettingsViewModel::class.java].uiState.value.let {
+            it.isAvailable && !it.isLoading && !it.isSaving && !it.isMaintaining
+        }
+
+    private fun backupAction(label: String): SemanticsNodeInteraction {
+        // Offscreen button text remains in the unmerged tree; scroll before resolving its clickable parent.
+        compose.onNodeWithText(label, useUnmergedTree = true).performScrollTo()
+        return compose.onNode(hasText(label) and hasClickAction()).assertIsDisplayed().assertIsEnabled()
+    }
+
     private fun cancelSystemPicker() {
         val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
         val deadline = System.nanoTime() + 10_000_000_000L

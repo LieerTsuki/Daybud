@@ -7,6 +7,13 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isDialog
+import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.example.lifemanager.domain.maintenance.MaintenanceCoordinator
@@ -49,6 +56,48 @@ class SubscriptionScreenRegressionTest {
 
     @After fun cleanup() {
         if (::model.isInitialized) model.viewModelScope.cancel()
+    }
+
+    private fun showSubscriptions() {
+        val generations = TestGenerations(7)
+        model = SubscriptionViewModel(Records(), NoAlarms, Preferences(), Dispatchers.IO,
+            GenerationAccess(generations, MaintenanceCoordinator(generations)))
+        compose.setContent {
+            val state by model.uiState.collectAsStateWithLifecycle()
+            LifeManagerTheme { SubscriptionContent(state, model, onExport = {}) }
+        }
+        compose.waitUntil(5000) { compose.waitForIdle(); model.uiState.value.isAvailable }
+    }
+
+    @Test fun newSubscriptionHasNoCurrencyCategoryNotesOrAdvanceReminderControls() {
+        showSubscriptions()
+        compose.onNodeWithContentDescription("添加订阅").performClick()
+        compose.waitUntil(5000) { compose.waitForIdle(); !model.uiState.value.editor.isLoadingReminders }
+        compose.onNodeWithText("订阅名称").assertExists()
+        compose.onNodeWithText("金额").assertExists()
+        compose.onNodeWithText("币种（ISO 4217，例如 CNY）").assertDoesNotExist()
+        compose.onNodeWithText("分类（可选）").assertDoesNotExist()
+        compose.onNodeWithText("备注（可选）").assertDoesNotExist()
+        compose.onNode(SemanticsMatcher.keyIsDefined(SemanticsActions.ScrollToIndex) and hasAnyAncestor(isDialog()))
+            .performScrollToNode(hasText("扣费当天 09:00 提醒"))
+        compose.onNodeWithText("扣费当天 09:00 提醒").assertExists()
+    }
+
+    @Test fun monthlyStatementCanSwitchMonthsAndOpenTheActualSubscription() {
+        showSubscriptions()
+        compose.onNodeWithText("导出 CSV").assertDoesNotExist()
+        compose.onNodeWithText("账单").performClick()
+        compose.onNodeWithText("本月预计").assertExists()
+        compose.onNodeWithContentDescription("当月预计费用 ¥15.00").assertExists()
+        compose.onNodeWithContentDescription("上个月账单").performClick()
+        compose.onNodeWithContentDescription("下个月账单").performClick()
+        compose.onNode(SemanticsMatcher.keyIsDefined(SemanticsActions.ScrollToIndex))
+            .performScrollToNode(hasText("维护期间保留的订阅"))
+        compose.onNodeWithText("维护期间保留的订阅").performClick()
+        compose.waitUntil(5000) { compose.waitForIdle(); model.uiState.value.detailId == 42L }
+        compose.onNode(SemanticsMatcher.keyIsDefined(SemanticsActions.ScrollToIndex) and hasAnyAncestor(isDialog()))
+            .performScrollToNode(hasText("实际扣费历史"))
+        compose.onNodeWithText("实际扣费历史").assertExists()
     }
 
     @Test fun maintenanceMarksAddSubscriptionFabDisabledWhileKeepingAvailableSnapshot() {

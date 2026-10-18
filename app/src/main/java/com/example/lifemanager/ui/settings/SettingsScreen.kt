@@ -15,10 +15,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,10 +25,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableStateOf
 import com.example.lifemanager.domain.model.ThemeMode
 import com.example.lifemanager.domain.model.DateFormat
 import com.example.lifemanager.domain.maintenance.DataGeneration
@@ -43,10 +35,10 @@ internal data class PreferenceReminder(val module:String,val label:String,val ch
 internal data class PreferenceState(val settings:PreferenceValues?,val generation:DataGeneration?,
     val isAvailable:Boolean,val isLoading:Boolean,val isSaving:Boolean,val isMaintaining:Boolean,val errorMessage:String?)
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun PreferenceContent(state:PreferenceState,onThemeChanged:(ThemeMode)->Unit,onRetry:()->Unit,onBack:()->Unit,
-    onDateFormatChanged:(DateFormat)->Unit,onCurrencyChanged:(String)->Unit,onReminderDayChanged:(Int,Boolean)->Unit,
+    onDateFormatChanged:(DateFormat)->Unit,
     onReminderEnabledChanged:(String,Boolean)->Unit,operationBusy:Boolean=false,backupSection:@Composable ()->Unit={},
     modulesDescription:String="当前已启用统一计划、打卡、订阅费用管理和设置。打卡提醒、暂停和归档尚未实现。",backLabel:String="返回计划") {
 
@@ -84,22 +76,8 @@ internal fun PreferenceContent(state:PreferenceState,onThemeChanged:(ThemeMode)-
                         Text(label, modifier = Modifier.padding(start = 8.dp))
                     }
                 }
-                Text("仅改变日期展示；订阅日期输入和 CSV 导出仍使用 YYYY-MM-DD。", style = MaterialTheme.typography.bodySmall)
-                Text("新建订阅偏好", style = MaterialTheme.typography.titleLarge)
-                var currency by remember(saved.defaultCurrency, state.generation) { mutableStateOf(saved.defaultCurrency) }
-                OutlinedTextField(currency, { currency = it }, enabled = editable, singleLine = true,
-                    label = { Text("新订阅默认币种（ISO 4217）") }, modifier = Modifier.fillMaxWidth())
-                Button(onClick = { onCurrencyChanged(currency) }, enabled = editable) { Text("保存默认币种") }
-                Text("新建订阅默认提醒", style = MaterialTheme.typography.titleMedium)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf(1, 3, 7).forEach { day ->
-                        FilterChip(selected = day in saved.defaultReminderDays, enabled = editable,
-                            onClick = { onReminderDayChanged(day, day !in saved.defaultReminderDays) },
-                            label = { Text("提前 $day 天") })
-                    }
-                }
-                Text(if (saved.defaultReminderDays.isEmpty()) "当前默认不安排提醒" else "提醒使用本地 09:00；实际投递仍需系统权限。")
-                Text("只用于之后新建的订阅；不会换算现有金额或覆盖现有提醒，统计仍仅汇总 CNY。", style = MaterialTheme.typography.bodySmall)
+                Text("仅改变日期展示，不影响已保存的日期。", style = MaterialTheme.typography.bodySmall)
+                Text("订阅以人民币计费，扣费当天 09:00 提醒", style = MaterialTheme.typography.bodyMedium)
                 Text("模块提醒", style = MaterialTheme.typography.titleLarge)
                 saved.reminders.forEach { (module, label, checked) ->
                     Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {

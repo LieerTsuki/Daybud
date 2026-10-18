@@ -5,6 +5,7 @@ import com.example.lifemanager.domain.model.Subscription
 interface SubscriptionReminderSchedulerContract {
     fun schedule(subscription: Subscription, reminderDays: Set<Int>): Unit =
         error("Android scheduling requires suspend scheduleCurrent under global/module admission")
+    /** reminderDays preserves historical preferences; the Android scheduler always derives due-day 09:00. */
     suspend fun scheduleCurrent(subscription: Subscription, reminderDays: Set<Int>) = schedule(subscription, reminderDays)
     fun cancel(subscriptionId: Long, reminderDays: Set<Int>)
     fun cancelAll(subscriptionId: Long)

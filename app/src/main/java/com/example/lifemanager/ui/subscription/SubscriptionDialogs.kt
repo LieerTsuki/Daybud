@@ -8,6 +8,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import com.example.lifemanager.domain.model.BillingCycle
 import com.example.lifemanager.domain.usecase.SubscriptionRules
 import java.time.LocalDate
@@ -22,27 +24,29 @@ internal fun SubscriptionEditor(editor: SubscriptionEditorState, model: Subscrip
     },
         text = {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                item { Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf("Netflix", "Spotify", "iCloud", "微信读书").forEach { name ->
-                        SuggestionChip(onClick = { model.updateEditor(editorGeneration) { it.copy(name = name) } }, label = { Text(name) }, enabled = editable)
+                item { SubscriptionFormSection("订阅信息") {
+                    EditField("订阅名称", editor.name, editable) { value -> model.updateEditor(editorGeneration) { it.copy(name = value) } }
+                    OutlinedTextField(editor.amount, { value -> model.updateEditor(editorGeneration) { it.copy(amount = value) } },
+                        Modifier.fillMaxWidth(), label = { Text("金额") }, singleLine = true, enabled = editable,
+                        prefix = { Text(if (editor.currency == "CNY") "¥" else editor.currency) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), shape = MaterialTheme.shapes.medium)
+                } }
+                item { SubscriptionFormSection("计费周期") {
+                    BillingCycle.entries.chunked(2).forEach { pair ->
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            pair.forEach { cycle -> FilterChip(editor.billingCycle == cycle,
+                                onClick = { model.updateEditor(editorGeneration) { it.copy(billingCycle = cycle) } },
+                                modifier = Modifier.weight(1f), label = { Text(cycleLabel(cycle)) }, enabled = editable) }
+                        }
                     }
                 } }
-                item { EditField("订阅名称", editor.name, editable) { value -> model.updateEditor(editorGeneration) { it.copy(name = value) } } }
-                item { EditField("金额", editor.amount, editable) { value -> model.updateEditor(editorGeneration) { it.copy(amount = value) } } }
-                item { EditField("币种（ISO 4217，例如 CNY）", editor.currency, editable && !editor.isLoadingReminders && editor.preferencesError == null) { value -> model.updateEditor(editorGeneration) { it.copy(currency = value) } } }
-                item { Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    BillingCycle.entries.forEach { cycle -> FilterChip(editor.billingCycle == cycle,
-                        onClick = { model.updateEditor(editorGeneration) { it.copy(billingCycle = cycle) } }, label = { Text(cycleLabel(cycle)) }, enabled = editable) }
+                item { SubscriptionFormSection("扣费安排") {
+                    SubscriptionDateInput("下次扣费日期", editor.nextBillingDate, editable) { value -> model.updateEditor(editorGeneration) { it.copy(nextBillingDate = value) } }
+                    SubscriptionDateInput("开始日期", editor.startDate, editable) { value -> model.updateEditor(editorGeneration) { it.copy(startDate = value) } }
                 } }
-                item { EditField("下次扣费日期（YYYY-MM-DD）", editor.nextBillingDate, editable) { value -> model.updateEditor(editorGeneration) { it.copy(nextBillingDate = value) } } }
-                item { EditField("开始日期（YYYY-MM-DD）", editor.startDate, editable) { value -> model.updateEditor(editorGeneration) { it.copy(startDate = value) } } }
-                item { EditField("分类（可选）", editor.category, editable) { value -> model.updateEditor(editorGeneration) { it.copy(category = value) } } }
-                item { EditField("备注（可选）", editor.note, editable) { value -> model.updateEditor(editorGeneration) { it.copy(note = value) } } }
-                item { Text("扣费前提醒（本地 09:00，可多选）") }
-                item { Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf(1, 3, 7).forEach { day -> FilterChip(day in editor.reminderDays, onClick = {
-                        model.updateEditor(editorGeneration) { it.copy(reminderDays = if (day in it.reminderDays) it.reminderDays - day else it.reminderDays + day) }
-                    }, label = { Text("$day 天") }, enabled = editable && !editor.isLoadingReminders && editor.preferencesError == null) }
+                item { Surface(shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.primaryContainer) {
+                    Text("扣费当天 09:00 提醒", Modifier.fillMaxWidth().padding(14.dp), style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer)
                 } }
                 if (editor.isLoadingReminders) item { Text(if (editor.original == null) "正在读取新建订阅偏好…" else "正在读取提醒配置…") }
                 editor.preferencesError?.let { message -> item { Text(message, color = MaterialTheme.colorScheme.error) } }
@@ -63,9 +67,11 @@ internal fun PaymentEditor(editor: PaymentEditorState, model: SubscriptionViewMo
         EditorDialogTitle(if (editor.editingId == 0L) "记录实际扣费" else "编辑实际扣费", pendingNotificationLabel)
     },
         text = { LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            item { EditField("实际金额", editor.amount, editable) { value -> model.updatePaymentEditor(editorGeneration) { it.copy(amount = value) } } }
-            item { EditField("币种", editor.currency, editable) { value -> model.updatePaymentEditor(editorGeneration) { it.copy(currency = value) } } }
-            item { EditField("扣费日期（YYYY-MM-DD）", editor.paidAt, editable) { value -> model.updatePaymentEditor(editorGeneration) { it.copy(paidAt = value) } } }
+            item { OutlinedTextField(editor.amount, { value -> model.updatePaymentEditor(editorGeneration) { it.copy(amount = value) } },
+                Modifier.fillMaxWidth(), label = { Text("实际金额") }, singleLine = true, enabled = editable,
+                prefix = { Text(if (editor.currency == "CNY") "¥" else editor.currency) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), shape = MaterialTheme.shapes.medium) }
+            item { SubscriptionDateInput("扣费日期", editor.paidAt, editable) { value -> model.updatePaymentEditor(editorGeneration) { it.copy(paidAt = value) } } }
             item { EditField("扣费备注", editor.note, editable) { value -> model.updatePaymentEditor(editorGeneration) { it.copy(note = value) } } }
             item { Text("该记录只更新实际支出，不改变订阅计费日期。") }
             editor.validationMessage?.let { item { Text(it, color = MaterialTheme.colorScheme.error) } }
@@ -107,8 +113,7 @@ internal fun SubscriptionDetail(state: SubscriptionUiState, model: SubscriptionV
             item { Text("${moneyText(subscription.amountMinor, subscription.currency)} / ${cycleLabel(subscription.billingCycle)}") }
             item { Text("开始：${displayDate(subscription.startDate)}") }
             item { Text("下次扣费：${SubscriptionRules.effectiveNextBillingDate(subscription, LocalDate.now())?.let { displayDate(it) } ?: "已停止"}") }
-            item { Text("${subscription.category ?: "未分类"}　${subscription.note.orEmpty()}") }
-            item { Text("提醒：${state.detailReminderDays.sorted().joinToString { "提前 $it 天" }.ifEmpty { "未设置" }}") }
+            item { Text(if (subscription.isActive) "扣费当天 09:00 提醒" else "已停止提醒") }
             subscription.cancelDate?.let { day -> item { Text("取消日期：${displayDate(day)}") } }
             item { Row(Modifier.horizontalScroll(rememberScrollState())) {
                 TextButton(onClick = { model.openEditor(subscription, renderedGeneration) }, enabled = canMutate) { Text("编辑") }
@@ -142,7 +147,18 @@ internal fun SubscriptionDetail(state: SubscriptionUiState, model: SubscriptionV
 
 @Composable
 private fun EditField(label: String, value: String, enabled: Boolean, onChange: (String) -> Unit) {
-    OutlinedTextField(value, onChange, modifier = Modifier.fillMaxWidth(), label = { Text(label) }, enabled = enabled)
+    OutlinedTextField(value, onChange, modifier = Modifier.fillMaxWidth(), label = { Text(label) }, enabled = enabled,
+        shape = MaterialTheme.shapes.medium)
+}
+
+@Composable
+private fun SubscriptionFormSection(title: String, content: @Composable () -> Unit) {
+    Surface(shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surface) {
+        Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(title, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+            content()
+        }
+    }
 }
 
 @Composable

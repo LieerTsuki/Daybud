@@ -45,7 +45,7 @@ object SubscriptionNotificationHelper {
         val notification = Notification.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle("订阅扣费提醒")
-            .setContentText("${subscription.appName} 将于 $dueDate 扣费（提前 $daysBefore 天）")
+            .setContentText("${subscription.appName} 今天扣费")
             .setContentIntent(openIntent)
             .setAutoCancel(true)
             .addExtras(Bundle().apply {
@@ -68,7 +68,8 @@ object SubscriptionNotificationHelper {
         val manager = context.getSystemService(NotificationManager::class.java)
         manager.activeNotifications.filter { card ->
             val identity = owned(card) ?: return@filter false
-            disabled || identity.second != current.value || identity.first !in validIds
+            disabled || identity.second != current.value || identity.first !in validIds ||
+                card.tag != notificationTag(identity.first, SubscriptionReminderRules.DUE_DAY)
         }.forEach { manager.cancel(it.tag, it.id) }
     }
 

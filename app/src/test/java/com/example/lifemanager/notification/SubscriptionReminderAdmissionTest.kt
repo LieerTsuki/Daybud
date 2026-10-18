@@ -133,7 +133,7 @@ class SubscriptionReminderAdmissionTest {
         assertEquals(listOf(subscription.id), reminderReads)
         assertEquals(1, schedulerResolutions)
         assertTrue(alarmOperations > 0)
-        assertEquals(1, alarms.scheduledAlarms.size, "Valid delivery must rearm its selected offset")
+        assertEquals(1, alarms.scheduledAlarms.size, "Valid delivery must rearm its automatic due-day alarm")
         assertEquals(1, notifications.size(), "Current eligible Room row must still deliver")
         assertTrue(notifications.allNotifications.single().extras.getCharSequence("android.text")
             .toString().contains("current subscription"), "Notification must use the Room name")
@@ -143,7 +143,7 @@ class SubscriptionReminderAdmissionTest {
 
     private suspend fun saveDueSubscription(): Subscription {
         assertTrue(LocalTime.now().isAfter(LocalTime.of(9, 0)), "Fixture must satisfy existing 09:00 qualification")
-        val dueDate = LocalDate.now().plusDays(1)
+        val dueDate = LocalDate.now()
         val subscription = Subscription(
             appName = "current subscription", amountMinor = 1800L, currency = "CNY",
             billingCycle = BillingCycle.MONTHLY, nextBillingDate = dueDate,
@@ -190,10 +190,10 @@ class SubscriptionReminderAdmissionTest {
             settingsProvider = { settings },
         )
         val intent = Intent("com.example.lifemanager.TEST_SUBSCRIPTION_ADMISSION")
-            .setData(Uri.parse(ReminderKey.subscriptionData(subscription.id, 1, subscription.nextBillingDate)))
+            .setData(Uri.parse(ReminderKey.subscriptionData(subscription.id, 0, subscription.nextBillingDate)))
             .putExtra(ReminderGeneration.EXTRA, 37L)
             .putExtra(SubscriptionReminderReceiver.EXTRA_SUBSCRIPTION_ID, subscription.id)
-            .putExtra(SubscriptionReminderReceiver.EXTRA_DAYS_BEFORE, 1)
+            .putExtra(SubscriptionReminderReceiver.EXTRA_DAYS_BEFORE, 0)
             .putExtra(SubscriptionReminderReceiver.EXTRA_DUE_DATE, subscription.nextBillingDate.toString())
         // Framework dispatch supplies a real PendingResult so quick finish is observable.
         val filter = IntentFilter(intent.action).apply { addDataScheme("lifemanager") }

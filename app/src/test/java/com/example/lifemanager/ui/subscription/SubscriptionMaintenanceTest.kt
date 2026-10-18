@@ -351,8 +351,8 @@ class SubscriptionMaintenanceTest {
             defaults.complete(AppSettings(defaultCurrency = "EUR", defaultReminderDays = setOf(7)))
             runCurrent()
             assertTrue(ready.isCompleted)
-            assertEquals("EUR", model.uiState.value.editor.currency)
-            assertEquals(setOf(7), model.uiState.value.editor.reminderDays)
+            assertEquals("CNY", model.uiState.value.editor.currency)
+            assertEquals(emptySet(), model.uiState.value.editor.reminderDays)
         } finally {
             defaults.complete(AppSettings())
             finishSession.complete(Unit)

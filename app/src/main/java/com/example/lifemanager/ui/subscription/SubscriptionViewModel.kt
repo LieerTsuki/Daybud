@@ -276,8 +276,8 @@ class SubscriptionViewModel @Inject constructor(
                     withContext(Dispatchers.Main.immediate) {
                         controls.update { state ->
                             if (state.editor.sessionId == session && state.editor.generation == token && state.editor.isOpen)
-                                state.copy(editor = state.editor.copy(currency = defaults?.defaultCurrency ?: state.editor.currency,
-                                    reminderDays = days.toSet(), isLoadingReminders = false))
+                                state.copy(editor = state.editor.copy(currency = subscription?.currency ?: "CNY",
+                                    reminderDays = if (subscription == null) emptySet() else days.toSet(), isLoadingReminders = false))
                             else state
                         }
                     }
@@ -319,7 +319,8 @@ class SubscriptionViewModel @Inject constructor(
         val editor = controls.value.editor.copy(reminderDays = controls.value.editor.reminderDays.toSet())
         if (!editor.isOpen || editor.isSaving || editor.isLoadingReminders || editor.preferencesError != null || controls.value.isBusy || editor.generation != generation) return
         val token = eventToken(generation) ?: return
-        val currency = editor.currency.trim().uppercase(Locale.ROOT)
+        // Hidden historical fields are immutable here; never relabel an old foreign amount.
+        val currency = editor.original?.currency ?: "CNY"
         val amount = SubscriptionRules.parseAmountMinor(editor.amount, currency)
         val next = parseDate(editor.nextBillingDate)
         val start = parseDate(editor.startDate)
@@ -334,7 +335,7 @@ class SubscriptionViewModel @Inject constructor(
         val original = editor.original
         val subscription = Subscription(id = original?.id ?: 0, appName = editor.name.trim(), amountMinor = amount!!,
             currency = currency, billingCycle = editor.billingCycle, nextBillingDate = next!!, startDate = start!!,
-            category = editor.category, note = editor.note, isActive = original?.isActive ?: true,
+            category = original?.category, note = original?.note, isActive = original?.isActive ?: true,
             cancelDate = original?.cancelDate, createdAt = original?.createdAt ?: now, updatedAt = now)
         SubscriptionRules.validate(subscription)?.let { message ->
             controls.update { it.copy(editor = editor.copy(validationMessage = message)) }; return
@@ -342,7 +343,7 @@ class SubscriptionViewModel @Inject constructor(
         controls.update { it.copy(editor = editor.copy(isSaving = true)) }
         mutate(token, "保存订阅失败") {
             val current = original?.let { checkNotNull(repository.getSubscription(it.id)) { "订阅已被删除" } }
-            val saved = subscription.copy(isActive = current?.isActive ?: true,
+            val saved = subscription.copy(isActive = current?.isActive ?: true, category = current?.category, note = current?.note,
                 cancelDate = current?.cancelDate, createdAt = current?.createdAt ?: subscription.createdAt)
             require(SubscriptionRules.validate(saved) == null) { "日期与当前订阅状态不一致" }
             val id = repository.saveSubscription(saved, editor.reminderDays)

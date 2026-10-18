@@ -118,7 +118,7 @@ class UnifiedPlanCalibrationTest {
         UnifiedAlarmService.failPlanSet = setOf(first)
         assertFails { f.reconciler().reconcile() }
         assertEquals(second, f.token(second).planId)
-        assertTrue(alarmData(f).contains("lifemanager://subscription-reminder/1/3/2026-01-04"))
+        assertTrue(alarmData(f).contains("lifemanager://subscription-reminder/1/0/2026-01-04"))
         UnifiedAlarmService.failPlanSet = emptySet()
         f.reconciler().reconcile()
         assertEquals(3, f.alarms.scheduledAlarms.size)
@@ -128,7 +128,7 @@ class UnifiedPlanCalibrationTest {
     @Test fun `subscription calibration reads v6 flag instead of resolving legacy settings entry point`() = fixture { f ->
         f.clock.at = Instant.parse("2026-01-01T08:00:00Z"); subscribe(f)
         f.subscriptionCalibration.reconcile(DataGeneration(0), false)
-        assertEquals(listOf("lifemanager://subscription-reminder/1/3/2026-01-04"), alarmData(f))
+        assertEquals(listOf("lifemanager://subscription-reminder/1/0/2026-01-04"), alarmData(f))
         f.db.openHelper.writableDatabase.execSQL("UPDATE app_settings SET subscriptionReminders=0")
         f.subscriptionCalibration.reconcile(DataGeneration(0), false)
         assertTrue(f.alarms.scheduledAlarms.isEmpty())

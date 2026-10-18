@@ -71,31 +71,31 @@ class SettingsScreenTest {
         compose.onNodeWithText("DD-MM-YYYY").assertIsSelected()
     }
 
-    @Test fun currencyEditorPassesTheEnteredCodeToTheSaveAction() {
-        var requested: String? = null
+    @Test fun subscriptionPolicyCannotBeChangedThroughObsoleteCurrencyAndAdvanceReminderControls() {
         compose.setContent { LifeManagerTheme {
-            content(presentation(settings = values(), isLoading = false, isAvailable = true),
-                {}, {}, {}, onCurrencyChanged = { requested = it })
+            content(presentation(settings = values(defaultReminderDays = setOf(1, 3, 7)),
+                isLoading = false, isAvailable = true), {}, {}, {})
         } }
-        compose.onNodeWithText("新订阅默认币种（ISO 4217）").performScrollTo().performTextReplacement("EUR")
-        compose.onNodeWithText("保存默认币种").performScrollTo().performClick()
-        kotlin.test.assertEquals("EUR", requested)
+        compose.onNodeWithText("新订阅默认币种（ISO 4217）").assertDoesNotExist()
+        compose.onNodeWithText("保存默认币种").assertDoesNotExist()
+        listOf(1, 3, 7).forEach { day ->
+            compose.onNodeWithText("提前 $day 天").assertDoesNotExist()
+        }
+        compose.onNodeWithText("订阅以人民币计费，扣费当天 09:00 提醒").performScrollTo().assertExists()
     }
 
-    @Test fun reminderSelectionKeepsOtherSelectedDays() {
-        val state = mutableStateOf(presentation(settings = values(defaultReminderDays = setOf(3)),
-            isLoading = false, isAvailable = true))
+    @Test fun subscriptionReminderSwitchStillControlsOnlySubscriptionReminders() {
+        val state = mutableStateOf(presentation(settings = values(), isAvailable = true))
         compose.setContent { LifeManagerTheme {
-            content(state.value, {}, {}, {}, onReminderDayChanged = { day, selected ->
-                val current = state.value.settings!!
-                state.value = state.value.copy(settings = current.copy(defaultReminderDays =
-                    if (selected) current.defaultReminderDays + day else current.defaultReminderDays - day))
+            content(state.value, {}, {}, {}, onReminderEnabledChanged = { module, enabled ->
+                val saved = state.value.settings!!
+                state.value = state.value.copy(settings = saved.copy(reminders = saved.reminders.map {
+                    if (it.module == module) it.copy(checked = enabled) else it
+                }))
             })
         } }
-        compose.onNodeWithText("提前 1 天").performScrollTo().performClick()
-        kotlin.test.assertEquals(setOf(1, 3), state.value.settings!!.defaultReminderDays)
-        compose.onNodeWithText("提前 3 天").performClick()
-        kotlin.test.assertEquals(setOf(1), state.value.settings!!.defaultReminderDays)
+        compose.onNodeWithContentDescription("订阅提醒").performScrollTo().performClick().assertIsOff()
+        compose.onNodeWithContentDescription("计划提醒").assertIsOn()
     }
 
     @Test fun maintenanceDisablesPreferenceWritesAndRetry() {
@@ -106,20 +106,7 @@ class SettingsScreenTest {
         compose.onNodeWithText("深色").assertIsNotEnabled()
         compose.onNodeWithText("重新读取设置").assertIsNotEnabled()
         compose.onNodeWithText("DD-MM-YYYY").performScrollTo().assertIsNotEnabled()
-        compose.onNodeWithText("保存默认币种").performScrollTo().assertIsNotEnabled()
-        compose.onNodeWithText("提前 7 天").performScrollTo().assertIsNotEnabled()
-    }
-
-    @Test fun currencyDraftSurvivesCancelledFreezeButResetsOnCommittedGenerationWithSameCurrency() {
-        val state = mutableStateOf(presentation(settings = values(), isLoading = false,
-            isAvailable = true, generation = DataGeneration(0)))
-        compose.setContent { LifeManagerTheme { content(state.value, {}, {}, {}) } }
-        compose.onNodeWithText("新订阅默认币种（ISO 4217）").performScrollTo().performTextReplacement("EUR")
-        compose.runOnIdle { state.value = state.value.copy(isMaintaining = true) }
-        compose.runOnIdle { state.value = state.value.copy(isMaintaining = false) }
-        compose.onNodeWithText("新订阅默认币种（ISO 4217）").assertTextContains("EUR")
-        compose.runOnIdle { state.value = state.value.copy(generation = DataGeneration(1)) }
-        compose.onNodeWithText("新订阅默认币种（ISO 4217）").assertTextContains("CNY")
+        compose.onNodeWithContentDescription("订阅提醒").performScrollTo().assertIsNotEnabled()
     }
 
     @Test fun unifiedReminderSwitchUsesItsModuleIdentityWithoutChangingOtherSwitches() {
@@ -145,11 +132,10 @@ class SettingsScreenTest {
     @androidx.compose.runtime.Composable
     private fun content(state: PreferenceState, onThemeChanged: (ThemeMode) -> Unit = {},
         onRetry: () -> Unit = {}, onBack: () -> Unit = {},
-        onDateFormatChanged: (DateFormat) -> Unit = {}, onCurrencyChanged: (String) -> Unit = {},
-        onReminderDayChanged: (Int, Boolean) -> Unit = { _, _ -> },
+        onDateFormatChanged: (DateFormat) -> Unit = {},
         onReminderEnabledChanged: (String, Boolean) -> Unit = { _, _ -> }) {
-        PreferenceContent(state, onThemeChanged, onRetry, onBack, onDateFormatChanged, onCurrencyChanged,
-            onReminderDayChanged, onReminderEnabledChanged, modulesDescription = "统一计划、打卡、订阅与设置。",
+        PreferenceContent(state, onThemeChanged, onRetry, onBack, onDateFormatChanged,
+            onReminderEnabledChanged, modulesDescription = "统一计划、打卡、订阅与设置。",
             backLabel = "返回计划")
     }
 }

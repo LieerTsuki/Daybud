@@ -12,7 +12,7 @@ import kotlin.test.assertTrue
 
 class SubscriptionReminderDeliveryTest {
     private val zone = ZoneId.of("Asia/Shanghai")
-    private val now = Instant.parse("2026-10-07T01:05:00Z")
+    private val now = Instant.parse("2026-10-10T01:05:00Z")
     private val subscription = Subscription(
         id = 42L, appName = "音乐", amountMinor = 1800L, billingCycle = BillingCycle.MONTHLY,
         nextBillingDate = LocalDate.of(2026, 10, 10), startDate = LocalDate.of(2026, 9, 10),
@@ -24,10 +24,10 @@ class SubscriptionReminderDeliveryTest {
         val alarms = PendingAlarmState()
         val shown = mutableListOf<Subscription>()
         SubscriptionReminderDelivery.reconcile(
-            42L, subscription, setOf(3), 3, LocalDate.of(2026, 9, 10), now, zone, alarms, shown::add,
+            42L, subscription, setOf(3), 0, LocalDate.of(2026, 9, 10), now, zone, alarms, shown::add,
         )
         assertEquals(LocalDate.of(2026, 10, 10), alarms.pending?.dueDate)
-        assertEquals(Instant.parse("2026-10-07T01:00:00Z"), alarms.pending?.triggerAt)
+        assertEquals(Instant.parse("2026-10-10T01:00:00Z"), alarms.pending?.triggerAt)
         assertTrue(shown.isEmpty())
     }
 
@@ -36,10 +36,10 @@ class SubscriptionReminderDeliveryTest {
         val alarms = PendingAlarmState()
         val shown = mutableListOf<Subscription>()
         SubscriptionReminderDelivery.reconcile(
-            42L, subscription, setOf(3), 3, LocalDate.of(2026, 10, 10), now, zone, alarms, shown::add,
+            42L, subscription, setOf(3), 0, LocalDate.of(2026, 10, 10), now, zone, alarms, shown::add,
         )
         assertEquals(LocalDate.of(2026, 11, 10), alarms.pending?.dueDate)
-        assertEquals(Instant.parse("2026-11-07T01:00:00Z"), alarms.pending?.triggerAt)
+        assertEquals(Instant.parse("2026-11-10T01:00:00Z"), alarms.pending?.triggerAt)
         assertEquals(listOf(subscription), shown)
     }
 
@@ -48,7 +48,7 @@ class SubscriptionReminderDeliveryTest {
         val alarms = PendingAlarmState()
         val shown = mutableListOf<Subscription>()
         SubscriptionReminderDelivery.reconcile(
-            42L, null, emptySet(), 3, LocalDate.of(2026, 10, 10), now, zone, alarms, shown::add,
+            42L, null, emptySet(), 0, LocalDate.of(2026, 10, 10), now, zone, alarms, shown::add,
         )
         assertNull(alarms.pending)
         assertTrue(shown.isEmpty())
@@ -58,17 +58,17 @@ class SubscriptionReminderDeliveryTest {
     // The stale-broadcast regression fails if production cancels the offset before validating delivery.
     private inner class PendingAlarmState : SubscriptionReminderSchedulerContract {
         var pending: SubscriptionReminderOccurrence? = SubscriptionReminderOccurrence(
-            LocalDate.of(2026, 10, 10), Instant.parse("2026-10-07T01:00:00Z"),
+            LocalDate.of(2026, 10, 10), Instant.parse("2026-10-10T01:00:00Z"),
         )
 
         override fun schedule(subscription: Subscription, reminderDays: Set<Int>) {
-            if (!SubscriptionReminderRules.shouldPreservePending(subscription, reminderDays, 3, pending, now, zone)) {
-                pending = if (3 in reminderDays) SubscriptionReminderRules.nextReminder(subscription, 3, now, zone) else null
+            if (!SubscriptionReminderRules.shouldPreservePending(subscription, reminderDays, 0, pending, now, zone)) {
+                pending = SubscriptionReminderRules.nextReminder(subscription, 0, now, zone)
             }
         }
 
         override fun cancel(subscriptionId: Long, reminderDays: Set<Int>) {
-            if (subscriptionId == 42L && 3 in reminderDays) pending = null
+            if (subscriptionId == 42L && 0 in reminderDays) pending = null
         }
 
         override fun cancelAll(subscriptionId: Long) {

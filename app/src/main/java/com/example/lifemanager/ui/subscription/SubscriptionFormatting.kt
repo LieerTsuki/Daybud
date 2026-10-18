@@ -9,7 +9,8 @@ fun amountText(minor: Long, currency: String = "CNY"): String {
     return BigDecimal.valueOf(minor, digits).toPlainString()
 }
 
-fun moneyText(minor: Long, currency: String = "CNY") = "$currency ${amountText(minor, currency)}"
+fun moneyText(minor: Long, currency: String = "CNY") =
+    if (currency == "CNY") "¥${amountText(minor, currency)}" else "$currency ${amountText(minor, currency)}"
 
 fun cycleLabel(cycle: BillingCycle): String = when (cycle) {
     BillingCycle.WEEKLY -> "周付"

@@ -16,29 +16,29 @@ import kotlin.test.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SubscriptionViewModelTest {
-    @Test fun newSubscriptionReadsUnifiedPreferencesInsteadOfLegacyDefaults() {
+    @Test fun newSubscriptionUsesRenminbiRegardlessOfHistoricalCurrencyDefaults() {
         val preferences = Preferences(AppSettings(defaultCurrency = "USD", defaultReminderDays = setOf(3))).apply {
             unified = V1AppSettings(defaultCurrency = "EUR", defaultReminderDays = setOf(1, 7))
         }
         scenario(preferences = preferences) { model, repository, _ ->
             model.openEditor(); advanceUntilIdle()
-            assertEquals("EUR", model.uiState.value.editor.currency)
-            assertEquals(setOf(1, 7), model.uiState.value.editor.reminderDays)
+            assertEquals("CNY", model.uiState.value.editor.currency)
+            assertEquals(emptySet(), model.uiState.value.editor.reminderDays)
             model.updateEditor { it.copy(name = "统一偏好订阅", amount = "12.50") }
             model.saveSubscription(); advanceUntilIdle()
-            assertEquals("EUR", repository.subscriptions.value.single().currency)
+            assertEquals("CNY", repository.subscriptions.value.single().currency)
         }
     }
 
-    @Test fun eachNewSubscriptionReadsFreshUnifiedDefaultsWithoutChangingAnOpenDraft() {
+    @Test fun changedHistoricalDefaultsCannotChangeNewSubscriptionCurrencyOrReminderPolicy() {
         val preferences = Preferences().apply { unified = V1AppSettings(defaultCurrency = "EUR", defaultReminderDays = setOf(7)) }
         scenario(preferences = preferences) { model, _, _ ->
             model.openEditor(); advanceUntilIdle()
             preferences.unified = V1AppSettings(defaultCurrency = "JPY", defaultReminderDays = setOf(1))
-            assertEquals("EUR", model.uiState.value.editor.currency)
+            assertEquals("CNY", model.uiState.value.editor.currency)
             model.closeEditor(); model.openEditor(); advanceUntilIdle()
-            assertEquals("JPY", model.uiState.value.editor.currency)
-            assertEquals(setOf(1), model.uiState.value.editor.reminderDays)
+            assertEquals("CNY", model.uiState.value.editor.currency)
+            assertEquals(emptySet(), model.uiState.value.editor.reminderDays)
         }
     }
 
@@ -54,19 +54,35 @@ class SubscriptionViewModelTest {
         }
     }
 
-    @Test fun newSubscriptionUsesSavedCurrencyAndReminderCombination() {
+    @Test fun newSubscriptionIgnoresRetiredCurrencyAndReminderDefaults() {
         val preferences = Preferences(AppSettings(defaultCurrency = "EUR", defaultReminderDays = setOf(1, 7)))
         scenario(preferences = preferences) { model, repository, _ ->
             model.openEditor()
             advanceUntilIdle()
-            assertEquals("EUR", model.uiState.value.editor.currency)
-            assertEquals(setOf(1, 7), model.uiState.value.editor.reminderDays)
+            assertEquals("CNY", model.uiState.value.editor.currency)
+            assertEquals(emptySet(), model.uiState.value.editor.reminderDays)
             model.updateEditor { it.copy(name = "新订阅", amount = "12.50") }
             model.saveSubscription()
             advanceUntilIdle()
-            assertEquals("EUR", repository.subscriptions.value.single().currency)
+            assertEquals("CNY", repository.subscriptions.value.single().currency)
             assertEquals(1250L, repository.subscriptions.value.single().amountMinor)
         }
+    }
+
+    @Test fun hiddenHistoricalFieldsAndCurrencyCannotBeOverwrittenByEditorChanges() = scenario { model, repository, _ ->
+        repository.seed()
+        val historical = repository.subscriptions.value.single().copy(currency = "JPY", category = "旧分类", note = " 旧备注\n保留 ", amountMinor = 1200)
+        repository.subscriptions.value = listOf(historical)
+        advanceUntilIdle()
+        model.openEditor(historical); advanceUntilIdle()
+        model.updateEditor { it.copy(name = "修改名称", currency = "CNY", category = "", note = "") }
+        model.saveSubscription(); advanceUntilIdle()
+        val saved = repository.subscriptions.value.single()
+        assertEquals("修改名称", saved.appName)
+        assertEquals("JPY", saved.currency)
+        assertEquals(1200L, saved.amountMinor)
+        assertEquals("旧分类", saved.category)
+        assertEquals(" 旧备注\n保留 ", saved.note)
     }
 
     @Test fun editingExistingSubscriptionIgnoresChangedDefaults() {

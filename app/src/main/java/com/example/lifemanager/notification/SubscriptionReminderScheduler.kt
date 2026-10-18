@@ -21,7 +21,8 @@ class SubscriptionReminderScheduler(
     internal var zoneProvider: () -> ZoneId = ZoneId::systemDefault
     private val context = context.applicationContext
     private val alarmManager = this.context.getSystemService(AlarmManager::class.java)
-    // Operational alarm identities only. Subscriptions and selected offsets are always read from Room.
+    // Operational alarm identities only. Subscriptions are always read from Room; historical
+    // selected offsets round-trip unchanged while the current policy always schedules the due day.
     // Persist before setting an alarm so cancellation still works after process death or a date edit.
     private val alarmIndex = this.context.getSharedPreferences("subscription_alarm_identities", Context.MODE_PRIVATE)
 
@@ -40,6 +41,10 @@ class SubscriptionReminderScheduler(
         val now = nowProvider()
         val zone = zoneProvider()
         SubscriptionReminderRules.supportedDays.forEach { days ->
+            if (days != SubscriptionReminderRules.DUE_DAY) {
+                cancel(subscription.id, setOf(days))
+                return@forEach
+            }
             if (SubscriptionReminderRules.shouldPreservePending(
                     subscription, reminderDays, days, existingPending(subscription.id, days, generation), now, zone,
                 )
@@ -55,7 +60,6 @@ class SubscriptionReminderScheduler(
             } else null
             if (recover == null) cancel(subscription.id, setOf(days))
             else cancelAlarm(subscription.id, days)
-            if (days !in reminderDays) return@forEach
             val occurrence = recover ?: SubscriptionReminderRules.nextReminder(subscription, days, now, zone)
                 ?: return@forEach
             check(alarmIndex.edit()

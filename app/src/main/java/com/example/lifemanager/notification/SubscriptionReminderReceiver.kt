@@ -32,7 +32,7 @@ class SubscriptionReminderReceiver(
 ) : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val subscriptionId = intent.getLongExtra(EXTRA_SUBSCRIPTION_ID, 0L)
-        val daysBefore = intent.getIntExtra(EXTRA_DAYS_BEFORE, 0)
+        val daysBefore = intent.getIntExtra(EXTRA_DAYS_BEFORE, Int.MIN_VALUE)
         val dueDate = try {
             intent.getStringExtra(EXTRA_DUE_DATE)?.let(LocalDate::parse)
         } catch (_: DateTimeException) {

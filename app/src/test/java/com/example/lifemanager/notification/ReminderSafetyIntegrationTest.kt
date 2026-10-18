@@ -112,7 +112,7 @@ class ReminderSafetyIntegrationTest {
             assertEquals(false, settings.observe().first().subscriptionReminders)
             assertTrue(assertNotNull(subscriptions.getSubscription(current.id)).isActive)
             assertEquals(setOf(1), subscriptions.getReminderDays(current.id))
-            assertEquals(false, SubscriptionReminderScheduler.wasDelivered(context, current.id, 1,
+            assertEquals(false, SubscriptionReminderScheduler.wasDelivered(context, current.id, 0,
                 current.nextBillingDate, DataGeneration(37)))
         } finally { java.util.TimeZone.setDefault(originalZone) }
     }
@@ -126,20 +126,20 @@ class ReminderSafetyIntegrationTest {
         assertEquals(0, notifications.size())
         assertTrue(alarms.scheduledAlarms.isEmpty())
         assertEquals(1, calibrations)
-        assertEquals(false, SubscriptionReminderScheduler.wasDelivered(context, current.id, 1,
+        assertEquals(false, SubscriptionReminderScheduler.wasDelivered(context, current.id, 0,
             current.nextBillingDate, DataGeneration(37)))
         assertEquals(DataGeneration(37), generations.current())
     }
 
     private fun currentPayload(subscription: Subscription) = Intent()
-        .setData(Uri.parse(ReminderKey.subscriptionData(subscription.id, 1, subscription.nextBillingDate)))
+        .setData(Uri.parse(ReminderKey.subscriptionData(subscription.id, 0, subscription.nextBillingDate)))
         .putExtra(SubscriptionReminderReceiver.EXTRA_SUBSCRIPTION_ID, subscription.id)
-        .putExtra(SubscriptionReminderReceiver.EXTRA_DAYS_BEFORE, 1)
+        .putExtra(SubscriptionReminderReceiver.EXTRA_DAYS_BEFORE, 0)
         .putExtra(SubscriptionReminderReceiver.EXTRA_DUE_DATE, subscription.nextBillingDate.toString())
         .putExtra(ReminderGeneration.EXTRA, 37L)
 
     @Test fun consumedSubscriptionAlarmDuringCancelledFreezeIsRearmedNotMistakenForPendingIntent() = runTest {
-        var clock = Instant.parse("2026-10-05T08:00:00Z")
+        var clock = Instant.parse("2026-10-06T08:00:00Z")
         val zone = java.time.ZoneId.of("UTC")
         subscriptionScheduler.nowProvider = { clock }
         subscriptionScheduler.zoneProvider = { zone }
@@ -149,7 +149,7 @@ class ReminderSafetyIntegrationTest {
         subscriptionScheduler.scheduleCurrent(current, setOf(1))
         val old = alarms.scheduledAlarms.single().operation!!
         val payload = Intent(shadowOf(old).savedIntent)
-        clock = Instant.parse("2026-10-05T09:05:00Z")
+        clock = Instant.parse("2026-10-06T09:05:00Z")
         context.getSystemService(AlarmManager::class.java).cancel(old) // OS consumed the alarm, PI still exists.
         coordinator.withSession {
             val dispatcher = StandardTestDispatcher(testScheduler)
@@ -168,7 +168,7 @@ class ReminderSafetyIntegrationTest {
 
     @Test @Config(shadows = [RetryAlarmService::class])
     fun failedSubscriptionRearmRetainsTodayForNextRetry() = runTest {
-        var clock = Instant.parse("2026-10-05T08:00:00Z")
+        var clock = Instant.parse("2026-10-06T08:00:00Z")
         subscriptionScheduler.nowProvider = { clock }
         subscriptionScheduler.zoneProvider = { java.time.ZoneId.of("UTC") }
         val value = Subscription(appName = "synthetic retry", amountMinor = 100, billingCycle = BillingCycle.MONTHLY,
@@ -177,8 +177,8 @@ class ReminderSafetyIntegrationTest {
         subscriptionScheduler.scheduleCurrent(current, setOf(1))
         val old = alarms.scheduledAlarms.single().operation!!
         context.getSystemService(AlarmManager::class.java).cancel(old)
-        subscriptionScheduler.acknowledgeArrival(current.id, 1, current.nextBillingDate, DataGeneration(37))
-        clock = Instant.parse("2026-10-05T09:05:00Z")
+        subscriptionScheduler.acknowledgeArrival(current.id, 0, current.nextBillingDate, DataGeneration(37))
+        clock = Instant.parse("2026-10-06T09:05:00Z")
         RetryAlarmService.failNext = true
         assertFailsWith<IllegalStateException> { subscriptionScheduler.scheduleCurrent(current, setOf(1)) }
         subscriptionScheduler.scheduleCurrent(current, setOf(1))
@@ -368,7 +368,7 @@ class ReminderSafetyIntegrationTest {
 
     private suspend fun dueSubscription(clock: Instant): Subscription {
         val value = Subscription(appName = "synthetic consumed subscription", amountMinor = 100, billingCycle = BillingCycle.MONTHLY,
-            nextBillingDate = LocalDate.now().plusDays(1), startDate = LocalDate.now().minusMonths(1), createdAt = clock, updatedAt = clock)
+            nextBillingDate = LocalDate.now(), startDate = LocalDate.now().minusMonths(1), createdAt = clock, updatedAt = clock)
         return value.copy(id = subscriptions.saveSubscription(value, setOf(1)))
     }
 

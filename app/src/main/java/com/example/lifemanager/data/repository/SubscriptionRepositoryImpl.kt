@@ -28,10 +28,15 @@ class SubscriptionRepositoryImpl(private val database: RoomDatabase, private val
     override suspend fun saveSubscription(subscription: Subscription, reminderDays: Set<Int>): Long = database.withTransaction {
         require(SubscriptionRules.validate(subscription) == null) { SubscriptionRules.validate(subscription).orEmpty() }
         val now = Instant.now().toEpochMilli()
-        val created = if (subscription.id == 0L) now else checkNotNull(dao.getById(subscription.id)).createdAt
+        val current = if (subscription.id == 0L) null else checkNotNull(dao.getById(subscription.id))
+        val created = current?.createdAt ?: now
+        // These retired editor fields belong to the actual stored row, including null/empty and
+        // original whitespace. A visible-field edit or active-state change must not normalize them.
+        val category = if (current == null) subscription.category.clean() else current.category
+        val note = if (current == null) subscription.note.clean() else current.note
         val id = dao.upsertSubscription(SubscriptionEntity(subscription.id, subscription.appName.trim(), subscription.amountMinor,
             subscription.currency.trim().uppercase(Locale.ROOT), subscription.billingCycle, subscription.nextBillingDate.toEpochDay(),
-            subscription.startDate.toEpochDay(), subscription.category.clean(), subscription.note.clean(), subscription.isActive,
+            subscription.startDate.toEpochDay(), category, note, subscription.isActive,
             subscription.cancelDate?.toEpochDay(), created, now))
         dao.replaceReminders(id, reminderDays)
         id

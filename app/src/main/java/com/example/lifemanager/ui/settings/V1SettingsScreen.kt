@@ -19,7 +19,7 @@ fun V1SettingsScreen(model:V1SettingsViewModel,backup:V1BackupSettingsViewModel,
         generation,state.isAvailable,state.isLoading,state.isSaving,state.isMaintaining,state.errorMessage)
     androidx.activity.compose.BackHandler(enabled=operation.busy) {}
     PreferenceContent(view,{ if(preferencesAllowed())model.setTheme(it,generation) },{ if(!backup.uiState.value.busy)model.retry() },{ if(!backup.uiState.value.busy)onBack() },
-        { if(preferencesAllowed())model.setDateFormat(it,generation) },{ if(preferencesAllowed())model.setCurrency(it,generation) },{ day,selected->if(preferencesAllowed())model.setReminderDay(day,selected,generation) },
+        { if(preferencesAllowed())model.setDateFormat(it,generation) },
         { module,value->if(preferencesAllowed())model.setReminderEnabled(when(module) { "plan"->V1ReminderModule.PLAN;"subscription"->V1ReminderModule.SUBSCRIPTION;else->error("Unknown preference module") },value,generation) },
         operationBusy=operation.busy,
         backupSection={

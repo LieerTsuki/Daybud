@@ -1,0 +1,131 @@
+{
+  "date": "2026-10-18",
+  "versionName": "1.1.2",
+  "versionCode": 9,
+  "schema": 7,
+  "base": "5b69285",
+  "branch": "feat/subscription-bills",
+  "publication": "Validated; not yet published",
+  "jvm": {
+    "suites": 107,
+    "tests": 1206,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "device": {
+    "tests": 74,
+    "suites": 27,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "api": 35,
+    "serial": "emulator-5562",
+    "avd": "Rizhiya_Subscription_Bills",
+    "buildType": "Debug",
+    "method": "Full package via adb shell am instrument -w -r AndroidJUnitRunner"
+  },
+  "lint": {
+    "Fatal": 0,
+    "Error": 0,
+    "Warning": 29
+  },
+  "builds": {
+    "Debug": true,
+    "androidTest": true,
+    "Release": true
+  },
+  "upgrade": {
+    "avd": "Rizhiya_Subscription_Bills",
+    "evidence": "D:\\codex_work\\app\\app\\.tools\\subscription-upgrade-20261018",
+    "foreignKeyViolations": 0,
+    "fullColumnsAndValuesUnchanged": true,
+    "generationUnchanged": true,
+    "legacyCurrencyCategoryNoteUnchanged": true,
+    "newCode": 9,
+    "newVersion": "1.1.2",
+    "oldCode": 8,
+    "oldVersion": "1.1.1",
+    "schema": 7,
+    "selectedReminderOffsetsUnchanged": true,
+    "sequencesUnchanged": true,
+    "serial": "emulator-5562",
+    "settingsUnchanged": true,
+    "status": "verified",
+    "tablesUnchanged": [
+      "android_metadata",
+      "app_maintenance",
+      "app_settings",
+      "habit_records",
+      "habit_trees",
+      "habit_waterings",
+      "habits",
+      "plan_exceptions",
+      "plan_legacy_refs",
+      "plan_reminder_state",
+      "plan_tag_cross_ref",
+      "plans",
+      "subscription_payments",
+      "subscription_reminders",
+      "subscriptions",
+      "tags"
+    ],
+    "tables": 16,
+    "subscriptions": 8,
+    "payments": 5,
+    "legacyReminderPreferences": 9
+  },
+  "dueDayNotification": {
+    "status": "verified",
+    "serial": "emulator-5562",
+    "scheduledAlarms": 7,
+    "allOffsets": 0,
+    "allTriggerTimes": "09:00:00",
+    "beforeNineHadNoDueCard": true,
+    "notificationObservedAt": "2026-10-18_09:00:00+0800",
+    "method": "Real Android AlarmManager, simulated AVD wall clock",
+    "clockRestored": true
+  },
+  "apk": {
+    "name": "rizhiya-1.1.2-subscription-bills-preview.apk",
+    "bytes": 12517815,
+    "sha256": "7423e40c3a54cbb1aa3ea5a4614f08b9008ac62ec52ee7d5f538d00ef97a4981",
+    "certificateSha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+    "debuggable": false,
+    "v2": true,
+    "v3": true,
+    "zipalign16KiB": true
+  },
+  "sourceManifest": {
+    "files": 384,
+    "initialSha256": "4d579293ebc2ede8618621e6a858cdc999462cd907502fc57f41b7af0885b275",
+    "finalSha256": "d1f061fe63b45135d6e28ba31be52594c24ac06703b5eff9ae489f50a4b1ec17",
+    "changesAfterFullJvmBuild": [
+      "app/src/androidTest/java/com/example/lifemanager/ui/settings/BackupPickerActivityTest.kt",
+      "app/src/androidTest/java/com/example/lifemanager/ui/subscription/SubscriptionBillsDeviceTest.kt"
+    ],
+    "productionAndJvmSourcesUnchanged": true
+  },
+  "evidenceLogs": {
+    "fullBuildAndJvm": {
+      "path": ".tools/subscription-first-full.log",
+      "sha256": "ca0e30110fa5538dc11a04ea233d60cfcf46cb6be071f4a0e15a4560f50c9752"
+    },
+    "testOnlyRebuild": {
+      "path": ".tools/subscription-device-test-fix-build.log",
+      "sha256": "e1e74cb2f46bfb79b45648109e154d27251aa4fdf658ad6163f2e7153dbbfffc"
+    },
+    "firstDeviceRun": {
+      "path": ".tools/subscription-device-full.log",
+      "sha256": "b127920cee65d47b2e4ba5c39b166e737fb072f9739a256c4ae63aa657ac6054"
+    },
+    "finalDeviceRun": {
+      "path": ".tools/subscription-device-final.log",
+      "sha256": "59d0a4d4a39c75d032f740ac33cbe5f28ca3e74feb737b29b663edf714199c81"
+    }
+  },
+  "limits": [
+    "Dedicated API35 emulator with synthetic data; physical devices and OEM background restrictions unverified",
+    "Manual TalkBack, large datasets, all cloud file providers and production store signing unverified"
+  ]
+}

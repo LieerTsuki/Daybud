@@ -10,7 +10,10 @@ import java.time.ZoneId
 data class SubscriptionReminderOccurrence(val dueDate: LocalDate, val triggerAt: Instant)
 
 object SubscriptionReminderRules {
-    val supportedDays: Set<Int> = setOf(1, 3, 7)
+    // Include retired offsets only so their operational alarms/cards can be identified and removed.
+    // Persisted reminder preferences remain untouched for strict historical backup compatibility.
+    val supportedDays: Set<Int> = setOf(0, 1, 3, 7)
+    const val DUE_DAY = 0
     private val reminderTime = LocalTime.of(9, 0)
 
     fun nextReminder(
@@ -19,9 +22,9 @@ object SubscriptionReminderRules {
         now: Instant,
         zone: ZoneId,
     ): SubscriptionReminderOccurrence? {
-        if (daysBefore !in supportedDays || !subscription.isActive) return null
+        if (daysBefore != DUE_DAY || !subscription.isActive) return null
         val localNow = now.atZone(zone)
-        // Seek by reminder date, not billing date: a near bill can already have passed offsets.
+        // A fresh schedule at or after nine must seek the next cycle instead of replaying today.
         val firstReminderDate = if (localNow.toLocalTime().isBefore(reminderTime)) {
             localNow.toLocalDate()
         } else {
@@ -42,7 +45,9 @@ object SubscriptionReminderRules {
         now: Instant,
         zone: ZoneId,
     ): Boolean {
-        if (subscription == null || daysBefore !in selectedDays) return false
+        // Automatic due-day reminders apply even when the historical preference set is empty.
+        // A queued advance-reminder broadcast from an older app must never post after upgrade.
+        if (subscription == null || daysBefore != DUE_DAY) return false
         // Permit inexact delivery later on the same local day; reject historical/early payloads.
         val todayStart = now.atZone(zone).toLocalDate().atStartOfDay(zone).toInstant()
         val occurrence = nextReminder(subscription, daysBefore, todayStart.minusNanos(1), zone) ?: return false

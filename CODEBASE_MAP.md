@@ -1,5 +1,10 @@
 # 代码索引
 
+- ui/subscription/SubscriptionWorkspace.kt、SubscriptionBillCards.kt、SubscriptionBills.kt：订阅列表与按月/日期账单、人民币预计/实际分离，替代旧统计图表。
+- ui/subscription/SubscriptionDialogs.kt、SubscriptionDateInput.kt、SubscriptionViewModel.kt：精简表单、日期选择、人民币新建及历史字段保护。
+- notification/SubscriptionReminderRules.kt、SubscriptionReminderScheduler.kt、SubscriptionNotificationHelper.kt：自动扣费当天09:00、旧提前身份清理和通知点击；不向持久偏好写0。
+- data/repository/SubscriptionRepositoryImpl.kt：生产Room订阅/付款事务和历史隐藏字段保留；本轮结果见docs/subscription-bills-acceptance.md。
+
 - domain/model/HabitForest.kt、domain/repository/HabitRepository.kt：树种、树与水滴读模型及持久化接口。
 - data/local/entity/HabitTreeEntity.kt、HabitWateringEntity.kt、dao/HabitForestDao.kt、migration/HabitForestMigration.kt：Room7新增表、聚合查询及6→7非破坏性迁移。
 - data/repository/HabitRepositoryImpl.kt：任务与种子原子创建、手动浇水、成熟重种、撤销级联和树种编辑。
