@@ -6,9 +6,11 @@
 
 每次版本更新附带[更新内容文档](CHANGELOG.md)；开发中分批结果与已发布版本分开记录，此约定已写入仓库 `AGENTS.md`。
 
-## 1.1.4正式候选验收通过，待发布
+## 1.1.4正式版已发布
 
-本轮1210项JVM/107套件、17项签名工具测试、六个精确SDK签名检查及API26/28/35三条真实覆盖升级通过，16张表和序列一致；构建成功，lint0错误/50警告。正式GitHub Release待发布，当前公开下载仍为下方1.1.3预览版。本轮无界面或数据库变更，用户已在会话中确认此前真机验证完成。[正式发布验收](docs/stable-release-acceptance.md) · [签名与密钥恢复](docs/release-signing.md)。
+本轮1210项JVM/107套件、17项签名工具测试、六个精确SDK签名检查及API26/28/35三条真实覆盖升级通过，16张表和序列一致；构建成功，lint0错误/50警告。已于2026-10-19T10:58:44+08:00发布正式Latest Release，源码`4c1838312ebf59c8f3bf5d41f7159c5f60727f51`已直接推送main，公开APK及校验文件回下载一致。本轮无界面或数据库变更，用户已在会话中确认此前真机验证完成。[正式发布验收](docs/stable-release-acceptance.md) · [签名与密钥恢复](docs/release-signing.md)。
+
+[下载日子芽1.1.4正式APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.1.4/rizhiya-1.1.4.apk) · [正式Release说明](https://github.com/LieerTsuki/Daybud/releases/tag/v1.1.4) · [发布回执](docs/evidence/stable-1.1.4-publication.json)
 
 ## 历史设置页精简 · 1.1.3预览版已发布
 

@@ -1,6 +1,6 @@
 # 1.1.4正式发布验收
 
-状态：正式候选验证通过，待公开发布。日期：2026-10-19。
+状态：已于2026-10-19T10:58:44+08:00公开发布正式Latest Release。日期：2026-10-19。
 
 本轮只调整版本与发布流程，功能沿用1.1.3；安装身份`com.example.lifemanager`、minSdk26、Room7及format3/schema7保持。[完整验证汇总](evidence/stable-1.1.4-validation.json) · [固定签名与恢复](release-signing.md)。
 
@@ -41,3 +41,7 @@ API35在未显式sync的模拟器退出/重开后，旧包安装文件丢失，�
 用户于2026-10-19在会话中确认此前版本真机验证完成；这是用户报告，不计为代理对新签名1.1.4的真机测试。未提供型号、系统和逐项记录，不扩展为全部设备通过。
 
 API27/32/33仅做精确SDK签名验证，实际覆盖安装在26/28/35；不声称全部OEM、手动TalkBack、大数据或应用商店审核通过。GitHub正式版使用专用签名与稳定发布标记，Android8兼容分支仍保留旧证书。旧Release/APK保留。
+
+## 正式发布回执
+
+[正式Release](https://github.com/LieerTsuki/Daybud/releases/tag/v1.1.4) · [下载APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.1.4/rizhiya-1.1.4.apk) · [完整发布回执](evidence/stable-1.1.4-publication.json)。`draft=false`、`prerelease=false`，Latest已确认。APK和SHA256SUMS匿名回下载一致，匿名latest入口指向v1.1.4；tag固定在`4c1838312ebf59c8f3bf5d41f7159c5f60727f51`，发布当时main等于该提交。APK内嵌构建提交与tag的384个应用/构建文件逐一核对一致。该回执及发布状态是后续纯文档提交，不重新签名或更换APK。
