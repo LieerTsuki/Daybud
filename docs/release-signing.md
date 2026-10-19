@@ -11,7 +11,7 @@
 
 APK携带旧→新证书的签名轮换链，显式`--rotation-min-sdk-version 28`。旧证书保留installed-data能力以支持覆盖升级，rollback关闭；其余能力沿用工具默认值。Android8无法识别v3轮换，仍需旧密钥签署v2，因此不能称所有支持平台均已摆脱旧证书。旧密钥和轮换链必须与新密钥一起长期保留。将来是否停止Android8支持需单独决策，不得为了换签强迫用户卸载。
 
-Android官方提示较旧平台存在签名比较相关限制；本应用未使用shared UID、签名权限或认证器集成。指定模拟器结果只证明所记录平台和用例，不代表全部厂商系统。[apksigner参数](https://developer.android.com/tools/apksigner) · [v3轮换说明](https://source.android.com/docs/security/features/apksigning/v3)。GitHub正式Release与应用商店审核、Play App Signing是不同流程。
+Android官方提示较旧平台存在签名比较相关限制；本应用未配置shared UID或跨应用签名权限/认证器集成。AndroidX生成的应用自身动态Receiver签名权限保留，不将其误称为“完全没有签名权限”。指定模拟器结果只证明所记录平台和用例，不代表全部厂商系统。[apksigner参数](https://developer.android.com/tools/apksigner) · [v3轮换说明](https://source.android.com/docs/security/features/apksigning/v3)。GitHub正式Release与应用商店审核、Play App Signing是不同流程。
 
 ## 私密文件与备份
 

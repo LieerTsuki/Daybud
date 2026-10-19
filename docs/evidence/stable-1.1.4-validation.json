@@ -1,0 +1,588 @@
+{
+  "date": "2026-10-19",
+  "versionName": "1.1.4",
+  "versionCode": 11,
+  "roomSchema": 7,
+  "backupFormat": 3,
+  "scope": "Version and release-signing pipeline only; application features/schema unchanged from1.1.3",
+  "jvm": {
+    "tests": 1210,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 107
+  },
+  "lint": {
+    "Fatal": 0,
+    "Error": 0,
+    "Warning": 50
+  },
+  "build": {
+    "status": "successful",
+    "debug": true,
+    "androidTest": true,
+    "release": true,
+    "log": ".tools/stable-full.log",
+    "committedReleaseLog": ".tools/stable-committed-release.log",
+    "committedSource": "0a0250a96225317b7d93dc685f57df9dd113009b"
+  },
+  "signingToolTests": {
+    "tests": 17,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "device": {
+    "kind": "Actual install-r upgrade integration scenarios, not AndroidJUnit suite count",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "androidApis": [
+      26,
+      28,
+      35
+    ],
+    "previous74AndroidJUnitTestsRerun": false
+  },
+  "upgrade": {
+    "status": "verified",
+    "tables": 16,
+    "subscriptions": 8,
+    "payments": 5,
+    "reminderRows": 9,
+    "scenarios": [
+      {
+        "sdk": 35,
+        "verification": {
+          "avd": "Rizhiya_Stable_Release",
+          "evidence": "D:\\codex_work\\app\\app\\.tools\\stable-upgrade-20261019",
+          "foreignKeyViolations": 0,
+          "fullColumnsAndValuesUnchanged": true,
+          "generationUnchanged": true,
+          "legacyCurrencyCategoryNoteUnchanged": true,
+          "legacyDateFormat": "DMY",
+          "legacyDateFormatPreserved": true,
+          "newCertificateSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+          "newCode": 11,
+          "newVersion": "1.1.4",
+          "oldCertificateSha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+          "oldCode": 10,
+          "oldVersion": "1.1.3",
+          "packageManagerActiveSigner": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+          "packageManagerSigningHistory": [
+            "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+            "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a"
+          ],
+          "schema": 7,
+          "selectedReminderOffsetsUnchanged": true,
+          "sequencesUnchanged": true,
+          "serial": "emulator-5566",
+          "settingsUnchanged": true,
+          "signingCertificateRotated": true,
+          "status": "verified",
+          "tablesUnchanged": [
+            "android_metadata",
+            "app_maintenance",
+            "app_settings",
+            "habit_records",
+            "habit_trees",
+            "habit_waterings",
+            "habits",
+            "plan_exceptions",
+            "plan_legacy_refs",
+            "plan_reminder_state",
+            "plan_tag_cross_ref",
+            "plans",
+            "subscription_payments",
+            "subscription_reminders",
+            "subscriptions",
+            "tags"
+          ]
+        },
+        "cleanup": {
+          "avd": "Rizhiya_Stable_Release",
+          "businessTablesEmpty": true,
+          "code": 11,
+          "defaultTablesUnchanged": true,
+          "deletedParentIds": {
+            "habits": [
+              701,
+              702
+            ],
+            "plans": [
+              501,
+              502
+            ],
+            "subscriptions": [
+              301,
+              307,
+              304,
+              308,
+              306,
+              305,
+              302,
+              303
+            ],
+            "tags": [
+              601
+            ]
+          },
+          "evidence": "D:\\codex_work\\app\\app\\.tools\\stable-upgrade-20261019\\cleanup",
+          "independentDeviceSnapshotMatched": true,
+          "operationalCacheNote": "Captured separately; next app startup must cancel obsolete alarms.",
+          "operationalCachesCleared": false,
+          "schema": 7,
+          "sequencesUnchanged": true,
+          "serial": "emulator-5566",
+          "status": "cleaned",
+          "version": "1.1.4"
+        }
+      },
+      {
+        "sdk": 26,
+        "verification": {
+          "androidApi": 26,
+          "avd": "Rizhiya_Stable_API26",
+          "evidence": "D:\\codex_work\\app\\app\\.tools\\stable-api26-upgrade-20261019",
+          "expectedActiveSignerAfterUpgrade": "preview-v2-fallback",
+          "foreignKeyViolations": 0,
+          "fullColumnsAndValuesUnchanged": true,
+          "generationUnchanged": true,
+          "legacyCurrencyCategoryNoteUnchanged": true,
+          "legacyDateFormat": "DMY",
+          "legacyDateFormatPreserved": true,
+          "legacyFallbackSignerPreserved": true,
+          "newCertificateSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+          "newCode": 11,
+          "newVersion": "1.1.4",
+          "oldCertificateSha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+          "oldCode": 10,
+          "oldVersion": "1.1.3",
+          "packageManagerActiveSigner": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+          "packageManagerHistorySemantics": "legacyCurrentSignerOnly",
+          "packageManagerSigningHistory": [
+            "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c"
+          ],
+          "schema": 7,
+          "selectedReminderOffsetsUnchanged": true,
+          "sequencesUnchanged": true,
+          "serial": "emulator-5570",
+          "settingsUnchanged": true,
+          "signingCertificateRotated": false,
+          "status": "verified",
+          "tablesUnchanged": [
+            "android_metadata",
+            "app_maintenance",
+            "app_settings",
+            "habit_records",
+            "habit_trees",
+            "habit_waterings",
+            "habits",
+            "plan_exceptions",
+            "plan_legacy_refs",
+            "plan_reminder_state",
+            "plan_tag_cross_ref",
+            "plans",
+            "subscription_payments",
+            "subscription_reminders",
+            "subscriptions",
+            "tags"
+          ]
+        },
+        "cleanup": {
+          "androidApi": 26,
+          "avd": "Rizhiya_Stable_API26",
+          "businessTablesEmpty": true,
+          "code": 11,
+          "defaultTablesUnchanged": true,
+          "deletedParentIds": {
+            "habits": [
+              701,
+              702
+            ],
+            "plans": [
+              501,
+              502
+            ],
+            "subscriptions": [
+              301,
+              307,
+              304,
+              308,
+              306,
+              305,
+              302,
+              303
+            ],
+            "tags": [
+              601
+            ]
+          },
+          "evidence": "D:\\codex_work\\app\\app\\.tools\\stable-api26-upgrade-20261019\\cleanup",
+          "expectedActiveSignerAfterUpgrade": "preview-v2-fallback",
+          "independentDeviceSnapshotMatched": true,
+          "operationalCacheNote": "Captured separately; next app startup must cancel obsolete alarms.",
+          "operationalCachesCleared": false,
+          "schema": 7,
+          "sequencesUnchanged": true,
+          "serial": "emulator-5570",
+          "status": "cleaned",
+          "version": "1.1.4"
+        }
+      },
+      {
+        "sdk": 28,
+        "verification": {
+          "androidApi": 28,
+          "avd": "Rizhiya_Stable_API28",
+          "evidence": "D:\\codex_work\\app\\app\\.tools\\stable-api28-upgrade-20261019",
+          "expectedActiveSignerAfterUpgrade": "formal-v3-rotation",
+          "foreignKeyViolations": 0,
+          "fullColumnsAndValuesUnchanged": true,
+          "generationUnchanged": true,
+          "legacyCurrencyCategoryNoteUnchanged": true,
+          "legacyDateFormat": "DMY",
+          "legacyDateFormatPreserved": true,
+          "legacyFallbackSignerPreserved": false,
+          "newCertificateSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+          "newCode": 11,
+          "newVersion": "1.1.4",
+          "oldCertificateSha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+          "oldCode": 10,
+          "oldVersion": "1.1.3",
+          "packageManagerActiveSigner": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+          "packageManagerHistorySemantics": "actualSigningCertificateHistory",
+          "packageManagerSigningHistory": [
+            "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+            "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a"
+          ],
+          "schema": 7,
+          "selectedReminderOffsetsUnchanged": true,
+          "sequencesUnchanged": true,
+          "serial": "emulator-5572",
+          "settingsUnchanged": true,
+          "signingCertificateRotated": true,
+          "status": "verified",
+          "tablesUnchanged": [
+            "android_metadata",
+            "app_maintenance",
+            "app_settings",
+            "habit_records",
+            "habit_trees",
+            "habit_waterings",
+            "habits",
+            "plan_exceptions",
+            "plan_legacy_refs",
+            "plan_reminder_state",
+            "plan_tag_cross_ref",
+            "plans",
+            "subscription_payments",
+            "subscription_reminders",
+            "subscriptions",
+            "tags"
+          ]
+        },
+        "cleanup": {
+          "androidApi": 28,
+          "avd": "Rizhiya_Stable_API28",
+          "businessTablesEmpty": true,
+          "code": 11,
+          "defaultTablesUnchanged": true,
+          "deletedParentIds": {
+            "habits": [
+              701,
+              702
+            ],
+            "plans": [
+              501,
+              502
+            ],
+            "subscriptions": [
+              301,
+              307,
+              304,
+              308,
+              306,
+              305,
+              302,
+              303
+            ],
+            "tags": [
+              601
+            ]
+          },
+          "evidence": "D:\\codex_work\\app\\app\\.tools\\stable-api28-upgrade-20261019\\cleanup",
+          "expectedActiveSignerAfterUpgrade": "formal-v3-rotation",
+          "independentDeviceSnapshotMatched": true,
+          "operationalCacheNote": "Captured separately; next app startup must cancel obsolete alarms.",
+          "operationalCachesCleared": false,
+          "schema": 7,
+          "sequencesUnchanged": true,
+          "serial": "emulator-5572",
+          "status": "cleaned",
+          "version": "1.1.4"
+        }
+      }
+    ]
+  },
+  "coldBoot": {
+    "all16TablesAndSequencesPersist": true,
+    "appLaunched": true,
+    "exactApkSha256": "639da438eb08aec6f070dab0aac4f5116cdd4974e4d156c0489c410ffe490fdb",
+    "hostShutdownAfterExplicitSync": true,
+    "installedApkPersists": true,
+    "sdk": 35,
+    "signing": {
+      "currentSha256": [
+        "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a"
+      ],
+      "hasMultipleSigners": false,
+      "hasPastSigningCertificates": true,
+      "historySha256": [
+        "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+        "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a"
+      ],
+      "package": "com.example.lifemanager",
+      "probeJarSha256": "205769ea9e5a726348ccc6d56979e3f7433f5c625709ad3c92dfb00ac623850c",
+      "probeSourceSha256": "8536d1dd618023cdd78b6907f027249d4a8098c8225a612e453f4d2e8cdac6bf",
+      "versionCode": 11,
+      "versionName": "1.1.4"
+    },
+    "status": "verified"
+  },
+  "apk": {
+    "name": "rizhiya-1.1.4.apk",
+    "bytes": 12509424,
+    "sha256": "639da438eb08aec6f070dab0aac4f5116cdd4974e4d156c0489c410ffe490fdb",
+    "versionName": "1.1.4",
+    "versionCode": 11,
+    "debuggable": false,
+    "zipalign16KiB": true,
+    "legacyCertificateSha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+    "certificateSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+    "rotationMinSdk": 28,
+    "lineage": {
+      "status": "verified",
+      "mode": "lineage",
+      "evidence": {
+        "certificates": [
+          {
+            "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+            "installedData": true,
+            "sharedUid": true,
+            "permission": true,
+            "rollback": false,
+            "auth": true
+          },
+          {
+            "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+            "installedData": true,
+            "sharedUid": true,
+            "permission": true,
+            "rollback": false,
+            "auth": true
+          }
+        ]
+      }
+    },
+    "verification": {
+      "status": "verified",
+      "mode": "apk",
+      "evidence": {
+        "rotationMinSdk": 28,
+        "embeddedLineage": {
+          "certificates": [
+            {
+              "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+              "installedData": true,
+              "sharedUid": true,
+              "permission": true,
+              "rollback": false,
+              "auth": true
+            },
+            {
+              "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+              "installedData": true,
+              "sharedUid": true,
+              "permission": true,
+              "rollback": false,
+              "auth": true
+            }
+          ]
+        },
+        "platforms": [
+          {
+            "sdk": 26,
+            "verified": true,
+            "effectiveSignerSha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+            "v1": false,
+            "v2": true,
+            "v3": false,
+            "v31": false,
+            "warnings": [],
+            "lineage": null
+          },
+          {
+            "sdk": 27,
+            "verified": true,
+            "effectiveSignerSha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+            "v1": false,
+            "v2": true,
+            "v3": false,
+            "v31": false,
+            "warnings": [],
+            "lineage": null
+          },
+          {
+            "sdk": 28,
+            "verified": true,
+            "effectiveSignerSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+            "v1": false,
+            "v2": false,
+            "v3": true,
+            "v31": false,
+            "warnings": [],
+            "lineage": {
+              "certificates": [
+                {
+                  "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                },
+                {
+                  "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                }
+              ]
+            }
+          },
+          {
+            "sdk": 32,
+            "verified": true,
+            "effectiveSignerSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+            "v1": false,
+            "v2": false,
+            "v3": true,
+            "v31": false,
+            "warnings": [],
+            "lineage": {
+              "certificates": [
+                {
+                  "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                },
+                {
+                  "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                }
+              ]
+            }
+          },
+          {
+            "sdk": 33,
+            "verified": true,
+            "effectiveSignerSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+            "v1": false,
+            "v2": false,
+            "v3": true,
+            "v31": false,
+            "warnings": [],
+            "lineage": {
+              "certificates": [
+                {
+                  "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                },
+                {
+                  "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                }
+              ]
+            }
+          },
+          {
+            "sdk": 35,
+            "verified": true,
+            "effectiveSignerSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+            "v1": false,
+            "v2": false,
+            "v3": true,
+            "v31": false,
+            "warnings": [],
+            "lineage": {
+              "certificates": [
+                {
+                  "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                },
+                {
+                  "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "embeddedVcsRevision": "0a0250a96225317b7d93dc685f57df9dd113009b"
+  },
+  "sourceManifest": {
+    "files": 384,
+    "finalSha256": "afddde3f6c0103173231d64a8228944e54837045125dbc92d973952dbd576d7f"
+  },
+  "releaseToolSha256": {
+    "tools/release/daybud-release-certificate.pem": "44e6ad0257ec4771fdfc13b974a051d261d0053bfc23a31dfb0c0329ff3d198c",
+    "tools/release/daybud-signing-lineage.bin": "25415a0c43db8613626b2d4caee5b257a695ef56c7a087f23e2580d765b347b7",
+    "tools/release/release.py": "bb0b329d4282fe4c4d6de1de5e5b50920fa6b3776c31e6df9487032867f01225",
+    "tools/release/test_release.py": "16d0b8d6736d9dc7a780e2623b1bbdbfce7034573109e524371f59066e9afa29",
+    "tools/release/VerifySignature.java": "bd63e518ffa468b1e177803dda214d409bb62d0b7ca01d42f1fda4f459237525"
+  },
+  "keyStorage": {
+    "outsideRepository": true,
+    "windowsAclUserAndSystemOnly": true,
+    "secondDiskCopyHashVerified": true,
+    "offlineCopyStillUserResponsibility": true
+  },
+  "physicalValidation": {
+    "source": "User confirmed in conversation on2026-10-19",
+    "version": "Previous preview; no new-signed1.1.4 device details provided",
+    "agentExecuted": false
+  },
+  "limitations": [
+    "API27/32/33 exact SDK cryptographic verification only; actual install-r on26/28/35",
+    "No blanket OEM, manual TalkBack, large data or store approval claim"
+  ]
+}

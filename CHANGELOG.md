@@ -2,11 +2,11 @@
 
 本文件随每次版本更新维护。未发布区是开发进度，不代表手机安装包已经包含新功能。
 
-## 未发布 · 1.1.4 / code11 正式签名候选
+## 1.1.4 / code11 · 正式签名（验收通过，待发布）
 
 - 引入专用发布密钥、旧→新签名轮换链及可重复使用的签名验证工具。Android9+使用新v3证书，Android8保留旧v2签名以支持覆盖升级。
 - 仅版本与发布流程变化，界面沿用1.1.3；包名、Room7、format3/schema7备份与业务数据契约保持。保留历史Release和APK。
-- 用户已确认此前真机验证完成。本轮重新执行1210项JVM/107套件全部通过，failure/error/skipped均0；Debug/androidTest/Release构建成功，lint0错误/50警告；17项签名工具保护测试通过。最终签名与覆盖升级仍待验证，尚未发布。[正式发布验收](docs/stable-release-acceptance.md) · [签名与恢复](docs/release-signing.md)。
+- 用户已确认此前真机验证完成。本轮重新执行1210项JVM/107套件全部通过，failure/error/skipped均0；Debug/androidTest/Release构建成功，lint0错误/50警告；17项签名工具保护测试通过。六个精确SDK签名检查点与API26/28/35三条真实覆盖升级通过，16张表及序列一致；API35额外冷启动通过。尚未公开发布。[正式发布验收](docs/stable-release-acceptance.md) · [签名与恢复](docs/release-signing.md)。
 
 ## 1.1.3 / code10 · 设置页精简（2026-10-19已发布预览版）
 
