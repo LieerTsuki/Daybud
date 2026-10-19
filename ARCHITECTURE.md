@@ -2,6 +2,8 @@
 
 更新：2026-10-19；已公开发布订阅账单预览1.1.2，源码已合并main；设置精简预览1.1.3已公开发布。
 
+1.1.4候选仅调整版本与发布流程，业务架构不变。tools/release在Gradle输出之外完成16KiB对齐、旧→新证书轮换签名和独立apksig校验；私密配置及新旧密钥均在仓库外。API26/27保留旧v2证书，API28+采用固定专用v3证书；详见docs/release-signing.md。
+
 设置主页由PreferenceContent的主题/提醒卡片、V1BackupSettingsControls的数据操作行与SettingsPlatformSection的权限/关于入口组成。详细权限状态、版本与许可证只在弹窗展示；权限恢复重读、真实系统Intent、备份会话票据和独立确认保持。DatePresentation固定YYYY-MM-DD及HH:mm，仍按指定ZoneId转换Instant；旧DateFormat枚举、持久值和历史备份严格契约保留，当前导航不再注入旧格式。
 
 Android Kotlin + Jetpack Compose；当前源码Room数据库schema7，计划、打卡、订阅、设置四个入口。应用身份com.example.lifemanager。已发布1.1.0为schema7；互动森林不改数据库或备份格式。6→7只增加habit_trees/habit_waterings，历史迁移保持。历史交付见docs/v1-delivery-acceptance.md。

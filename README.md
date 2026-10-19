@@ -6,7 +6,11 @@
 
 每次版本更新附带[更新内容文档](CHANGELOG.md)；开发中分批结果与已发布版本分开记录，此约定已写入仓库 `AGENTS.md`。
 
-## 设置页精简 · 1.1.3预览版已发布
+## 1.1.4正式候选验证中
+
+专用发布签名、保留数据覆盖升级及正式GitHub Release正在验证；当前公开下载仍为下方1.1.3预览版。本轮无界面或数据库变更，用户已在会话中确认此前真机验证完成。[正式发布验收](docs/stable-release-acceptance.md) · [签名与密钥恢复](docs/release-signing.md)。
+
+## 历史设置页精简 · 1.1.3预览版已发布
 
 设置主页精简为主题、提醒、数据操作和两个详情入口，沿用现有奶油白、薄荷绿与圆角卡片。取消日期格式调整，日期统一YYYY-MM-DD；通知权限、关于和许可证在点击后查看。旧日期偏好保留于存储和备份，不再改变当前展示。当前1.1.3/code10，Room7及format3/schema7保持。本轮1210项JVM/107套件、74项API35设备测试/27套件全部通过，failure/error/skipped均0；Debug/androidTest/Release及lint成功（0错误/29警告）。真实1.1.2覆盖升级核对16张表所有字段和自增序列一致，历史DMY设置原样保留。已于2026-10-19T00:54:02+08:00公开发布，已验收源码`86e228c3d7b0feb50e9a6afd31712cb13904ac32`直接推送main，公开APK及校验文件回下载一致；[验证汇总](docs/evidence/settings-polish-1.1.3-validation.json)，本轮验证见[设置改版验收](docs/settings-polish-acceptance.md)。[发布回执](docs/evidence/settings-polish-1.1.3-publication.json)。
 

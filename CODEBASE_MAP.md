@@ -1,5 +1,7 @@
 # 代码索引
 
+- tools/release/release.py、VerifySignature.java、test_release.py：仓库外密钥签名、固定正式身份、精确SDK签名矩阵及发布保护测试；公开证书和轮换链同目录，私钥禁止入库。流程见docs/release-signing.md。
+
 - ui/settings/SettingsScreen.kt、V1SettingsScreen.kt、V1BackupSettingsSection.kt：紧凑主题、模块提醒、数据操作卡片，保留维护/备份状态保护。
 - ui/settings/SettingsPlatformSection.kt、DatePresentation.kt：按需打开权限/关于/完整离线许可证，固定YYYY-MM-DD展示并保持旧偏好存储兼容。
 
