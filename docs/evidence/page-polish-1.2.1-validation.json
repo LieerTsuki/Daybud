@@ -1,0 +1,905 @@
+{
+  "date": "2026-10-20",
+  "versionName": "1.2.1",
+  "versionCode": 13,
+  "roomSchema": 8,
+  "backupFormat": 4,
+  "jvm": {
+    "tests": 1295,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 125,
+    "reportDirectory": "app/build/test-results/testDebugUnitTest",
+    "reports": [
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.backup.AndroidBackupFileStoreTest.xml",
+        "sha256": "8970551bd228e55dd3d71c46aa6d9af079546a6b77e77f8730146428ab31f15d"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.backup.BackupCodecTest.xml",
+        "sha256": "958e8e22237e6c898e9582dcbea4a8c7564fe44cb4eee5b549a0f149255158e1"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.backup.CanonicalBackupJsonTest.xml",
+        "sha256": "b9eb3230cfa016c03051e41bb939d10777b9428f1962e70193ea2e2a9131f78e"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.backup.ContentResolverBackupStreamsTest.xml",
+        "sha256": "ae77d042f2e5d5815e084cf57068597b74d7d5d0d41117b21d2581f2c41b43c0"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.backup.ForestBackupCodecTest.xml",
+        "sha256": "f5ad6a4c1972a86218181da8f90a65d59d211c51f49ab0644944b228568f1598"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.backup.ForestBackupRoomTest.xml",
+        "sha256": "badc40c3e7fc3f1ac2921654ff6ca261cc54259df7ace84a9144c78a7d62a47e"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.backup.LegacyBackupConverterTest.xml",
+        "sha256": "fab3a7482ff80e83d45c3850306d57c2e71ef07758a4fb5f49587ead0b8d7e24"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.backup.V1BackupSettingsRoomTest.xml",
+        "sha256": "eba1e1d5b87d6e33aacbd16f354f0bc7ab70f309e095a114903cb22eee4d567c"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.backup.V2BackupCodecTest.xml",
+        "sha256": "6593f2c6dfd61c796fda1aceefb1f1bd5ac205f7df01591a0e4805c8ba8aa9f7"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.backup.V2BackupMaintenanceWorkflowRoomTest.xml",
+        "sha256": "5661bc409635e66e500c0d5fda659d6554ba82da7ec521115559ec9a1df98d02"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.backup.V2BackupMutationRepositoryRoomTest.xml",
+        "sha256": "63876c59deaeeba236eee51ac774b4528ed27f3502002e3a92c1b549a0318c14"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.backup.V2BackupReminderCaptureRoomTest.xml",
+        "sha256": "00e75af7c8d12d1f88896816d9d350125b73a1560a28155c568aa448d6e975fa"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.backup.V2BackupRepositoryRoomTest.xml",
+        "sha256": "33eb0325570a8eeb62bad3f0a91fb67ca3286c81468911bba5d0c5833af9cc46"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.backup.V4ArchiveContainerTest.xml",
+        "sha256": "1c63899de87be6a30a2530766edf3f35bab441383161881e12194e4491aca779"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.backup.V4ArchiveFilesTest.xml",
+        "sha256": "e8ce5dd53ec587d074d5203b580e7ba55e34197650e09fe4271cc70df7b1bf8c"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.backup.V4BackupManifestTest.xml",
+        "sha256": "a8125454e6e50e8f5a339023b9d924d78afe60065f382ea9fe70d6c6d1d17b7c"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.backup.V4BackupRepositoryRoomTest.xml",
+        "sha256": "6ff8c4dda836392bdea7dfb44ede52e5edc1ee9f00bdd50c58f3dad486c45c75"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.backup.VersionedBackupCodecTest.xml",
+        "sha256": "a7dfcd285a7d0162619e722c224d41863b282085d686d5dc864d1957bb377649"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.diary.ai.ChatCompletionsClientTest.xml",
+        "sha256": "5132d4853b0491660820e37bd9308d2735318553681fb8e2a9eab8b50305540c"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.diary.ai.ChatCompletionsProtocolTest.xml",
+        "sha256": "a328d47660b7a7b4e205c5adebae9463438b9f61acde31da36624df01c460f50"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.diary.ai.DiaryAiEngineTest.xml",
+        "sha256": "bd848f43af1ecf795a385317b21011af1dfd0d487450839335a79a8b1d5d5b5c"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.diary.ai.RoomDiaryAiDataSourceTest.xml",
+        "sha256": "0814d70fa004ce471e7b14888881224aabcef87654a3b6e2300bb1e46ddcd7b5"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.diary.DiaryMigrationTest.xml",
+        "sha256": "9a4335d0ea3f3ed108e4d9b04ad7a3d46140180c040b561cf87279f41e96d20b"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.diary.DiaryRepositoryRoomTest.xml",
+        "sha256": "60bf2d79595ae9c30db16712f6b89d8e0e83f04b9ff6a4bdca6c7aac62d03601"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.diary.DiaryStorageTest.xml",
+        "sha256": "52e2144680e713eac1f34a66b42b826cc5ac8221eeb490f29f36b26deb38c13f"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.local.HabitForestMigrationTest.xml",
+        "sha256": "8fb4175c05cce4e05ac7898aee49eecbf39dd4eef7c4c8c1417eb8e171fbe62a"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.local.SettingsMigrationTest.xml",
+        "sha256": "d2912f9b73ccbeb8551f3a7cbd37fdc0b4f5b5bcb9aee1886883ea3575f9ef41"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.local.V1ProductionDatabaseTest.xml",
+        "sha256": "140de612fbebc592d3b237073b9fad97ad8a221d8c933a1608f45ab79e7c17cc"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.plan.LegacyPlanConverterTest.xml",
+        "sha256": "b29397c0e8ebe3225e442cb0808c72ce78df6491172955702a95031e24205612"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.plan.LegacyPlanReferencesTest.xml",
+        "sha256": "84b8a83f18af39af1a8159dc07c6dcb260a5ea3b2a0681307e26003e9cdd5fa8"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.plan.PlanEditorRoomTest.xml",
+        "sha256": "72ae7722b06dd9ca479dd8c5d986d67e1248d8031d4fdd67d01f334dac309eaa"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.plan.PlanListRoomTest.xml",
+        "sha256": "9db43730f075c9ad2afa969f4dd1f10002a86821557f48a13c5733bef4ce5dad"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.plan.PlanMappingTest.xml",
+        "sha256": "1c9425e84f3555feb0b98feb0c96c233381f59e2dd196df00d7dafb4a0ec8078"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.plan.PlanMigrationTest.xml",
+        "sha256": "1b9c1b1572e220d4c3c443ec888d026c21a9301e97151e00f50332b423fe2dfd"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.plan.PlanOverviewRoomTest.xml",
+        "sha256": "d749ad15eb213717d9c957abd296410575f12e28fa7f1162dd3bab13f23d716f"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.plan.PlanRepositoryRoomTest.xml",
+        "sha256": "bc1f7cd2f05097e552fe074aea806aeae3ccac389b7ca50a0f89d0a1044be01d"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.plan.PlanUseCasesRoomTest.xml",
+        "sha256": "53113554fc29053740cee77fc4440944aee1001f74d516544177c823ec4b4de4"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.plan.V1SettingsRoomTest.xml",
+        "sha256": "ea20413f194bed8e3fce69aeb3210e56d45c4a3e98ee5caeccfb3cd67b39959e"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.repository.DataGenerationRepositoryRoomTest.xml",
+        "sha256": "3ada5c9f6d960a0dad7072343b8ee620a011fa95bce738be3318efe6ef18db57"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.repository.HabitForestRoomTest.xml",
+        "sha256": "e8e26cd9ac41405a501df1d1cfac071dfd9979aa34734f93248b888fae582828"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.repository.HabitRepositoryRoomTest.xml",
+        "sha256": "e065a270551802d90cec17a7ddb443299c495b82c497c88f76b1628b3223287f"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.repository.SettingsRepositoryRoomTest.xml",
+        "sha256": "af0fdd4667e5f9d2aee55850895ca0d7daf68ddcb47e8c1e341c8e0505fc8b5c"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.data.repository.SubscriptionRepositoryRoomTest.xml",
+        "sha256": "e207d8fad559fe566f61c638b4aef4352502d01dbdfa500785ed6db92a1bed6c"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.domain.backup.V2BackupFileUseCasesTest.xml",
+        "sha256": "e3fb6967fd8088ad1d1ca874cd758d507d3fedd453d7945497853448db19e609"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.domain.backup.V2BackupValidatorTest.xml",
+        "sha256": "66364daf07a116e7ecbafaaed1aded1c28a2e5e334f7156f69324212e6cad0bb"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.domain.diary.ai.DiaryAiPolicyTest.xml",
+        "sha256": "ebcb9f5ad14c666a022ae6fa75989f6f67de8f481c1b986cbf91a4b6cb012a6a"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.domain.diary.ai.DiaryAiScheduleTest.xml",
+        "sha256": "8cb154c81f3ce181482ca16affbb1bcea2dc6da9a8a772e175be899a9ffff931"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.domain.diary.DiaryBackupValidatorTest.xml",
+        "sha256": "d357dffdf8eee45ff91799a228bf9bb299f5ad922918182419be7a18ae912886"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.domain.diary.DiaryRulesTest.xml",
+        "sha256": "f35fe1673cbcb93c429f7e71218c1a2fbfe1967c637791d8bce70adec1e90a3b"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.domain.maintenance.MaintenanceCoordinatorTest.xml",
+        "sha256": "ff4a16bffafc016e0e011fc3904302e447c5e7b426fc0deaa901059e96b44b3d"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.domain.plan.PlanCalendarQueryTest.xml",
+        "sha256": "64db8a7dde8f930caedbc2701def06c974d8242ae709c531606505dfa2db2ff0"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.domain.plan.PlanCheckedSaveTest.xml",
+        "sha256": "d354e0fcd06c20161d998ee2cebe1f5362eba97e5efa7b8cab63bae532e60c08"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.domain.plan.PlanConflictsTest.xml",
+        "sha256": "d41cc39f5ba28255e407544612589d16adc4ff1f46cfe6ea5afa604ec337742a"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.domain.plan.PlanListQueryTest.xml",
+        "sha256": "407d0e34c2956aedeb5e3218dbed9c6758d9bd6b96b2f773ed139869b2bbea40"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.domain.plan.PlanOccurrencesTest.xml",
+        "sha256": "a01a0572220966d5917ee97e711c98b1f9b4f06d05e50fdeded838c60c02c7a7"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.domain.plan.PlanReminderRulesTest.xml",
+        "sha256": "4d19bb70a6377866bcf81af7dc4ebab573de8a7e7ce0d20d2e690d980c32a3f4"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.domain.plan.PlanRulesTest.xml",
+        "sha256": "250ff249bd9e2de11f5db6db84af456e53fd1ba1b2fd24587d94470cd8fb028e"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.domain.plan.PlanStatisticsTest.xml",
+        "sha256": "125b26e2b2fe88572667e89e680f326a4f86a01d9c6acd941e789d97a4bc41c6"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.domain.plan.PlanUseCasesTest.xml",
+        "sha256": "1ec7cfe734279a793aed63cc83e24abd2f89aafc12e226fe3ba88e01841205bb"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.domain.usecase.HabitRulesTest.xml",
+        "sha256": "12067fc593aa7c548011d094dac4b0a95d128275adc349c256cf33d50de069ef"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.domain.usecase.SubscriptionRulesTest.xml",
+        "sha256": "d2674fc38ac78e8e222efc1484a862b94c8fbc4eb87d5b79cb6ef1c3cb45562f"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.notification.E6ReminderActivationTest.xml",
+        "sha256": "f5519df4af3664cb73656c6fa70b792cf585b586db8515ca27bf5a891e1cddf2"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.notification.PlanReminderIdentityTest.xml",
+        "sha256": "ad36f0a0703310bcf15eaf3f08109648ce031e8340a22894fd122e526cd3ea93"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.notification.PlanReminderIntegrationTest.xml",
+        "sha256": "6a84ab77e11dece8e594b465f026faeb99247c753468dcd553b64f2e2df771fc"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.notification.PlanReminderProtocolTest.xml",
+        "sha256": "76837e137e586f0e34d644b8b7b49ecba46cc37f9271a41321725ba97fee1ef7"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.notification.ReminderAlarmPermissionTest.xml",
+        "sha256": "60384184d70f815ca107edf2fe60f2606ecbe3fb90c68acb35431295b3deb225"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.notification.ReminderBroadcastRunnerAdmissionTest.xml",
+        "sha256": "47f9113940189a11d9c7dd58fcaa179928bbb9a914859c507620902716462a69"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.notification.ReminderKeyTest.xml",
+        "sha256": "a8a2e4c7253a6370b63968939d72d9103cb56db3dba357101addd8edd551f76e"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.notification.ReminderSafetyIntegrationTest.xml",
+        "sha256": "6aadb81fbd06eb0affb3b5cd1bf9330eef637d791bc001034f54f3f306d17472"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.notification.ReminderSourceGenerationTest.xml",
+        "sha256": "30f2583d4b15f99c762ae272c52c70b9ffcec930966de2ed7e5221bad7c827da"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.notification.StartupCalibrationTest.xml",
+        "sha256": "4a5851c252aec2a29416ecb2bafc5c30833f13800cb7a43656057859087f9d2b"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.notification.SubscriptionDueDayPolicyTest.xml",
+        "sha256": "6d064d7775401031b9f886f44b740948f8733dee291eb405b0a189f0eec9ffa1"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.notification.SubscriptionOperationCoordinatorTest.xml",
+        "sha256": "f39a0dc0ee40dfe3018a7c542974bc19ba2e28ac21a50faa271465add64698bf"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.notification.SubscriptionReminderAdmissionTest.xml",
+        "sha256": "a28af06034b7af6956a1c34f4a1ec4bec1ba232711a040dcf5896c9d79f3c13e"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.notification.SubscriptionReminderDeliveryTest.xml",
+        "sha256": "dec7a129c18de5bd3b463c709d253e426f406ad3b8524f860f4bcd8e5f86b09d"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.notification.SubscriptionReminderKeyTest.xml",
+        "sha256": "133756dea30fe36608f17d66fabd190992495998cc04137f4ff1e52a65b6c610"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.notification.SubscriptionReminderReconciliationTest.xml",
+        "sha256": "07c42dc807a27330f70a1414e550fc48f52157c0f654345ca9c9ab2379faa067"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.notification.SubscriptionReminderRulesTest.xml",
+        "sha256": "71d6bc8d3f27540ed5ebcb8f6c2910cfe687a4f322b68993176977826921723d"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.notification.UnifiedBroadcastRepairTest.xml",
+        "sha256": "d3344d05cdb5032a307a89e502c355695bffa9f1d78fd3164611cf3d96092886"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.notification.UnifiedLegacyCleanupTest.xml",
+        "sha256": "0d23cd90ef014e786116d0b9b0307a18abe2afd7b01df4d4f60c0c06af479e75"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.notification.UnifiedPlanCalibrationTest.xml",
+        "sha256": "1421ba1273492c01256ff830ee0cd0dd91fed9953ea3f66e2505395e2e2f97d4"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.notification.UnifiedWorkerRoutingTest.xml",
+        "sha256": "bbd6cfd2eb0f7112cb24fa1c9fbc24d9eb572716ea929c6fe8f8de51d8521871"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.branding.LauncherBrandingTest.xml",
+        "sha256": "9b88d221f364d211913f773deb680b2192c8cabeb203ff0b0169411a1cb6294e"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.common.GenerationAccessTest.xml",
+        "sha256": "6c6f5780a1db21c8598b5e13e010d6fa111288132298406298dbdb2d76578eb9"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.diary.ai.DiaryAiScreenTest.xml",
+        "sha256": "1b22021eed83beb04a4aafdef6a0aa3ee076ce0325497e4fff655bad0b3c4928"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.diary.ai.DiaryAiViewModelTest.xml",
+        "sha256": "81907e363ed2b7d0b759c5786c4142d46d0902cef53ec3b85ce7f4a88be79871"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.diary.DiaryViewModelTest.xml",
+        "sha256": "8f5e782e4065e90a6c1ebe0914ff5d9002a8cef741a7f7d2b22062fc606e456f"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.habit.HabitForestScreenTest.xml",
+        "sha256": "003b2d5a7a24cfbb3c2f35bf0b1e743d65e47a99bc19b36ffe6e2204a5ac5166"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.habit.HabitForestViewModelTest.xml",
+        "sha256": "621b3d3bb7cf136446bacd2ac79bd6e620df5c25028a54c7f19f1c12136fc2c7"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.habit.HabitMaintenanceTest.xml",
+        "sha256": "b9e2dc17a86288bae7ce62e22e813487f6772e062d30149623fa6dc37243923b"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.habit.HabitScreenRegressionTest.xml",
+        "sha256": "1155079c90df4ae7f41e22605c6d43a1b809e9113fcbf9dae0967e6c9b83ecf3"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.habit.HabitViewModelTest.xml",
+        "sha256": "11337c88773d11f5a1641e2a53e43b7f31d70976eb2c12d0458c1fb06044e2ae"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.habit.InteractiveForestTest.xml",
+        "sha256": "b057d8be3bbd7d72e21fada99c752d63f9fc9880d91f0eb2af65a5f2573bf8b2"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.navigation.NavigationMaintenanceTest.xml",
+        "sha256": "fabee3f5b918b5fed79f35dee59ff87088da92c4bf5c618d3be924f321e13e25"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.navigation.NotificationSourceNavigationTest.xml",
+        "sha256": "6260ef0fe8daf01da70730eb1f22810bbafa62ee3b9496bcb78879781b811595"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.navigation.PlanNavigationViewModelTest.xml",
+        "sha256": "26aad73420b87561ac4240879baac7ee81b2268a4ac4e313c595c3732198b670"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.navigation.PlanNotificationClickTest.xml",
+        "sha256": "be535a9381935b0f5f1f634a66afd3e3caf418ff297c81ce7ef0baa6606ae2bf"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.navigation.V1ActivityActivationTest.xml",
+        "sha256": "4704a1d9e0732f166f868e29d45bc6ee3f32f194ec9d8ef1ba8a4d6bc4952b53"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.navigation.V1NavigationComposeTest.xml",
+        "sha256": "efd418ac572949993ae9b368998c774729f3e4c23539274c885cf3589ebbedc6"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.plan.InlineMonthWorkspaceTest.xml",
+        "sha256": "475e52fd44b0dd101b4903264522b306012aec3ec926797f6f8a827f18901727"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.plan.PlanCalendarTitlesComposeTest.xml",
+        "sha256": "e49b52faa92be2f1c82f90091792d5e79f75cdc8a07287b9e85398096efe499d"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.plan.PlanDayDetailsComposeTest.xml",
+        "sha256": "d8441d4c1bb1c0ac935e828a4b22a0ae398effb9e0a356cb1d56e6f4e8858ca3"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.plan.PlanDraftTest.xml",
+        "sha256": "5c6c28bf892f415905248b5e7f8ddc3a1893ddc80de095dafdbc4deb70b75afa"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.plan.PlanEditorComposeTest.xml",
+        "sha256": "a968272b782c0aeed3208daca179151e14463522cf609f8e658ba20b4fbd29e1"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.plan.PlanEditorViewModelTest.xml",
+        "sha256": "9ce0fd8399bbad0c691d4dfc526eca2490cc66327cd66f9e6bf52e297ed07f0d"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.plan.PlanOverviewComposeTest.xml",
+        "sha256": "b1b32b2a382fc6b9555aaa5b966cdc7900b7d1bef42a6b99c76d4fed206b5fd9"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.plan.PlanOverviewViewModelTest.xml",
+        "sha256": "2a03d0a9d97b4510f6fb9486b15727494fec95a5f0672443e167aea2046d409a"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.plan.PlanOverviewWorkspaceTest.xml",
+        "sha256": "2616d0735771de70ef55b106ad2639dd85fc1ec4d21c085ab1a1e05a883ddfb2"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.plan.PlanQuadrantBoardTest.xml",
+        "sha256": "cd53ee7988b3d712d27fe59993374a003dd63b5655ffa897fc0c6fd674cc8c8e"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.plan.PlanQuadrantEditorTest.xml",
+        "sha256": "356c7bed9fab37a4ad123740d3cb47051e19e589f0d1f6d4cf4ea7a3ec7f448e"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.plan.PlanScreenTest.xml",
+        "sha256": "d0e8279bcfea8bd63794dcd7dd2013a7a9ea20d8a834213e8df3c5696e0d58ec"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.plan.PlanViewModelTest.xml",
+        "sha256": "b991fdfa2f57ff4a3d75de1c9d65d5b7bd9a08589e21b87b13938d1c11b96cba"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.plan.PlanWorkspaceComposeTest.xml",
+        "sha256": "adc152f6504fd511168e82f0b6db312e171659e0b86b0c9eadb7d26bcd17e3a0"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.settings.DatePresentationTest.xml",
+        "sha256": "1f4098127f4975c44586a73854ce9933861fd5ee05adcd91169c0eec165ac54f"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.settings.SettingsPlatformSectionBehaviorTest.xml",
+        "sha256": "05d56bd258c2fe7d4d84db028ae54a3ebf91bec2d80d9a47308a4a68089cd2b8"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.settings.SettingsScreenTest.xml",
+        "sha256": "43ca996d148e686336088da919e9fd72abd4e84a71b94f5b40b2ed01a5b5d288"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.settings.SettingsThemeTest.xml",
+        "sha256": "85553b6d2a6b9240c7f346621c5f8c93719fd61827a3fe78e5a5dea19e09e3f3"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.settings.V1BackupPickerTest.xml",
+        "sha256": "c6261d0ae7ff2b2f582dd916d5f30fcc5782888370658ef10092866c630a95a2"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.settings.V1BackupSettingsDialogsTest.xml",
+        "sha256": "995159776bfd4612a9aad0de66325581d163b0ebda7625d54cd967149a90dead"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.settings.V1BackupSettingsViewModelTest.xml",
+        "sha256": "d6bad32928694cbb92ecb98e4b15e2bdd27346d6f60e0a1507996a558233efae"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.settings.V1SettingsViewModelTest.xml",
+        "sha256": "77604b212da20ce3f924aa378db551cd3f4450df03458206a597a30c734fbf5d"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.subscription.SubscriptionBillsTest.xml",
+        "sha256": "2d46ef46e173ab9985a71a95058bb31f6f8a2c7f3e30a9aed4ba66314f53af51"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.subscription.SubscriptionMaintenanceTest.xml",
+        "sha256": "519cfe923f0b6c6df0de801c6a7f4199fb89d46cfe8824176f70f2dfb59e55ad"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.subscription.SubscriptionScreenRegressionTest.xml",
+        "sha256": "33569639145fda2c4b1195be2a1ea98862b2feac12381c072d1505b055558288"
+      },
+      {
+        "file": "app/build/test-results/testDebugUnitTest/TEST-com.example.lifemanager.ui.subscription.SubscriptionViewModelTest.xml",
+        "sha256": "52b1ac8c50a17565cffacfae04099545c7a6fff45af840b13f892756bf3ca6a9"
+      }
+    ]
+  },
+  "lint": {
+    "Fatal": 0,
+    "Error": 0,
+    "Warning": 51,
+    "report": "app/build/reports/lint-results-debug.xml",
+    "reportSha256": "6aa254791cde73367b5e2daa7683f5c63ec49d94eecfa666376a782a931c7285"
+  },
+  "device": {
+    "tests": 79,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "serial": "emulator-5580",
+    "avd": "Rizhiya_Diary_API35",
+    "androidApi": 35,
+    "appSha256": "d0306f45fffcf32413a4d7190e9c40ec020c6a10d66d69b4106b0c4585b040d5",
+    "testApkSha256": "0deb322c102c9d27c251acdd49c785168293eecad2f816b0ac203e2069949c5a",
+    "log": ".tools\\polish-1.2.1-device.log",
+    "commandExit": 0,
+    "passed": true,
+    "resultFile": ".tools/polish-1.2.1-device-results.json",
+    "resultSha256": "9468cbe1d8780412407f209051f0fb707c6884f5fbc74deab1f343cd7e2210e3",
+    "logSha256": "8bd345af9db774f3f62c764974d15c1c31dfd33ad108d51f967983df952286bd"
+  },
+  "signingToolTests": {
+    "tests": 17,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "log": ".tools/polish-1.2.1-signing-tool-tests.log",
+    "logSha256": "ad04f31229ca729303cf88dbb24479627adf27e32016f4ce49d03221a911775d"
+  },
+  "build": {
+    "status": "successful",
+    "debug": true,
+    "androidTest": true,
+    "release": true,
+    "log": ".tools/polish-1.2.1-full.log",
+    "logSha256": "76b1835ee84aef3e774ab01eff860e4255399034dbc9b2ba45df828a99aa52ae",
+    "committedSource": "9466278a17d24e496410fce4dbbb82d36dffef03",
+    "sourceManifestFiles": 443,
+    "releaseSource": "9466278a17d24e496410fce4dbbb82d36dffef03",
+    "embeddedVcsFile": "META-INF/version-control-info.textproto",
+    "runStartedUtc": "2026-10-20T07:18:29.570529+00:00",
+    "completedUtc": "2026-10-20T07:27:40.456853+00:00",
+    "reportFreshness": "JVM and lint mtime >= full.log Windows creation time; <= completion+2s"
+  },
+  "sourceManifest": {
+    "file": ".tools/polish-1.2.1-source-manifest.json",
+    "files": 443,
+    "sha256": "d95ff850cb78fc4a7e8d4012b1ac26aa9c69d50c21acd228011ab19e6faf15e1",
+    "normalization": "CRLF to LF for source text",
+    "checkedAgainstCommits": [
+      "9466278a17d24e496410fce4dbbb82d36dffef03",
+      "9466278a17d24e496410fce4dbbb82d36dffef03"
+    ]
+  },
+  "upgrade": {
+    "status": "verified",
+    "tablesBefore": 23,
+    "tablesAfter": 23,
+    "androidApi": 35,
+    "installedApkSha256": "78a5e5c5a51915162efb83eecead44f132cfc254fb84d08962e46bb2b1335723",
+    "proofFile": ".tools/polish-1.2.1-api35-upgrade-20261020-1/verified.json",
+    "evidenceSha256": {
+      "verified.json": "dfbe7db23bc15af1f22b3c064a3bac4ee78e9a1c5f355ec79cd4cdda6ad51042",
+      "before-typed.json": "cf3019be7b1e172c305c5cb2b3c811c9ee2532450aa10c95184704f9b0e2bba5",
+      "after-typed.json": "cf3019be7b1e172c305c5cb2b3c811c9ee2532450aa10c95184704f9b0e2bba5",
+      "expected.json": "4579401ad4c4e838336ef5f4629e2c9b5f1f0beb8cc43d224c01dba1e5550f0b"
+    },
+    "verification": {
+      "afterTypedJsonSha256": "cf3019be7b1e172c305c5cb2b3c811c9ee2532450aa10c95184704f9b0e2bba5",
+      "androidApi": 35,
+      "applicationTables": 23,
+      "applicationUidPreserved": true,
+      "avd": "Rizhiya_Stable_Release",
+      "beforeTypedJsonSha256": "cf3019be7b1e172c305c5cb2b3c811c9ee2532450aa10c95184704f9b0e2bba5",
+      "evidence": "D:\\codex_work\\app\\app\\.tools\\polish-1.2.1-api35-upgrade-20261020-1",
+      "executed": true,
+      "expectedJsonSha256": "4579401ad4c4e838336ef5f4629e2c9b5f1f0beb8cc43d224c01dba1e5550f0b",
+      "foreignKeyViolations": 0,
+      "fullColumnsRawValuesStorageClassesAndNullsUnchanged": true,
+      "installedApkSha256": "78a5e5c5a51915162efb83eecead44f132cfc254fb84d08962e46bb2b1335723",
+      "installedCandidateBytesUnchanged": true,
+      "integrityCheck": "ok",
+      "newCode": 13,
+      "newDeviceFiles": {
+        "-wal": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "main": "8a9c40ecb22dafb3e6a6ca0a5206ae1890fbf214adaaddd3c4451c4721a7f7e8"
+      },
+      "newSchema": 8,
+      "newVersion": "1.2.1",
+      "oldApkSha256": "8076ca536a0574abbb50d718cb7b723f2af36af4628d4b4f675e3f4398da7bf8",
+      "oldCode": 12,
+      "oldSchema": 8,
+      "oldVersion": "1.2.0",
+      "packageManagerActiveSigner": [
+        "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a"
+      ],
+      "packageManagerSigningHistory": [
+        "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+        "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a"
+      ],
+      "planReminderStateIncluded": true,
+      "rows": {
+        "android_metadata": 1,
+        "app_maintenance": 1,
+        "app_settings": 1,
+        "diary_draft_media": 0,
+        "diary_drafts": 0,
+        "diary_entries": 0,
+        "diary_entry_media": 0,
+        "diary_media": 0,
+        "diary_review_sources": 0,
+        "diary_reviews": 0,
+        "habit_records": 0,
+        "habit_trees": 0,
+        "habit_waterings": 0,
+        "habits": 0,
+        "plan_exceptions": 0,
+        "plan_legacy_refs": 0,
+        "plan_reminder_state": 0,
+        "plan_tag_cross_ref": 0,
+        "plans": 0,
+        "subscription_payments": 0,
+        "subscription_reminders": 0,
+        "subscriptions": 0,
+        "tags": 0
+      },
+      "schemaSqlAndRoomIdentityUnchanged": true,
+      "scope": "Existing actual AVD data only; no synthetic fixture; empty tables remain empty. API35 only. Private files/preferences not compared.",
+      "sequencesExactlyUnchanged": true,
+      "serial": "emulator-5566",
+      "stableSignerPreserved": true,
+      "status": "verified",
+      "tablesUnchanged": [
+        "android_metadata",
+        "app_maintenance",
+        "app_settings",
+        "diary_draft_media",
+        "diary_drafts",
+        "diary_entries",
+        "diary_entry_media",
+        "diary_media",
+        "diary_review_sources",
+        "diary_reviews",
+        "habit_records",
+        "habit_trees",
+        "habit_waterings",
+        "habits",
+        "plan_exceptions",
+        "plan_legacy_refs",
+        "plan_reminder_state",
+        "plan_tag_cross_ref",
+        "plans",
+        "subscription_payments",
+        "subscription_reminders",
+        "subscriptions",
+        "tags"
+      ],
+      "typedFingerprint": "f5e130b586bff07dd1ab95b5f5b9beca9772dcbc696425f12d2bb37fdb7139cd",
+      "updatedApplicationObservedRunningBeforeSnapshot": true
+    }
+  },
+  "apk": {
+    "name": "rizhiya-1.2.1.apk",
+    "bytes": 12787952,
+    "sha256": "78a5e5c5a51915162efb83eecead44f132cfc254fb84d08962e46bb2b1335723",
+    "versionName": "1.2.1",
+    "versionCode": 13,
+    "debuggable": false,
+    "zipalign16KiB": true,
+    "legacyCertificateSha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+    "certificateSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+    "rotationMinSdk": 28,
+    "lineage": {
+      "status": "verified",
+      "mode": "lineage",
+      "evidence": {
+        "certificates": [
+          {
+            "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+            "installedData": true,
+            "sharedUid": true,
+            "permission": true,
+            "rollback": false,
+            "auth": true
+          },
+          {
+            "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+            "installedData": true,
+            "sharedUid": true,
+            "permission": true,
+            "rollback": false,
+            "auth": true
+          }
+        ]
+      }
+    },
+    "verification": {
+      "status": "verified",
+      "mode": "apk",
+      "evidence": {
+        "rotationMinSdk": 28,
+        "embeddedLineage": {
+          "certificates": [
+            {
+              "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+              "installedData": true,
+              "sharedUid": true,
+              "permission": true,
+              "rollback": false,
+              "auth": true
+            },
+            {
+              "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+              "installedData": true,
+              "sharedUid": true,
+              "permission": true,
+              "rollback": false,
+              "auth": true
+            }
+          ]
+        },
+        "platforms": [
+          {
+            "sdk": 26,
+            "verified": true,
+            "effectiveSignerSha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+            "v1": false,
+            "v2": true,
+            "v3": false,
+            "v31": false,
+            "warnings": [],
+            "lineage": null
+          },
+          {
+            "sdk": 27,
+            "verified": true,
+            "effectiveSignerSha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+            "v1": false,
+            "v2": true,
+            "v3": false,
+            "v31": false,
+            "warnings": [],
+            "lineage": null
+          },
+          {
+            "sdk": 28,
+            "verified": true,
+            "effectiveSignerSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+            "v1": false,
+            "v2": false,
+            "v3": true,
+            "v31": false,
+            "warnings": [],
+            "lineage": {
+              "certificates": [
+                {
+                  "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                },
+                {
+                  "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                }
+              ]
+            }
+          },
+          {
+            "sdk": 32,
+            "verified": true,
+            "effectiveSignerSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+            "v1": false,
+            "v2": false,
+            "v3": true,
+            "v31": false,
+            "warnings": [],
+            "lineage": {
+              "certificates": [
+                {
+                  "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                },
+                {
+                  "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                }
+              ]
+            }
+          },
+          {
+            "sdk": 33,
+            "verified": true,
+            "effectiveSignerSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+            "v1": false,
+            "v2": false,
+            "v3": true,
+            "v31": false,
+            "warnings": [],
+            "lineage": {
+              "certificates": [
+                {
+                  "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                },
+                {
+                  "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                }
+              ]
+            }
+          },
+          {
+            "sdk": 35,
+            "verified": true,
+            "effectiveSignerSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+            "v1": false,
+            "v2": false,
+            "v3": true,
+            "v31": false,
+            "warnings": [],
+            "lineage": {
+              "certificates": [
+                {
+                  "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                },
+                {
+                  "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "file": ".tools/delivery-polish-1.2.1/rizhiya-1.2.1.apk",
+    "signingReceipt": ".tools/delivery-polish-1.2.1/rizhiya-1.2.1.signing.json",
+    "signingReceiptSha256": "39d0a479a9431109a80bef0b02778e3ca6e686bdf26983e65295fbbd27089b7f",
+    "embeddedVcsRevision": "9466278a17d24e496410fce4dbbb82d36dffef03"
+  },
+  "independentReview": {
+    "status": "approved",
+    "score": 9,
+    "scale": 10,
+    "scope": "Final page-polish code and device-test review reported by orchestrator"
+  },
+  "limitations": [
+    "One actual existing API35 stable-AVD 1.2.0-to1.2.1 upgrade; no new seed was inserted.",
+    "All23 actual existing schema8 tables and sequences compared exactly; empty tables prove empty preservation only.",
+    "79 AndroidJUnit tests ran on a separate owned API35 emulator; no new physical-device verification.",
+    "No API26/API28 upgrade was rerun for this UI-only release; private files/preferences are outside the DB equality proof.",
+    "No broad OEM, manual TalkBack, physical-device font/layout, large-database or app-store approval claim."
+  ]
+}
