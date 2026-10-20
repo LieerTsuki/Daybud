@@ -2,13 +2,13 @@
 
 本文件随每次版本更新维护。未发布区是开发进度，不代表手机安装包已经包含新功能。
 
-## 未发布 · 1.2.1 / code13 页面调整
+## 1.2.1 / code13 · 页面调整（2026-10-20已发布正式版）
 
 - 计划四象限完整展示全部未完成计划，移除“展开其余”及未完成列表收起操作；已完成计划仍可展开和收起。
 - 日记按记录日期倒序，同日按创建时间、ID倒序；补写或修改旧日期后回到对应日期位置。
 - AI回顾开始、结束日期改为只读日期框，右侧日历按钮选择日期，确认后更新范围，取消保持原值；上周、上月快捷项保留。
 - Room8、V4完整备份及正式签名身份沿用1.2.0，无数据库迁移；本轮验证与发布状态见[页面调整验收](docs/page-polish-1.2.1-acceptance.md)。
-- 本轮1295项JVM/125套件、79项API35设备测试、17项签名工具测试全部通过，failure/error/skipped均为0；Debug/androidTest/Release构建成功，lint0错误/51警告。正式签名六个SDK检查点及16KiB对齐通过。现有API35正式1.2.0覆盖升级到1.2.1后，23张表全部字段、类型、NULL值及序列逐值一致，应用UID和签名身份保持。本轮覆盖升级仅验证一台已有数据的API35模拟器，空表仅证明空表保留；未新增API26/28覆盖升级或真机验收，数据库比对不覆盖私有文件和偏好设置。[验证汇总](docs/evidence/page-polish-1.2.1-validation.json)。验证完成，尚未发布。
+- 本轮1295项JVM/125套件、79项API35设备测试、17项签名工具测试全部通过，failure/error/skipped均为0；Debug/androidTest/Release构建成功，lint0错误/51警告。正式签名六个SDK检查点及16KiB对齐通过。现有API35正式1.2.0覆盖升级到1.2.1后，23张表全部字段、类型、NULL值及序列逐值一致，应用UID和签名身份保持。本轮覆盖升级仅验证一台已有数据的API35模拟器，空表仅证明空表保留；未新增API26/28覆盖升级或真机验收，数据库比对不覆盖私有文件和偏好设置。[验证汇总](docs/evidence/page-polish-1.2.1-validation.json)。已于2026-10-20T15:43:28+08:00发布正式Latest Release，发布源码`636e8510ace3dc6d530722263796386164d145b3`已推送main；公开APK及SHA256SUMS回下载一致。[下载1.2.1正式APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.2.1/rizhiya-1.2.1.apk) · [正式Release](https://github.com/LieerTsuki/Daybud/releases/tag/v1.2.1) · [发布回执](docs/evidence/page-polish-1.2.1-publication.json)
 
 ## 1.2.0 / code12 · 日记与AI回顾（2026-10-20已发布正式版）
 

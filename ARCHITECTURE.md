@@ -1,8 +1,8 @@
 # 项目架构
 
-更新：2026-10-20；已发布正式1.2.0/code12日记与AI回顾，为当前Latest Release；历史1.1.4正式签名延续。
+更新：2026-10-20；当前Latest Release为正式1.2.1/code13页面调整，沿用1.2.0日记与AI回顾架构；历史1.1.4正式签名延续。
 
-1.2.1/code13页面调整验证完成，待发布：PlanScreen完整渲染未完成列表，仅已完成保留折叠状态；DiaryDao两个查询与DiaryRules.ordered统一按记录日期、创建时间、ID倒序，DiaryViewModel沿用该规则。AI回顾由AiReviewDateInput提供只读框与右侧日期选择器，UTC转换civil date，禁用时清除临时选择；确认仍调用原range流程清除旧预览与未保存结果。Room8、V4及签名身份不变。当前验收见docs/page-polish-1.2.1-acceptance.md。
+1.2.1/code13页面调整已于2026-10-20发布正式版：PlanScreen完整渲染未完成列表，仅已完成保留折叠状态；DiaryDao两个查询与DiaryRules.ordered统一按记录日期、创建时间、ID倒序，DiaryViewModel沿用该规则。AI回顾由AiReviewDateInput提供只读框与右侧日期选择器，UTC转换civil date，禁用时清除临时选择；确认仍调用原range流程清除旧预览与未保存结果。Room8、V4及签名身份不变。当前验收见docs/page-polish-1.2.1-acceptance.md。
 
 当前版本使用Room8、计划/打卡/日记/订阅/设置五入口。7→8仅新增七张日记表，旧15张Room表定义不变；DiaryViewModel与DiaryAiViewModel由Activity保留的独立工厂创建。DiaryScreen组合列表/日历、草稿箱、详情、编辑和媒体查看，草稿落Room且1秒空闲/5秒连续输入保存；回调捕获原世代/会话/修订，普通写入由仓库内部获取全局准入，调用方不得再嵌套。
 

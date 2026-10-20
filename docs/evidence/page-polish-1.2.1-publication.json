@@ -1,0 +1,33 @@
+{
+  "status": "publicly-verified",
+  "versionName": "1.2.1",
+  "versionCode": 13,
+  "repository": "LieerTsuki/Daybud",
+  "tag": "v1.2.1",
+  "releaseId": 418122516,
+  "releaseUrl": "https://github.com/LieerTsuki/Daybud/releases/tag/v1.2.1",
+  "publishedAt": "2026-10-20T07:43:28Z",
+  "publishedAtShanghai": "2026-10-20T15:43:28+08:00",
+  "draft": false,
+  "prerelease": false,
+  "latestVerified": true,
+  "releaseSourceCommit": "636e8510ace3dc6d530722263796386164d145b3",
+  "mainAtVerification": "636e8510ace3dc6d530722263796386164d145b3",
+  "metadataAuthenticatedFallback": true,
+  "embeddedBuildCommit": "9466278a17d24e496410fce4dbbb82d36dffef03",
+  "allSourceManifestFiles": 443,
+  "apk": {
+    "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.2.1/rizhiya-1.2.1.apk",
+    "sha256": "78a5e5c5a51915162efb83eecead44f132cfc254fb84d08962e46bb2b1335723",
+    "bytes": 12787952,
+    "githubDigest": "sha256:78a5e5c5a51915162efb83eecead44f132cfc254fb84d08962e46bb2b1335723",
+    "anonymousDownloadVerified": true
+  },
+  "checksums": {
+    "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.2.1/SHA256SUMS.txt",
+    "anonymousDownloadVerified": true
+  },
+  "validation": "page-polish-1.2.1-validation.json",
+  "localAnonymousDownload": ".tools\\delivery-polish-1.2.1\\public-rizhiya-1.2.1-20261020T074447Z.apk",
+  "verifiedAt": "2026-10-20T07:45:18.050204+00:00"
+}

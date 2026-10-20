@@ -6,9 +6,11 @@
 
 每次版本更新附带[更新内容文档](CHANGELOG.md)；开发中分批结果与已发布版本分开记录，此约定已写入仓库 `AGENTS.md`。
 
-## 1.2.1页面体验调整 · 验证完成，待发布
+## 1.2.1正式版 · 页面体验调整
 
-本轮源码1.2.1/code13：计划四象限完整展示全部未完成项，仅已完成可折叠；日记按记录日期倒序，同日按创建时间与ID倒序；AI回顾开始/结束日期通过右侧日历按钮选择，无需输入。Room8、V4备份和正式签名身份沿用1.2.0，无数据库迁移。本轮1295项JVM/125套件、79项API35设备测试、17项签名工具测试全部通过，failure/error/skipped均为0；Debug/androidTest/Release构建成功，lint0错误/51警告。正式签名六个SDK检查点及16KiB对齐通过。现有API35正式1.2.0覆盖升级到1.2.1后，23张表全部字段、类型、NULL值及序列逐值一致，应用UID和签名身份保持。正式下载入口在发布完成后补入。[更新说明](CHANGELOG.md) · [本轮验收](docs/page-polish-1.2.1-acceptance.md)。
+本轮源码1.2.1/code13：计划四象限完整展示全部未完成项，仅已完成可折叠；日记按记录日期倒序，同日按创建时间与ID倒序；AI回顾开始/结束日期通过右侧日历按钮选择，无需输入。Room8、V4备份和正式签名身份沿用1.2.0，无数据库迁移。本轮1295项JVM/125套件、79项API35设备测试、17项签名工具测试全部通过，failure/error/skipped均为0；Debug/androidTest/Release构建成功，lint0错误/51警告。正式签名六个SDK检查点及16KiB对齐通过。现有API35正式1.2.0覆盖升级到1.2.1后，23张表全部字段、类型、NULL值及序列逐值一致，应用UID和签名身份保持。已于2026-10-20T15:43:28+08:00发布正式Latest Release，发布源码`636e8510ace3dc6d530722263796386164d145b3`已推送main；公开APK及SHA256SUMS回下载一致。[更新说明](CHANGELOG.md) · [本轮验收](docs/page-polish-1.2.1-acceptance.md)。
+
+[下载1.2.1正式APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.2.1/rizhiya-1.2.1.apk) · [正式Release](https://github.com/LieerTsuki/Daybud/releases/tag/v1.2.1) · [发布回执](docs/evidence/page-polish-1.2.1-publication.json)
 
 ## 历史1.2.0正式版 · 日记与AI回顾
 
