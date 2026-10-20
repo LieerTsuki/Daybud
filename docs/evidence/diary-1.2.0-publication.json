@@ -1,0 +1,44 @@
+{
+  "date": "2026-10-20",
+  "sourceCommit": "f05cced242fad87e8a3d108d4195db348b862c9c",
+  "apkBuildCommit": "65141724cc50322b4e9f24b38d3ec71aeeebe4cc",
+  "mainAtPublication": "f05cced242fad87e8a3d108d4195db348b862c9c",
+  "release": {
+    "id": 417889972,
+    "tag": "v1.2.0",
+    "url": "https://github.com/LieerTsuki/Daybud/releases/tag/v1.2.0",
+    "publishedAt": "2026-10-20T00:52:36Z",
+    "publishedAtShanghai": "2026-10-20T08:52:36+08:00",
+    "draft": false,
+    "prerelease": false,
+    "latest": true,
+    "assets": [
+      {
+        "name": "rizhiya-1.2.0.apk",
+        "bytes": 12787952,
+        "digest": "sha256:8076ca536a0574abbb50d718cb7b723f2af36af4628d4b4f675e3f4398da7bf8",
+        "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.2.0/rizhiya-1.2.0.apk"
+      },
+      {
+        "name": "SHA256SUMS.txt",
+        "bytes": 84,
+        "digest": "sha256:cf6613f674ed1f525bbc8ff6368c7994b12a75357356902e692f20991d038cea",
+        "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.2.0/SHA256SUMS.txt"
+      }
+    ]
+  },
+  "publicDownloadVerified": true,
+  "checksumDownloadVerified": true,
+  "anonymousLatestRedirectVerified": true,
+  "anonymousLatestUrl": "https://github.com/LieerTsuki/Daybud/releases/tag/v1.2.0",
+  "releaseMetadataVerification": "Authenticated GitHub publish response, latest API and resolved tag/main API checks; public APK/checksum/latest page fetched without credentials. Git protocol TLS failed, source refs independently resolved through read-only GitHub API.",
+  "sha256": "8076ca536a0574abbb50d718cb7b723f2af36af4628d4b4f675e3f4398da7bf8",
+  "bytes": 12787952,
+  "remoteTagCommit": "f05cced242fad87e8a3d108d4195db348b862c9c",
+  "validatedSourceFiles": 440,
+  "sourceManifestSha256": "38cb9bb352a6907950a570f0ec651a9f175707a533f5f8f2be01ce63492538a8",
+  "applicationCodeChangedSinceValidation": false,
+  "sourceHashMethod": "Normalized CRLF/LF for all440 app/build/schema/test files versus tested snapshot and Git blobs",
+  "legacyApi26And27CertificateSha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+  "api28PlusCertificateSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a"
+}

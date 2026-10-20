@@ -6,13 +6,15 @@
 
 每次版本更新附带[更新内容文档](CHANGELOG.md)；开发中分批结果与已发布版本分开记录，此约定已写入仓库 `AGENTS.md`。
 
-## 1.2.0日记正式候选 · 验收通过，待发布
+## 1.2.0正式版 · 日记与AI回顾
 
 源码1.2.0/code12增加「日记」入口，支持文字、图库照片/视频、心情、列表/日历、详情、持久草稿、连续记录/月记录次数与那年今日。AI服务由用户自行配置，选定范围后生成生活回顾、心情变化、重要时刻、个人成长和温暖寄语；媒体与草稿不上传，密钥不随备份导出，自动总结默认关闭。
 
-Room7→8仅新增七张日记表，原表逐值保留；完整备份升级为V4流式归档，包含日记、草稿、媒体与回顾。恢复旧V1–V3文件会保留当前日记。1290项JVM、78项API35设备测试及API26/28/35三条1.1.4正式覆盖升级已通过，包含原生图库、视频播放及旧数据/序列逐值核对；构建成功，lint0错误/51警告。已生成正式签名APK，尚未公开发布，下方1.1.4历史包不含日记。[本轮验收与限制](docs/diary-acceptance.md) · [验证汇总](docs/evidence/diary-1.2.0-validation.json) · [已批准设计](docs/superpowers/specs/2026-10-19-diary-design.md)。
+Room7→8仅新增七张日记表，原表逐值保留；完整备份升级为V4流式归档，包含日记、草稿、媒体与回顾。恢复旧V1–V3文件会保留当前日记。1290项JVM、78项API35设备测试及API26/28/35三条1.1.4正式覆盖升级已通过，包含原生图库、视频播放及旧数据/序列逐值核对；构建成功，lint0错误/51警告。已于2026-10-20T08:52:36+08:00发布正式Latest Release，发布源码`f05cced242fad87e8a3d108d4195db348b862c9c`已直接推送main，公开APK及校验文件回下载一致。[本轮验收与限制](docs/diary-acceptance.md) · [验证汇总](docs/evidence/diary-1.2.0-validation.json) · [已批准设计](docs/superpowers/specs/2026-10-19-diary-design.md)。
 
-## 1.1.4正式版已发布
+[下载日子芽1.2.0正式APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.2.0/rizhiya-1.2.0.apk) · [正式Release说明](https://github.com/LieerTsuki/Daybud/releases/tag/v1.2.0) · [发布回执](docs/evidence/diary-1.2.0-publication.json)
+
+## 历史正式签名 · 1.1.4已发布
 
 本轮1210项JVM/107套件、17项签名工具测试、六个精确SDK签名检查及API26/28/35三条真实覆盖升级通过，16张表和序列一致；构建成功，lint0错误/50警告。已于2026-10-19T10:58:44+08:00发布正式Latest Release，源码`4c1838312ebf59c8f3bf5d41f7159c5f60727f51`已直接推送main，公开APK及校验文件回下载一致。本轮无界面或数据库变更，用户已在会话中确认此前真机验证完成。[正式发布验收](docs/stable-release-acceptance.md) · [签名与密钥恢复](docs/release-signing.md)。
 

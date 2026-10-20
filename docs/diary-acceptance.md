@@ -1,6 +1,6 @@
 # 日记与AI回顾 · 1.2.0验收
 
-当前状态：正式候选1.2.0/code12验收通过，待公开发布。1290项JVM、78项设备测试、正式签名及三条覆盖升级已通过。基线正式1.1.4/code11，用户批准设计后执行，沿用直接main推送与正式APK发布授权。[机器可读验证汇总](evidence/diary-1.2.0-validation.json)。
+当前状态：正式1.2.0/code12已于2026-10-20T08:52:36+08:00公开发布为Latest Release。1290项JVM、78项设备测试、正式签名及三条覆盖升级已通过。基线正式1.1.4/code11，用户批准设计后执行，沿用直接main推送与正式APK发布授权。[机器可读验证汇总](evidence/diary-1.2.0-validation.json)。
 
 ## 功能及数据边界
 
@@ -25,7 +25,7 @@ AI使用用户配置的HTTPS Chat Completions兼容接口，只发送确认范�
 
 ## 设备验收与限制
 
-API35专用模拟器最终执行78项AndroidJUnit，94.197秒，全部通过（0 failure/error/skipped）。包含实际MediaStore图片和设备编码AVC视频导入、删除图库源后私有字节核对、Room重开草稿、V4完整媒体/草稿/五段回顾恢复与及时回收、真实旋转和Android Keystore。实际调用系统多选图库选择PNG和20秒MP4，生产VideoView实际播放并验证后台暂停、不自动重播、返回/旋转释放。日志.tools/diary-final-device.log；最终Debug APK SHA-256为d64dafef820879129b8d4b1d80d90d023c5d6ef23b34812e2fda1094490bac95。正式签名1.1.4覆盖升级及APK摘要见下文，公开发布回执待追加。
+API35专用模拟器最终执行78项AndroidJUnit，94.197秒，全部通过（0 failure/error/skipped）。包含实际MediaStore图片和设备编码AVC视频导入、删除图库源后私有字节核对、Room重开草稿、V4完整媒体/草稿/五段回顾恢复与及时回收、真实旋转和Android Keystore。实际调用系统多选图库选择PNG和20秒MP4，生产VideoView实际播放并验证后台暂停、不自动重播、返回/旋转释放。日志.tools/diary-final-device.log；最终Debug APK SHA-256为d64dafef820879129b8d4b1d80d90d023c5d6ef23b34812e2fda1094490bac95。正式签名1.1.4覆盖升级及APK摘要见下文，公开发布回执见文末。
 
 实际界面截图已经人工查看：[日记列表](evidence/diary-1.2.0-images/diary-list.png)、[月历](evidence/diary-1.2.0-images/diary-calendar.png)、[详情与媒体](evidence/diary-1.2.0-images/diary-detail.png)、[原生图库多选](evidence/diary-1.2.0-images/selected.png)。标题UUID和纯色媒体均为本轮合成测试材料；对应原生无障碍树随截图留存。
 
@@ -46,3 +46,9 @@ API35专用模拟器最终执行78项AndroidJUnit，94.197秒，全部通过（0
 专用API26、28、35旧安装均从实际1.1.4/code11签名包install-r升级，不卸载、不清数据、不重置AVD。升级后Room7→8，16→23张应用表（包含Android元数据）；旧表所有列、原始值、SQLite存储类型、NULL、设置及序列逐项一致，integrity_check=ok、外键违规0。安装字节摘要与上述正式候选一致。仅清理本轮UUID合成数据，独立重读确认原先设置/旧值和序列高水位保留，关机前执行sync。
 
 升级检查前，辅助脚本对签名回执字段位置及Android随机安装目录中的波浪号识别不正确，均在安装前停止；补充两项RED→GREEN后修正，本体APK不变。API26 ADB三次只读快照命令中断均留存：两次在安装前，一次在已完成测试数据清理后的重读。保留失败目录和已准备材料，不重复安装或清理；最后以独立只读快照核对expected-after完成清理证明，实际重读未触发重试。API28/35流程完整通过。原始证据位于.tools/diary-api{26,28,35}-upgrade-20261019；日期目录沿用计划命名，实际执行日为2026-10-20。
+
+## 正式发布回执
+
+[正式Release](https://github.com/LieerTsuki/Daybud/releases/tag/v1.2.0) · [下载APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.2.0/rizhiya-1.2.0.apk) · [完整回执](evidence/diary-1.2.0-publication.json)。draft=false、prerelease=false，匿名Latest入口已确认指向v1.2.0；APK及SHA256SUMS匿名回下载与已验收签名候选完全一致。tag和发布时main均为`f05cced242fad87e8a3d108d4195db348b862c9c`，APK内嵌构建提交为`65141724cc50322b4e9f24b38d3ec71aeeebe4cc`，440个应用/构建/schema/测试文件经完整清单逐一核对一致。本回执为后续纯文档提交，不更换APK，保留所有历史Release。
+
+发布传输记录：首次上传写入超时且草稿无附件，随后通过同一个已绑定草稿ID完成上传，不另建Release。匿名APK首次完整下载、摘要/包内构建提交/校验文件/Latest核对通过后，Git标签只读查询遭遇TLS中断；第二次冗余下载中断未替换已校验完整文件。最后复核保留的匿名下载字节、重新读取校验文件与Latest，并以GitHub只读API解析tag/main精确提交完成回执。应用、签名包及绑定发布输入均未变化。
