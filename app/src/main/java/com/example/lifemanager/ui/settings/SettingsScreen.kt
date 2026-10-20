@@ -34,7 +34,7 @@ internal data class PreferenceState(val settings: PreferenceValues?, val generat
 internal fun PreferenceContent(state: PreferenceState, onThemeChanged: (ThemeMode) -> Unit, onRetry: () -> Unit, onBack: () -> Unit,
     onDateFormatChanged: (DateFormat) -> Unit,
     onReminderEnabledChanged: (String, Boolean) -> Unit, operationBusy: Boolean = false, backupSection: @Composable () -> Unit = {},
-    modulesDescription: String = "", backLabel: String = "返回计划") {
+    modulesDescription: String = "", backLabel: String = "返回计划", onOpenAi: (() -> Unit)? = null) {
     val editable = state.isAvailable && !state.isLoading && !state.isSaving && !state.isMaintaining && !operationBusy
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -79,6 +79,7 @@ internal fun PreferenceContent(state: PreferenceState, onThemeChanged: (ThemeMod
                 }
             }
         }
+        onOpenAi?.let { open -> SettingsGroup("日记") { SettingsAction("AI服务", open, editable) } }
         backupSection()
         SettingsPlatformSection(enabled = editable)
         TextButton(onBack, enabled = !operationBusy && !state.isMaintaining, modifier = Modifier.align(Alignment.CenterHorizontally)) {

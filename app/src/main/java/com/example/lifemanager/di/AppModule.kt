@@ -4,6 +4,10 @@ import com.example.lifemanager.data.backup.AndroidBackupFileStore
 import com.example.lifemanager.data.backup.V2BackupMutationRepositoryImpl
 import com.example.lifemanager.data.backup.V2BackupRepositoryImpl
 import com.example.lifemanager.data.backup.VersionedBackupJsonCodec
+import com.example.lifemanager.data.backup.V4BackupRepository
+import com.example.lifemanager.data.backup.V4BackupMutationRepository
+import com.example.lifemanager.data.diary.FileDiaryStorage
+import com.example.lifemanager.domain.diary.DiaryRepository
 import com.example.lifemanager.data.local.LifeManagerDatabase
 import com.example.lifemanager.data.plan.PlanRepositoryImpl
 import com.example.lifemanager.data.plan.RoomV1SettingsRepository
@@ -69,12 +73,13 @@ object ProviderModule {
         reminders: PlanReminderEffects): PlanUseCases = PlanUseCases(repository, maintenance, reminders)
 
     @Provides @Singleton
-    fun provideBackupRepository(database: LifeManagerDatabase): V2BackupRepository =
-        V2BackupRepositoryImpl(database, database.backupSnapshotDao())
+    fun provideBackupRepository(database: LifeManagerDatabase,diary:DiaryRepository): V2BackupRepository =
+        V4BackupRepository(database,V2BackupRepositoryImpl(database, database.backupSnapshotDao()),diary)
 
     @Provides @Singleton
-    fun provideBackupMutations(database: LifeManagerDatabase): V2BackupMutationRepository =
-        V2BackupMutationRepositoryImpl(database, database.backupSnapshotDao())
+    fun provideBackupMutations(database: LifeManagerDatabase,diary:DiaryRepository,storage:FileDiaryStorage,
+        aiStore:com.example.lifemanager.data.diary.ai.AiPrivateStore): V2BackupMutationRepository =
+        V4BackupMutationRepository(database,V2BackupMutationRepositoryImpl(database, database.backupSnapshotDao()),diary,storage,aiStore::pauseAutomatic)
 
     @Provides @Singleton
     fun provideBackupCodec(): VersionedBackupCodec = VersionedBackupJsonCodec()
@@ -82,8 +87,8 @@ object ProviderModule {
     @Provides @Singleton
     fun provideBackupFileUseCases(repository: V2BackupRepository, codec: VersionedBackupCodec,
         files: BackupFileStore, maintenance: MaintenanceCoordinator,
-        @IoDispatcher dispatcher: CoroutineDispatcher): V2BackupFileUseCases =
-        V2BackupFileUseCases(repository, codec, files, maintenance, dispatcher)
+        @IoDispatcher dispatcher: CoroutineDispatcher,archive:BackupArchive): V2BackupFileUseCases =
+        V2BackupFileUseCases(repository, codec, files, maintenance, dispatcher,archive=archive)
 
     @Provides @Singleton
     fun provideBackupWorkflow(snapshots: V2BackupRepository, mutations: V2BackupMutationRepository,

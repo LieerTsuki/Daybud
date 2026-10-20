@@ -11,10 +11,18 @@ import kotlinx.coroutines.withContext
 /** Verified current output and bounded historical preview; UI owns consent and operation identity. */
 class V2BackupFileUseCases(private val repository: V2BackupRepository, private val codec: VersionedBackupCodec,
     private val files: BackupFileStore, private val maintenance: MaintenanceCoordinator,
-    private val workDispatcher: CoroutineDispatcher, private val limits: BackupLimits = BackupLimits()) {
+    private val workDispatcher: CoroutineDispatcher, private val limits: BackupLimits = BackupLimits(),
+    private val archive: BackupArchive? = null) {
     suspend fun export(location: BackupLocation, appVersion: String, exportedAt: String,
         expected: DataGeneration? = null): V2BackupDocument = withContext(workDispatcher) {
         val token = expected ?: maintenance.capture()
+        if (archive != null) {
+            var captured: BackupCapture? = null
+            try {
+                maintenance.run(token) { archive.capture { repository.snapshot() }.also { captured=it } }
+                return@withContext archive.writeVerified(location, V2BackupDocument(appVersion, exportedAt, checkNotNull(captured).payload))
+            } finally { captured?.close() }
+        }
         val payload = maintenance.run(token) { repository.snapshot() }
         // Release ordinary admission before any slow document-provider operation.
         writeVerified(location, V2BackupDocument(appVersion, exportedAt, payload))
@@ -24,6 +32,7 @@ class V2BackupFileUseCases(private val repository: V2BackupRepository, private v
         currentCoroutineContext().ensureActive()
         val owned = ownV2Document(document, limits)
         return withContext(workDispatcher) {
+            if (archive != null) return@withContext archive.writeVerified(location, owned)
             val bytes = codec.encode(owned)
             currentCoroutineContext().ensureActive()
             files.write(location, bytes)
@@ -37,22 +46,26 @@ class V2BackupFileUseCases(private val repository: V2BackupRepository, private v
         }
     }
 
-    suspend fun preview(location: BackupLocation, legacyTodoZone: ZoneId): BackupImportResult = withContext(workDispatcher) {
-        files.withStagedInput(location, limits.maxBytes) { bytes ->
-            val decoded = codec.decode(bytes, legacyTodoZone)
-            currentCoroutineContext().ensureActive()
-            decoded.copy(document = ownV2Document(decoded.document, limits))
-        }
+    suspend fun preview(location: BackupLocation, legacyTodoZone: ZoneId): BackupImportResult {
+        var allocated: BackupImportResult?=null
+        var handedOff=false
+        try {
+            val result=withContext(workDispatcher) {
+                if (archive != null) archive.preview(location, legacyTodoZone).also { allocated=it }
+                else files.withStagedInput(location, limits.maxBytes) { bytes ->
+                    val decoded = codec.decode(bytes, legacyTodoZone)
+                    currentCoroutineContext().ensureActive()
+                    decoded.copy(document = ownV2Document(decoded.document, limits))
+                }
+            }
+            handedOff=true
+            return result
+        } finally { if(!handedOff)allocated?.let { releasePreview(it.document) } }
     }
     /** Full envelope guard for directly supplied restore documents, with no provider effects. */
-    internal fun validateDocument(document: V2BackupDocument) { codec.encode(document) }
-}
+    internal suspend fun validateDocument(document: V2BackupDocument) {
+        if (archive != null) archive.validateDocument(document) else codec.encode(document)
+    }
 
-/** Bound/validate before allocating a private graph; own all mutable collections before suspension. */
-internal fun ownV2Document(document: V2BackupDocument, limits: BackupLimits): V2BackupDocument {
-    V3BackupValidator.validate(document, limits)
-    return document.copy(payload = document.payload.copy(
-        tables = document.payload.tables.mapValues { (_, rows) -> rows.map { BackupRow(it.fields.toMap()) } },
-        settings = document.payload.settings.copy(defaultReminderDays = document.payload.settings.defaultReminderDays.toSet()),
-    )).also { V3BackupValidator.validate(it, limits) }
+    fun releasePreview(document: V2BackupDocument) { archive?.releasePreview(document) }
 }

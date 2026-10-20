@@ -21,7 +21,7 @@ import kotlin.test.*
 class V1ProductionDatabaseTest {
     @Test fun `actual factory creates only unified business tables and persisted defaults`()=fixture { db ->
         val sql=db.openHelper.writableDatabase
-        assertEquals(7,sql.version)
+        assertEquals(8,sql.version)
         val tables=sql.query("SELECT name FROM sqlite_master WHERE type='table'").use { c -> buildSet { while(c.moveToNext())add(c.getString(0)) } }
         assertTrue(tables.containsAll(setOf("plans","plan_tag_cross_ref","plan_exceptions","plan_legacy_refs","plan_reminder_state","habits","subscriptions","app_settings","app_maintenance")))
         assertFalse("todos" in tables);assertFalse("schedules" in tables)
@@ -31,26 +31,26 @@ class V1ProductionDatabaseTest {
         sql.query("SELECT generation FROM app_maintenance WHERE id=1").use { c -> assertTrue(c.moveToFirst());assertEquals(0,c.getLong(0)) }
     }
     @Test fun `actual factory upgrades complete v5 data without old business tables`()=fixture(5) { db ->
-        val sql=db.openHelper.writableDatabase;assertEquals(7,sql.version)
+        val sql=db.openHelper.writableDatabase;assertEquals(8,sql.version)
         sql.query("SELECT count(*) FROM plans").use { c -> c.moveToFirst();assertEquals(2,c.getInt(0)) }
         sql.query("SELECT count(*) FROM plan_legacy_refs").use { c -> c.moveToFirst();assertEquals(2,c.getInt(0)) }
         sql.query("SELECT title FROM plans WHERE id=1").use { c -> c.moveToFirst();assertEquals("  旧待办\n\"🏠\"  ",c.getString(0)) }
         sql.query("SELECT amountMinor FROM subscriptions").use { c -> c.moveToFirst();assertEquals(Long.MAX_VALUE,c.getLong(0)) }
         sql.query("SELECT generation FROM app_maintenance").use { c -> c.moveToFirst();assertEquals(10,c.getLong(0)) }
     }
-    @Test fun `actual factory registers complete v4 through v7 chain`()=fixture(4) { db ->
-        val sql=db.openHelper.writableDatabase;assertEquals(7,sql.version)
+    @Test fun `actual factory registers complete v4 through v8 chain`()=fixture(4) { db ->
+        val sql=db.openHelper.writableDatabase;assertEquals(8,sql.version)
         sql.query("SELECT count(*) FROM plans").use { c -> c.moveToFirst();assertEquals(2,c.getInt(0)) }
         sql.query("SELECT count(*) FROM habit_records").use { c -> c.moveToFirst();assertEquals(1,c.getInt(0)) }
         sql.query("SELECT generation FROM app_maintenance").use { c -> c.moveToFirst();assertEquals(1,c.getLong(0)) }
     }
-    @Test fun `actual factory registers reconstructed v1 through v7 chain`()=earlierChain(1)
-    @Test fun `actual factory registers v2 through v7 chain`()=earlierChain(2)
-    @Test fun `actual factory registers v3 through v7 chain`()=earlierChain(3)
+    @Test fun `actual factory registers reconstructed v1 through v8 chain`()=earlierChain(1)
+    @Test fun `actual factory registers v2 through v8 chain`()=earlierChain(2)
+    @Test fun `actual factory registers v3 through v8 chain`()=earlierChain(3)
 
     private fun earlierChain(version:Int)=fixture(version) { db ->
         val sql=db.openHelper.writableDatabase
-        assertEquals(7,sql.version)
+        assertEquals(8,sql.version)
         sql.query("SELECT count(*) FROM plans").use { c -> c.moveToFirst();assertEquals(if(version==1)1 else 2,c.getInt(0)) }
         sql.query("SELECT generation FROM app_maintenance").use { c -> c.moveToFirst();assertEquals(1,c.getLong(0)) }
         sql.query("PRAGMA foreign_key_check").use { assertFalse(it.moveToFirst()) }

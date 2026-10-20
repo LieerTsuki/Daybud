@@ -8,7 +8,7 @@ import kotlinx.serialization.json.*
 import com.example.lifemanager.domain.backup.V2BackupSchema
 import com.example.lifemanager.domain.backup.V3BackupSchema
 
-internal enum class BackupJsonContract { V1, V2, V3 }
+internal enum class BackupJsonContract { V1, V2, V3, V4 }
 
 /**
  * Strict reader with version-specific, non-input-controlled member budgets. Unlike a last-key-wins JSON tree parser, duplicate
@@ -21,7 +21,10 @@ internal class StrictBackupJson(private val source: String, private val limits: 
         BackupJsonContract.V1 -> 20
         BackupJsonContract.V2 -> V2BackupSchema.maxRowMembers
         BackupJsonContract.V3 -> V3BackupSchema.maxRowMembers
+        BackupJsonContract.V4 -> maxOf(V3BackupSchema.maxRowMembers, 32)
     }
+    private val maximumDepth = if (contract == BackupJsonContract.V4) 14 else 8
+    private val maximumArrayItems = if (contract == BackupJsonContract.V4) limits.maxRows.toLong() * 6 + 50 else limits.maxRows.toLong() + 3
     private var position = 0
     private var arrayItems = 0
     private var members = 0
@@ -34,7 +37,7 @@ internal class StrictBackupJson(private val source: String, private val limits: 
     }
 
     private fun value(depth: Int): JsonElement {
-        checkBackup(depth <= 8, "JSON 嵌套层数过多")
+        checkBackup(depth <= maximumDepth, "JSON 嵌套层数过多")
         whitespace()
         return when (peek()) {
             '{' -> objectValue(depth + 1)
@@ -75,7 +78,7 @@ internal class StrictBackupJson(private val source: String, private val limits: 
         if (consume(']')) return JsonArray(values)
         while (true) {
             // Table arrays contain maxRows in aggregate; settings add <=3.
-            checkBackup(++arrayItems <= limits.maxRows + 3, "JSON 数组记录数量超限")
+            checkBackup(++arrayItems <= maximumArrayItems, "JSON 数组记录数量超限")
             values.add(value(depth))
             whitespace()
             if (consume(']')) return JsonArray(values)

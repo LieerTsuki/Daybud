@@ -6,7 +6,7 @@ import androidx.compose.material3.*
 import com.example.lifemanager.domain.model.V1ReminderModule
 
 @Composable
-fun V1SettingsScreen(model:V1SettingsViewModel,backup:V1BackupSettingsViewModel,onBack:()->Unit,canStartBackup:()->Boolean={true}) {
+fun V1SettingsScreen(model:V1SettingsViewModel,backup:V1BackupSettingsViewModel,onBack:()->Unit,canStartBackup:()->Boolean={true},onOpenAi:(()->Unit)?=null) {
     val state=model.uiState.collectAsStateWithLifecycle().value
     val operation=backup.uiState.collectAsStateWithLifecycle().value
     val generation=state.generation
@@ -29,5 +29,7 @@ fun V1SettingsScreen(model:V1SettingsViewModel,backup:V1BackupSettingsViewModel,
             if(state.remindersPending) {
             Text("提醒需要重新同步")
             TextButton({ if(preferencesAllowed())model.retryReminders(generation) },enabled=preferencesAllowed()) { Text("重试同步") }
-        } },backLabel="返回计划")
+        } },backLabel="返回计划",onOpenAi=onOpenAi?.let { open ->
+            { if(preferencesAllowed() && model.uiState.value.generation==generation)open() }
+        })
 }

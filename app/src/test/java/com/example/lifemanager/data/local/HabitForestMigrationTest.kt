@@ -42,7 +42,7 @@ class HabitForestMigrationTest {
         val upgraded = LifeManagerDatabaseFactory.open(context, name)
         try {
             val sql = upgraded.openHelper.writableDatabase
-            assertEquals(7, sql.version)
+            assertEquals(8, sql.version)
             sql.query("SELECT name,iconKey,color,note,createdAt,updatedAt FROM habits WHERE id=-1").use {
                 assertTrue(it.moveToFirst()); assertEquals("  保留名字  ", it.getString(0)); assertEquals("Check", it.getString(1))
                 assertEquals(-16738680, it.getInt(2)); assertEquals(" 原备注 ", it.getString(3)); assertEquals(4, it.getLong(4)); assertEquals(5, it.getLong(5))

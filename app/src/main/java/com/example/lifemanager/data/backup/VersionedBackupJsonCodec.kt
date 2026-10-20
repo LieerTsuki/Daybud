@@ -8,7 +8,10 @@ import java.time.ZoneId
 
 /** Production entry point: strict historical hash checks, current forest conversion and V3 export. */
 class VersionedBackupJsonCodec(private val limits: BackupLimits = BackupLimits()) : VersionedBackupCodec {
-    override fun encode(document: V2BackupDocument): ByteArray = V3BackupJsonCodec(limits).encode(document)
+    override fun encode(document: V2BackupDocument): ByteArray {
+        checkBackup(document.payload.diary == null, "日记和媒体必须使用完整v4备份")
+        return V3BackupJsonCodec(limits).encode(document)
+    }
 
     override fun decode(bytes: ByteArray, legacyTodoZone: ZoneId): BackupImportResult = when (version(bytes)) {
         1L -> LegacyBackupConverter(limits).convert(BackupJsonCodec(limits).decode(bytes), legacyTodoZone).let {

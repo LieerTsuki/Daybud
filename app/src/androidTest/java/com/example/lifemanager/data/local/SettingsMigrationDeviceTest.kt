@@ -58,7 +58,7 @@ class SettingsMigrationDeviceTest {
             val database = LifeManagerDatabaseFactory.open(context, name)
             try {
                 val sqlite = database.openHelper.readableDatabase
-                assertEquals(7, sqlite.version)
+                assertEquals(8, sqlite.version)
                 val unchanged = listOf("tags", "habits", "habit_records", "subscriptions", "subscription_payments", "subscription_reminders")
                 for (table in unchanged) assertEquals(before.getValue(table), readRows(sqlite, table), table)
                 assertEquals(V1AppSettings(ThemeMode.DARK, DateFormat.DMY, "EUR", true, false, setOf(1,3,7)),

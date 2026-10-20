@@ -1,6 +1,6 @@
 # 完整备份格式 V3（数据库 schema 7）
 
-当前导出契约为 `life-manager-backup`、`formatVersion: 3`、`schemaVersion: 7`。文件是未加密 UTF-8 JSON，采用现有规范化 JSON 的 SHA-256 校验；哈希只覆盖原始 `payload`，元数据和校验值不参与哈希。严格拒绝重复字段、未知字段、错误类型、无效枚举及损坏关系。
+此页为1.1.x的冻结历史契约；1.2.0日记候选完整导出使用[V4流式归档](backup-format-v4.md)，恢复本页旧格式保留当前日记。V3契约为 `life-manager-backup`、`formatVersion: 3`、`schemaVersion: 7`。文件是未加密 UTF-8 JSON，采用现有规范化 JSON 的 SHA-256 校验；哈希只覆盖原始 `payload`，元数据和校验值不参与哈希。严格拒绝重复字段、未知字段、错误类型、无效枚举及损坏关系。
 
 V2 的十张业务表和全部设置字段保持原样；V3 增加：
 

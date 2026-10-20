@@ -59,7 +59,7 @@ class HabitForestMigrationDeviceTest {
             val database = LifeManagerDatabaseFactory.open(context, name)
             try {
                 val sqlite = database.openHelper.writableDatabase // Room validates the actual v7 schema.
-                assertEquals(7, sqlite.version)
+                assertEquals(8, sqlite.version)
                 assertEquals(beforeHabits, rows(sqlite, "SELECT * FROM habits ORDER BY id"))
                 assertEquals(beforeRecords, rows(sqlite, "SELECT * FROM habit_records ORDER BY id"))
                 assertEquals(listOf(listOf("17")), rows(sqlite, "SELECT generation FROM app_maintenance"))

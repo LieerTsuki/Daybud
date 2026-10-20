@@ -1,0 +1,52 @@
+com.android.providers.media.module null android.widget.FrameLayout text=null description=null clickable=false selected=false checked=false checkable=false
+com.android.providers.media.module null android.widget.LinearLayout text=null description=null clickable=false selected=false checked=false checkable=false
+com.android.providers.media.module null android.widget.FrameLayout text=null description=null clickable=false selected=false checked=false checkable=false
+com.android.providers.media.module com.android.providers.media.module:id/action_bar_root android.widget.LinearLayout text=null description=null clickable=false selected=false checked=false checkable=false
+com.android.providers.media.module android:id/content android.widget.FrameLayout text=null description=null clickable=false selected=false checked=false checkable=false
+com.android.providers.media.module null android.view.ViewGroup text=null description=null clickable=false selected=false checked=false checkable=false
+com.android.providers.media.module com.android.providers.media.module:id/bottom_sheet android.widget.LinearLayout text=null description=null clickable=false selected=false checked=false checkable=false
+com.android.providers.media.module com.android.providers.media.module:id/drag_bar android.widget.ImageView text=null description=null clickable=false selected=false checked=false checkable=false
+com.android.providers.media.module com.android.providers.media.module:id/privacy_text android.widget.TextView text=This app can only access the photos you select description=null clickable=false selected=false checked=false checkable=false
+com.android.providers.media.module null android.widget.FrameLayout text=null description=null clickable=false selected=false checked=false checkable=false
+com.android.providers.media.module com.android.providers.media.module:id/fragment_container android.widget.FrameLayout text=null description=null clickable=false selected=false checked=false checkable=false
+com.android.providers.media.module com.android.providers.media.module:id/picker_tab_viewpager androidx.viewpager.widget.ViewPager text=null description=null clickable=false selected=false checked=false checkable=false
+com.android.providers.media.module null androidx.recyclerview.widget.RecyclerView text=null description=null clickable=false selected=false checked=false checkable=false
+com.android.providers.media.module null android.widget.FrameLayout text=null description=null clickable=false selected=false checked=false checkable=false
+com.android.providers.media.module null android.widget.FrameLayout text=null description=null clickable=false selected=false checked=false checkable=false
+com.android.providers.media.module com.android.providers.media.module:id/picker_tab_recyclerview android.widget.GridView text=null description=null clickable=false selected=false checked=false checkable=false
+com.android.providers.media.module com.android.providers.media.module:id/date_header_title android.widget.TextView text=Recent description=null clickable=false selected=false checked=false checkable=false
+com.android.providers.media.module null android.widget.FrameLayout text=null description=Photo taken on Oct 20, 2026, 12:33:57 AM clickable=true selected=true checked=false checkable=false
+com.android.providers.media.module null androidx.cardview.widget.CardView text=null description=null clickable=false selected=true checked=false checkable=false
+com.android.providers.media.module null android.widget.FrameLayout text=null description=null clickable=false selected=true checked=false checkable=false
+com.android.providers.media.module com.android.providers.media.module:id/icon_thumbnail android.widget.ImageView text=null description=null clickable=false selected=true checked=false checkable=false
+com.android.providers.media.module com.android.providers.media.module:id/overlay_gradient android.widget.FrameLayout text=null description=null clickable=false selected=true checked=false checkable=false
+com.android.providers.media.module com.android.providers.media.module:id/icon_check android.widget.ImageView text=null description=null clickable=false selected=true checked=false checkable=false
+com.android.providers.media.module null android.widget.FrameLayout text=null description=Video taken on Oct 20, 2026, 12:33:57 AM with duration 00:20 clickable=true selected=true checked=false checkable=false
+com.android.providers.media.module null androidx.cardview.widget.CardView text=null description=null clickable=false selected=true checked=false checkable=false
+com.android.providers.media.module null android.widget.FrameLayout text=null description=null clickable=false selected=true checked=false checkable=false
+com.android.providers.media.module com.android.providers.media.module:id/icon_thumbnail android.widget.ImageView text=null description=null clickable=false selected=true checked=false checkable=false
+com.android.providers.media.module com.android.providers.media.module:id/overlay_gradient android.widget.FrameLayout text=null description=null clickable=false selected=true checked=false checkable=false
+com.android.providers.media.module com.android.providers.media.module:id/video_container android.widget.LinearLayout text=null description=null clickable=false selected=true checked=false checkable=false
+com.android.providers.media.module com.android.providers.media.module:id/video_duration android.widget.TextView text=00:20 description=null clickable=false selected=true checked=false checkable=false
+com.android.providers.media.module com.android.providers.media.module:id/icon_video android.widget.ImageView text=null description=null clickable=false selected=true checked=false checkable=false
+com.android.providers.media.module com.android.providers.media.module:id/icon_check android.widget.ImageView text=null description=null clickable=false selected=true checked=false checkable=false
+com.android.providers.media.module null android.widget.FrameLayout text=null description=Photo taken on Oct 19, 2026, 2:32:47 PM clickable=true selected=false checked=false checkable=false
+com.android.providers.media.module null androidx.cardview.widget.CardView text=null description=null clickable=false selected=false checked=false checkable=false
+com.android.providers.media.module null android.widget.FrameLayout text=null description=null clickable=false selected=false checked=false checkable=false
+com.android.providers.media.module com.android.providers.media.module:id/icon_thumbnail android.widget.ImageView text=null description=null clickable=false selected=false checked=false checkable=false
+com.android.providers.media.module com.android.providers.media.module:id/overlay_gradient android.widget.FrameLayout text=null description=null clickable=false selected=false checked=false checkable=false
+com.android.providers.media.module com.android.providers.media.module:id/icon_check android.widget.ImageView text=null description=null clickable=false selected=false checked=false checkable=false
+com.android.providers.media.module null android.widget.LinearLayout text=null description=null clickable=false selected=false checked=false checkable=false
+com.android.providers.media.module com.android.providers.media.module:id/toolbar android.view.ViewGroup text=null description=null clickable=false selected=false checked=false checkable=false
+com.android.providers.media.module null android.widget.ImageButton text=null description=Cancel clickable=true selected=false checked=false checkable=false
+com.android.providers.media.module com.android.providers.media.module:id/tab_layout android.widget.HorizontalScrollView text=null description=null clickable=false selected=false checked=false checkable=false
+com.android.providers.media.module null android.widget.LinearLayout text=null description=null clickable=false selected=false checked=false checkable=false
+com.android.providers.media.module null android.widget.LinearLayout text=null description=Photos clickable=false selected=true checked=false checkable=false
+com.android.providers.media.module null android.widget.TextView text=Photos description=null clickable=false selected=true checked=false checkable=false
+com.android.providers.media.module null android.widget.LinearLayout text=null description=Albums clickable=true selected=false checked=false checkable=false
+com.android.providers.media.module null android.widget.TextView text=Albums description=null clickable=false selected=false checked=false checkable=false
+com.android.providers.media.module null androidx.appcompat.widget.LinearLayoutCompat text=null description=null clickable=false selected=false checked=false checkable=false
+com.android.providers.media.module com.android.providers.media.module:id/picker_bottom_bar android.widget.LinearLayout text=null description=null clickable=true selected=false checked=false checkable=false
+com.android.providers.media.module com.android.providers.media.module:id/button_view_selected android.widget.Button text=View selected description=null clickable=true selected=false checked=false checkable=false
+com.android.providers.media.module com.android.providers.media.module:id/button_add android.widget.Button text=Add (2) description=null clickable=true selected=false checked=false checkable=false
+com.android.providers.media.module android:id/navigationBarBackground android.view.View text=null description=null clickable=false selected=false checked=false checkable=false

@@ -16,11 +16,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-internal interface BackupStreamAccess {
-    fun openRead(location: BackupLocation): InputStream?
-    fun openWrite(location: BackupLocation): OutputStream?
-}
-
 internal class ContentResolverBackupStreams(private val resolver: ContentResolver) : BackupStreamAccess {
     override fun openRead(location: BackupLocation): InputStream? = resolver.openInputStream(uri(location))
     override fun openWrite(location: BackupLocation): OutputStream? = resolver.openOutputStream(uri(location), "wt")

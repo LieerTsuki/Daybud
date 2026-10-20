@@ -12,7 +12,7 @@ import com.example.lifemanager.ui.subscription.PaymentEditorState
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
-enum class V1Destination { PLAN, HABIT, SUBSCRIPTION, SETTINGS }
+enum class V1Destination { PLAN, HABIT, DIARY, SUBSCRIPTION, SETTINGS }
 sealed interface PlanNotificationClick {
     data class Detail(val token:PlanReminderToken):PlanNotificationClick
     data class Subscription(val id:Long,val generation:DataGeneration):PlanNotificationClick

@@ -25,7 +25,7 @@ fun V1BackupSettingsSection(model: V1BackupSettingsViewModel, enabled: Boolean, 
     val sourcePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         sourceRequest?.let { id -> sourceRequest = null; model.sourceSelected(id, uri?.toString()) }
     }
-    val outputPicker = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+    val outputPicker = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) { uri ->
         outputRequest?.let { id -> outputRequest = null; model.outputSelected(id, uri?.toString()) }
     }
     LaunchedEffect(state.operationId, state.step) {
@@ -37,15 +37,15 @@ fun V1BackupSettingsSection(model: V1BackupSettingsViewModel, enabled: Boolean, 
                 if (sourceRequest != null) { model.pickerFailed(id); return@LaunchedEffect }
                 sourceRequest = id
                 sourceLaunched = id
-                try { sourcePicker.launch(arrayOf("application/json", "application/octet-stream", "text/plain")) }
+                try { sourcePicker.launch(arrayOf("application/zip", "application/json", "application/octet-stream", "text/plain")) }
                 catch (_: Exception) { sourceRequest = null; model.pickerFailed(id) }
             }
             BackupStep.PICK_OUTPUT -> if (outputLaunched != id) {
                 if (outputRequest != null) { model.pickerFailed(id); return@LaunchedEffect }
                 outputRequest = id
                 outputLaunched = id
-                val prefix = if (state.action == BackupAction.EXPORT) "daybud-v2-backup" else "daybud-before-change"
-                try { outputPicker.launch("$prefix-${LocalDate.now()}.json") }
+                val prefix = if (state.action == BackupAction.EXPORT) "daybud-v4-backup" else "daybud-before-change"
+                try { outputPicker.launch("$prefix-${LocalDate.now()}.zip") }
                 catch (_: Exception) { outputRequest = null; model.pickerFailed(id) }
             }
             else -> Unit
@@ -92,22 +92,28 @@ fun V1BackupSettingsDialogs(state: V1BackupUiState, answerFirst: (String, Boolea
     val id = state.operationId ?: return
     when (state.step) {
         BackupStep.EXPORT_NOTICE -> AlertDialog(onDismissRequest = { answerFirst(id, false) },
-            title = { Text("导出明文备份") }, text = { Text("文件包含全部计划、标签、打卡、林场、订阅及设置，任何获得文件的人都可以读取。导出只生成 V3，旧版应用不能读取；请勿安装旧版降级。") },
+            title = { Text("导出明文备份") }, text = { Text("包含计划、打卡、订阅、日记、草稿、照片、视频、已保存的AI回顾及设置。API Key和自动总结授权不会导出。V4归档未加密，任何获得文件的人都可以读取；请保存到可信位置，勿安装旧版降级。") },
             confirmButton = { TextButton({ answerFirst(id, true) }) { Text("选择保存位置") } },
             dismissButton = { TextButton({ answerFirst(id, false) }) { Text("取消") } })
         BackupStep.RESTORE_PREVIEW -> AlertDialog(onDismissRequest = { answerFirst(id, false) },
             title = { Text("恢复备份预览") }, text = {
                 BackupDialogColumn {
-                    Text(if (state.sourceFormat == BackupSourceFormat.V1) "已严格验证旧 V1 文件并转换为统一计划。" else if (state.sourceFormat == BackupSourceFormat.V2) "已严格验证旧 V2 文件并初始化林场种子。" else "已严格验证 V3 文件及林场记录。")
+                    Text(when(state.sourceFormat) {
+                        BackupSourceFormat.V1 -> "已严格验证旧 V1 文件并转换为统一计划。"
+                        BackupSourceFormat.V2 -> "已严格验证旧 V2 文件并初始化林场种子。"
+                        BackupSourceFormat.V4 -> "已严格验证 V4 清单及全部媒体字节。"
+                        else -> "已严格验证 V3 文件及林场记录。"
+                    })
                     state.legacyTodoTimeZone?.let { Text("旧待办未保存时区，本次按 $it 转换；这是恢复设备时区，不是原设备历史时区。") }
                     Text("导出时间：${state.sourceDate.orEmpty()}")
                     v1BackupTableLabels.forEach { (table, label) -> Text("$label：${state.rowCounts[table] ?: 0}") }
-                    Text("完整替换全部业务数据及设置，不合并。接下来先另存并验证当前数据的 V3 保护备份，再独立最终确认。恢复成功会使旧草稿失效；取消则保留。")
+                    Text(if(state.sourceFormat==BackupSourceFormat.V4) "将替换全部业务数据、日记、草稿、媒体、已保存回顾及设置，不合并。" else "将替换旧格式中包含的业务数据及设置，现有日记、日记草稿、媒体和回顾会保留。")
+                    Text("接下来先另存并验证当前数据的 V4 保护备份，再独立最终确认。取消会保留当前数据。AI服务密钥和自动总结授权不从备份导入。")
                 }
             }, confirmButton = { TextButton({ answerFirst(id, true) }) { Text("同意并备份当前数据") } },
             dismissButton = { TextButton({ answerFirst(id, false) }) { Text("取消") } })
         BackupStep.CLEAR_CHOICE -> AlertDialog(onDismissRequest = { answerFirst(id, null) },
-            title = { Text("清空前先保留备份") }, text = { Text("将删除计划、标签、打卡、订阅及关联记录，保留设置。建议先备份，下一步还需独立最终确认；成功后旧草稿失效。") },
+            title = { Text("清空前先保留备份") }, text = { Text("将删除计划、打卡、订阅、日记、日记草稿、媒体、AI回顾及关联记录，保留设置。建议先备份，下一步还需独立最终确认。") },
             confirmButton = { Column {
                 TextButton({ answerFirst(id, true) }) { Text("先备份当前数据") }
                 TextButton({ answerFirst(id, false) }) { Text("跳过备份，继续确认") }
@@ -115,10 +121,11 @@ fun V1BackupSettingsDialogs(state: V1BackupUiState, answerFirst: (String, Boolea
         BackupStep.FINAL_CONFIRM -> AlertDialog(onDismissRequest = { answerFinal(id, false) },
             title = { Text(if (state.action == BackupAction.RESTORE) "最终确认：替换全部数据" else "最终确认：清空业务数据") },
             text = { BackupDialogColumn {
-                Text(if (state.protectionVerified) "当前数据的独立 V3 保护备份已重读验证。" else "你已选择跳过保护备份；删除后只能使用此前备份恢复。")
+                Text(if (state.protectionVerified) "当前数据的独立 V4 保护备份已重读验证。" else "你已选择跳过保护备份；删除后只能使用此前备份恢复。")
                 Text(if (state.action == BackupAction.RESTORE) "将用 ${state.sourceDate.orEmpty()} 的备份替换全部业务数据及设置，共 ${state.rowCounts.values.sum()} 条业务及关联记录。"
                     else "将删除全部业务及关联记录，保留用户设置。")
-                Text("确认后旧草稿失效；取消则保留当前数据和草稿。请核对后再确认。")
+                Text(if(state.action==BackupAction.RESTORE && state.sourceFormat!=BackupSourceFormat.V4) "旧格式恢复将保留现有日记和日记草稿；其他旧编辑会话失效。" else "确认后日记和草稿按以上范围替换或删除，旧编辑会话失效。")
+                Text("取消会保留当前数据和草稿，请核对后再确认。")
             } }, confirmButton = { TextButton({ answerFinal(id, true) }) {
                 Text(if (state.action == BackupAction.RESTORE) "确认替换全部数据" else "确认清空业务数据", color = MaterialTheme.colorScheme.error)
             } }, dismissButton = { TextButton({ answerFinal(id, false) }) { Text("取消，保留原数据") } })
@@ -134,4 +141,5 @@ private fun BackupDialogColumn(content: @Composable ColumnScope.() -> Unit) {
 
 private val v1BackupTableLabels = listOf("plans" to "计划", "tags" to "标签", "plan_tag_cross_ref" to "计划标签关联",
     "plan_exceptions" to "计划例外", "plan_legacy_refs" to "旧来源映射", "habits" to "习惯", "habit_records" to "打卡记录", "habit_trees" to "林场树木", "habit_waterings" to "浇水记录",
-    "subscriptions" to "订阅", "subscription_payments" to "扣费记录", "subscription_reminders" to "订阅提醒配置")
+    "subscriptions" to "订阅", "subscription_payments" to "扣费记录", "subscription_reminders" to "订阅提醒配置",
+    "diary_entries" to "日记", "diary_drafts" to "日记草稿", "diary_media" to "照片和视频", "diary_reviews" to "AI回顾")

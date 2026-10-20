@@ -32,6 +32,8 @@ import com.example.lifemanager.data.local.entity.HabitTreeEntity
 import com.example.lifemanager.data.local.entity.HabitWateringEntity
 import com.example.lifemanager.data.local.dao.HabitForestDao
 import com.example.lifemanager.data.local.migration.HabitForestMigration
+import com.example.lifemanager.data.local.migration.DiaryMigration
+import com.example.lifemanager.data.diary.*
 
 @Database(
     entities = [
@@ -50,8 +52,15 @@ import com.example.lifemanager.data.local.migration.HabitForestMigration
         PlanSettingsEntity::class,
         MaintenanceEntity::class,
         PlanReminderStateEntity::class,
+        DiaryEntryEntity::class,
+        DiaryDraftEntity::class,
+        DiaryMediaEntity::class,
+        DiaryEntryMediaEntity::class,
+        DiaryDraftMediaEntity::class,
+        DiaryReviewEntity::class,
+        DiaryReviewSourceEntity::class,
     ],
-    version = 7,
+    version = 8,
     exportSchema = true,
 )
 @TypeConverters(Converters::class, PlanConverters::class)
@@ -64,6 +73,7 @@ abstract class LifeManagerDatabase : RoomDatabase() {
     abstract fun subscriptionDao(): SubscriptionDao
     abstract fun maintenanceDao(): MaintenanceDao
     abstract fun backupSnapshotDao(): BackupSnapshotDao
+    abstract fun diaryDao(): DiaryDao
 
     companion object {
         val INITIALIZE = PlanV6Schema.INITIALIZE
@@ -167,6 +177,6 @@ abstract class LifeManagerDatabase : RoomDatabase() {
             },
         )
 
-        val MIGRATIONS: Array<Migration> = LEGACY_MIGRATIONS + arrayOf(PlanMigration(), HabitForestMigration())
+        val MIGRATIONS: Array<Migration> = LEGACY_MIGRATIONS + arrayOf(PlanMigration(), HabitForestMigration(), DiaryMigration())
     }
 }

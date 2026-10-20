@@ -3,6 +3,13 @@ package com.example.lifemanager.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.runtime.saveable.rememberSaveable
+import com.example.lifemanager.ui.diary.DiaryScreen
+import com.example.lifemanager.ui.diary.DiaryViewModel
+import com.example.lifemanager.ui.diary.DiarySaveStatus
+import com.example.lifemanager.ui.diary.ai.DiaryAiViewModel
+import com.example.lifemanager.ui.diary.ai.DiaryAiScreen
+import com.example.lifemanager.ui.diary.ai.AiSettingsScreen
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -32,18 +39,22 @@ import kotlinx.coroutines.launch
 @Composable
 fun V1NavGraph(navigation:PlanNavigationViewModel,list:PlanViewModel,editor:PlanEditorViewModel,
     calendar:PlanCalendarViewModel,settings:V1SettingsViewModel,
-    habits:HabitViewModel,subscriptions:SubscriptionViewModel,backup:V1BackupSettingsViewModel) {
+    habits:HabitViewModel,subscriptions:SubscriptionViewModel,backup:V1BackupSettingsViewModel,
+    diary:DiaryViewModel?=null,diaryAi:DiaryAiViewModel?=null) {
     val state=navigation.uiState.collectAsStateWithLifecycle().value
     val edit=editor.uiState.collectAsStateWithLifecycle().value
     val prefs=settings.uiState.collectAsStateWithLifecycle().value
     val operation=backup.uiState.collectAsStateWithLifecycle().value
     val sub=subscriptions.uiState.collectAsStateWithLifecycle().value
+    val diaryState=diary?.uiState?.collectAsStateWithLifecycle()?.value
+    var diaryPage by rememberSaveable(state.generation) { mutableStateOf("home") }
+    var settingsAi by rememberSaveable(state.generation) { mutableStateOf(false) }
     val stamp=edit.stamp // Immutable rendering stamp for every captured tab callback.
     val scope=rememberCoroutineScope()
     val pages=rememberSaveableStateHolder()
     val enabled=state.generation!=null && !state.isMaintaining && !prefs.isSaving && !prefs.isMaintaining && !edit.isBusy && !operation.busy &&
-        !sub.isBusy && !sub.isMaintaining && !sub.isExporting && !sub.isExportPending && !sub.editor.isSaving && !sub.paymentEditor.isSaving
-    fun liveNavigationAllowed()=!settings.uiState.value.isSaving && !settings.uiState.value.isMaintaining &&
+        !sub.isBusy && !sub.isMaintaining && !sub.isExporting && !sub.isExportPending && !sub.editor.isSaving && !sub.paymentEditor.isSaving && diaryState?.busy!=true
+    fun liveNavigationAllowed()=diary?.uiState?.value?.busy!=true && !settings.uiState.value.isSaving && !settings.uiState.value.isMaintaining &&
         !editor.uiState.value.isBusy && !editor.uiState.value.isMaintaining && !backup.uiState.value.busy &&
         subscriptions.uiState.value.let { !it.isBusy && !it.isMaintaining && !it.isExporting && !it.isExportPending && !it.editor.isSaving && !it.paymentEditor.isSaving }
     LaunchedEffect(prefs.settings?.planReminders,state.destination) {
@@ -51,8 +62,11 @@ fun V1NavGraph(navigation:PlanNavigationViewModel,list:PlanViewModel,editor:Plan
         if(state.destination==V1Destination.PLAN && prefs.settings!=null)editor.retryRead()
     }
     LaunchedEffect(state.pending?.ticket,edit.stamp,edit.isLoading,edit.isAvailable,edit.isBusy,prefs.isSaving,state.waitingForDraft,operation.busy,
-        sub.generation,sub.isAvailable,sub.isLoading,sub.isBusy,sub.isMaintaining,sub.isExporting,sub.isExportPending,sub.editor,sub.paymentEditor) {
-        if(liveNavigationAllowed())navigation.deliver(editor,subscriptions)
+        sub.generation,sub.isAvailable,sub.isLoading,sub.isBusy,sub.isMaintaining,sub.isExporting,sub.isExportPending,sub.editor,sub.paymentEditor,diaryState?.busy) {
+        if(liveNavigationAllowed()) {
+            if(state.pending!=null && state.pending.destination!=V1Destination.DIARY)diary?.flush()
+            navigation.deliver(editor,subscriptions)
+        }
     }
     BackHandler(enabled=state.destination!=V1Destination.PLAN || state.isMaintaining) {
         if(liveNavigationAllowed())navigation.requestDestination(V1Destination.PLAN,stamp)
@@ -63,10 +77,10 @@ fun V1NavGraph(navigation:PlanNavigationViewModel,list:PlanViewModel,editor:Plan
                 shape=RoundedCornerShape(24.dp),border=BorderStroke(1.dp,MaterialTheme.colorScheme.outlineVariant),shadowElevation=3.dp) {
                 NavigationBar(windowInsets=WindowInsets(0,0,0,0)) {
                     V1Destination.entries.forEach { destination ->
-                        val label=when(destination) { V1Destination.PLAN->"计划";V1Destination.HABIT->"打卡";V1Destination.SUBSCRIPTION->"订阅";V1Destination.SETTINGS->"设置" }
-                        val icon=when(destination) { V1Destination.PLAN->Icons.Outlined.CheckCircle;V1Destination.HABIT->Icons.Outlined.Repeat;V1Destination.SUBSCRIPTION->Icons.Outlined.Payments;V1Destination.SETTINGS->Icons.Outlined.Settings }
+                        val label=when(destination) { V1Destination.PLAN->"计划";V1Destination.HABIT->"打卡";V1Destination.DIARY->"日记";V1Destination.SUBSCRIPTION->"订阅";V1Destination.SETTINGS->"设置" }
+                        val icon=when(destination) { V1Destination.PLAN->Icons.Outlined.CheckCircle;V1Destination.HABIT->Icons.Outlined.Repeat;V1Destination.DIARY->Icons.Outlined.Book;V1Destination.SUBSCRIPTION->Icons.Outlined.Payments;V1Destination.SETTINGS->Icons.Outlined.Settings }
                         NavigationBarItem(state.destination==destination,
-                            { if(liveNavigationAllowed())navigation.requestDestination(destination,stamp) },
+                            { if(liveNavigationAllowed()) { if(destination!=V1Destination.DIARY)diary?.flush();navigation.requestDestination(destination,stamp) } },
                             { Icon(icon,null) },label={ Text(label,maxLines=1,overflow=TextOverflow.Ellipsis) },enabled=enabled,
                             modifier=Modifier.semantics { contentDescription="${label}入口" })
                     }
@@ -79,19 +93,37 @@ fun V1NavGraph(navigation:PlanNavigationViewModel,list:PlanViewModel,editor:Plan
                         TextButton(navigation::retryRead,enabled=!state.isMaintaining) { Text("重新读取导航") }
                     }
                     if(state.waitingForDraft)Text("有待处理通知，请先保存或关闭当前草稿",Modifier.padding(12.dp))
+                    if(state.destination==V1Destination.SETTINGS && diaryState?.draft!=null && diaryState.saveStatus!=DiarySaveStatus.SAVED) {
+                        Text("日记草稿尚未保存，请返回日记重试后再备份或恢复。",Modifier.padding(horizontal=12.dp))
+                        TextButton({ if(liveNavigationAllowed())navigation.requestDestination(V1Destination.DIARY,stamp) }) { Text("返回日记草稿") }
+                    }
                     Box(Modifier.weight(1f)) { pages.SaveableStateProvider(state.destination.name) {
                         when(state.destination) {
                             V1Destination.PLAN->PlanWorkspace(list,editor,calendar)
                             V1Destination.HABIT->HabitScreen(habits)
+                            V1Destination.DIARY->if(diary!=null && diaryAi!=null) {
+                                when(diaryPage) {
+                                    "ai"->DiaryAiScreen(diaryAi,{ diaryPage="home" },{ diaryPage="settings" }) { id->
+                                        diaryState?.stamp?.let { diary.openEntry(id,it) };diaryPage="home"
+                                    }
+                                    "settings"->AiSettingsScreen(diaryAi) { diaryPage="ai" }
+                                    else->DiaryScreen(diary,{ diaryPage="ai" },enabled)
+                                }
+                                BackHandler(enabled=diaryPage!="home") { diaryPage=if(diaryPage=="settings")"ai"else "home" }
+                            }
                             V1Destination.SUBSCRIPTION->SubscriptionScreen(subscriptions)
-                            V1Destination.SETTINGS->V1SettingsScreen(settings,backup,
+                            V1Destination.SETTINGS->if(settingsAi && diaryAi!=null) {
+                                AiSettingsScreen(diaryAi) { settingsAi=false }
+                                BackHandler { settingsAi=false }
+                            } else V1SettingsScreen(settings,backup,
                                 onBack={ if(liveNavigationAllowed())navigation.requestDestination(V1Destination.PLAN,stamp) },
-                                canStartBackup={ !editor.uiState.value.isBusy && !editor.uiState.value.isMaintaining &&
+                                onOpenAi=diaryAi?.let { { settingsAi=true } },
+                                canStartBackup={ diary?.uiState?.value?.let { !it.busy && it.saveStatus==DiarySaveStatus.SAVED }!=false && !editor.uiState.value.isBusy && !editor.uiState.value.isMaintaining &&
                                     subscriptions.uiState.value.let { !it.isBusy && !it.isMaintaining && !it.isExporting && !it.isExportPending && !it.editor.isOpen && !it.paymentEditor.isOpen } &&
                                     navigation.uiState.value.let { it.destination==V1Destination.SETTINGS && it.pending==null && it.confirmation==null } })
                         }
                         // Registered after destination children; their BackHandlers cannot win a freeze.
-                        BackHandler(enabled=state.isMaintaining || edit.isMaintaining || prefs.isMaintaining || operation.busy || sub.isBusy || sub.isExporting || sub.isExportPending) {}
+                        BackHandler(enabled=state.isMaintaining || edit.isMaintaining || prefs.isMaintaining || operation.busy || sub.isBusy || sub.isExporting || sub.isExportPending || diaryState?.busy==true) {}
                     } }
                 }
             }

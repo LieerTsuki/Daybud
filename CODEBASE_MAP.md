@@ -1,5 +1,11 @@
 # 代码索引
 
+- domain/diary、data/diary：日记、持久草稿、媒体引用、统计/回忆、修订及Room8仓库；FileDiaryStorage实现私有流导入、暂存/pin/恢复和回收。
+- ui/diary、ui/diary/DiaryViewModelFactory.kt：列表/日历、详情/编辑、图库/图片/视频与Activity所有者；AI独立页面在ui/diary/ai。
+- domain/diary/ai、data/diary/ai：AI五段策略、来源适配、HTTPS客户端、Keystore/noBackup配置和受授权的周期Worker。
+- data/backup/V4ArchiveContainer.kt、V4BackupManifest.kt、V4ArchiveFiles.kt、V4BackupRepository.kt：完整媒体归档、严格清单、租约、历史格式保留及原子替换；详见docs/backup-format-v4.md和docs/diary-acceptance.md。
+
+
 - tools/release/release.py、VerifySignature.java、test_release.py：仓库外密钥签名、固定正式身份、精确SDK签名矩阵及发布保护测试；公开证书和轮换链同目录，私钥禁止入库。流程见docs/release-signing.md。
 
 - ui/settings/SettingsScreen.kt、V1SettingsScreen.kt、V1BackupSettingsSection.kt：紧凑主题、模块提醒、数据操作卡片，保留维护/备份状态保护。
@@ -15,7 +21,7 @@
 - data/repository/HabitRepositoryImpl.kt：任务与种子原子创建、手动浇水、成熟重种、撤销级联和树种编辑。
 - ui/habit/HabitScreen.kt、HabitViewModel.kt、ForestSection.kt：打卡、树种编辑、月历与统一森林、选树浇水面板和世代保护。
 - ui/habit/ForestScene.kt、ForestLandscape.kt、TreeIllustration.kt：连续卡通草地、共享树木场景、拖动/缩放/查找、六树种五阶段插画与写入后水滴动效。
-- domain/backup/V3BackupSchema.kt、V3BackupValidator.kt、data/backup/V3BackupJsonCodec.kt、ForestBackupConverter.kt：当前format3/schema7和旧备份严格转换；历史V1/V2契约不改写。
+- domain/backup/V3BackupSchema.kt、V3BackupValidator.kt、data/backup/V3BackupJsonCodec.kt、ForestBackupConverter.kt：冻结format3/schema7和旧备份严格转换；历史V1/V2契约不改写。
 
 - app/src/main/java/com/example/lifemanager/ui/navigation/V1ViewModelFactory.kt：生产计划与设置所有者接线。
 - ui/plan/PlanWorkspace.kt、PlanScreen.kt：四象限及月历下拉、导航与旧动作保护。
