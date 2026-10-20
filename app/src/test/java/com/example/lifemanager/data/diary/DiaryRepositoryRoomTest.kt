@@ -11,6 +11,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.first
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -22,6 +23,26 @@ import kotlin.test.*
 @Config(sdk=[28], application=Application::class)
 @SQLiteMode(SQLiteMode.Mode.NATIVE)
 class DiaryRepositoryRoomTest {
+    @Test fun entriesAndObservationUseRecordDateThenCreationTimeThenId(): Unit = runBlocking {
+        V6RoomFixture().use { fixture ->
+            val dao=fixture.database.diaryDao()
+            val records=listOf(Triple(1L,"2026-10-20",1L),Triple(2L,"2026-10-19",30L),
+                Triple(3L,"2026-10-01",100L),Triple(4L,"2026-10-19",40L),Triple(5L,"2026-10-19",40L))
+            records.forEach { (id,date,created) ->
+                dao.insertEntry(DiaryEntryEntity(id,LocalDate.parse(date).toEpochDay(),"记录$id","正文",null,created,created,1))
+            }
+            val expected=listOf(1L,5L,4L,2L,3L)
+            assertEquals(expected,dao.entries().map { it.id })
+            assertEquals(expected,dao.observeEntries().first().map { it.id })
+            val repository=RoomDiaryRepository(fixture.database,MaintenanceCoordinator(DataGenerationRepositoryImpl(fixture.database)),Clock.systemUTC())
+            assertEquals(expected,repository.observeEntries().first().map { it.id })
+            val draft=repository.createDraft(DataGeneration(0),LocalDate.parse("2026-10-20"),3)
+            val edited=repository.saveDraft(draft.copy(date=LocalDate.parse("2026-10-20")),draft.revision,DataGeneration(0))
+            repository.commitDraft(edited.id,edited.revision,DataGeneration(0))
+            assertEquals(listOf(3L,1L,5L,4L,2L),repository.observeEntries().first().map { it.id })
+            assertEquals(100L,dao.entry(3)!!.createdAt)
+        }
+    }
     @Test fun maintenanceReplacementIsAtomicAndPersistentDraftDoesNotDependOnOldGeneration(): Unit = runBlocking {
         V6RoomFixture().use { fixture ->
             val generations=DataGenerationRepositoryImpl(fixture.database)

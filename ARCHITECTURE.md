@@ -2,6 +2,8 @@
 
 更新：2026-10-20；已发布正式1.2.0/code12日记与AI回顾，为当前Latest Release；历史1.1.4正式签名延续。
 
+1.2.1/code13页面调整正在验证：PlanScreen完整渲染未完成列表，仅已完成保留折叠状态；DiaryDao两个查询与DiaryRules.ordered统一按记录日期、创建时间、ID倒序，DiaryViewModel沿用该规则。AI回顾由AiReviewDateInput提供只读框与右侧日期选择器，UTC转换civil date，禁用时清除临时选择；确认仍调用原range流程清除旧预览与未保存结果。Room8、V4及签名身份不变。当前验收见docs/page-polish-1.2.1-acceptance.md。
+
 当前版本使用Room8、计划/打卡/日记/订阅/设置五入口。7→8仅新增七张日记表，旧15张Room表定义不变；DiaryViewModel与DiaryAiViewModel由Activity保留的独立工厂创建。DiaryScreen组合列表/日历、草稿箱、详情、编辑和媒体查看，草稿落Room且1秒空闲/5秒连续输入保存；回调捕获原世代/会话/修订，普通写入由仓库内部获取全局准入，调用方不得再嵌套。
 
 FileDiaryStorage统一持有私有不可变媒体、临时文件与pin，锁序为全局准入或维护会话→storage gate→Room事务。完整快照在同一Room事务中读取旧模块与日记，gate内pin后释放普通准入进行慢I/O；恢复媒体先完整准备、摘要校验和promote，数据库在同一维护事务替换并推进一次世代。文件回收读取提交后的真实引用，pin保护并行导出与预览。

@@ -9,6 +9,12 @@ class DiaryRulesTest {
     private fun entry(id: Long, date: String, created: Long = id, updated: Long = created) =
         DiaryEntry(id, LocalDate.parse(date), "", "正文", null, emptyList(), Instant.ofEpochMilli(created), Instant.ofEpochMilli(updated), 1)
 
+    @Test fun recordDatePrecedesCreationTimeWhenBackfillingOlderDays() {
+        val entries = listOf(entry(1,"2026-10-20",1), entry(2,"2026-10-19",30),
+            entry(3,"2026-10-01",100), entry(4,"2026-10-19",40), entry(5,"2026-10-19",40))
+        assertEquals(listOf(1L,5L,4L,2L,3L),DiaryRules.ordered(entries).map { it.id })
+    }
+
     @Test fun editedOldEntryKeepsCreationOrderAndTiesUseDescendingId() {
         val entries = listOf(entry(1,"2026-10-19", 1, 999), entry(2,"2026-10-19", 2), entry(3,"2026-10-19", 2))
         assertEquals(listOf(3L, 2L, 1L), DiaryRules.ordered(entries).map { it.id })

@@ -121,7 +121,6 @@ private fun QuadrantCard(priority: TodoPriority, rows: List<PlanListRow>, state:
     onAdd: (() -> Unit)?, canNavigate: Boolean, modifier: Modifier = Modifier) {
     // Keep each expansion local to its quadrant and data generation, never a database filter.
     var showCompleted by rememberSaveable(priority, state.generation?.value) { mutableStateOf(false) }
-    var showAll by rememberSaveable(priority, state.generation?.value, state.filter.query) { mutableStateOf(false) }
     val active = rows.filterNot { it.plan.isCompleted }
     val completed = rows.filter { it.plan.isCompleted }
     val palette = quadrantPalette(priority)
@@ -144,11 +143,9 @@ private fun QuadrantCard(priority: TodoPriority, rows: List<PlanListRow>, state:
                     Modifier.padding(12.dp), style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            (if (showAll) active else active.take(3)).forEach { row ->
+            active.forEach { row ->
                 QuadrantEntry(row, enabled && row.plan.id !in state.pendingIds, zone, onCompleted, onOpen)
             }
-            if (active.size > 3) TextButton({ showAll = !showAll }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-                enabled = !state.isMaintaining) { Text(if (showAll) "收起计划" else "展开其余 ${active.size - 3} 项") }
             if (completed.isNotEmpty()) {
                 TextButton({ showCompleted = !showCompleted }, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)
                     .semantics { contentDescription = "${priorityLabel(priority)}：已完成 ${completed.size} 项" },

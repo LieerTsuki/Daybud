@@ -28,8 +28,8 @@ fun DiaryAiScreen(viewModel: DiaryAiViewModel, onBack: () -> Unit, onOpenSetting
             OutlinedButton(onClick = { viewModel.preset(AiPeriodKind.WEEK) }, enabled = !state.busy) { Text("上周") }
             OutlinedButton(onClick = { viewModel.preset(AiPeriodKind.MONTH) }, enabled = !state.busy) { Text("上月") }
         }
-        OutlinedTextField(state.from, { viewModel.range(it, state.through) }, label = { Text("开始日期 YYYY-MM-DD") }, singleLine = true, enabled = !state.busy, modifier = Modifier.fillMaxWidth())
-        OutlinedTextField(state.through, { viewModel.range(state.from, it) }, label = { Text("结束日期 YYYY-MM-DD") }, singleLine = true, enabled = !state.busy, modifier = Modifier.fillMaxWidth())
+        AiReviewDateInput("开始日期", state.from, !state.busy) { viewModel.range(it, state.through) }
+        AiReviewDateInput("结束日期", state.through, !state.busy) { viewModel.range(state.from, it) }
         Button(onClick = { viewModel.prepare() }, enabled = !state.busy, modifier = Modifier.fillMaxWidth()) { Text("检查范围") }
         state.preview?.let { preview ->
             Card(Modifier.fillMaxWidth()) { Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {

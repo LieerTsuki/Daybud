@@ -31,6 +31,25 @@ class PlanQuadrantBoardTest {
     private fun scroll(matcher:SemanticsMatcher) {
         compose.onNode(SemanticsMatcher.keyIsDefined(SemanticsActions.ScrollToIndex)).performScrollToNode(matcher)
     }
+    @Test fun `all unfinished plans are shown without expanding and completed plans stay collapsed`() {
+        val rows=(1L..6L).map { id -> PlanListRow(Plan(id=id,title="未完成$id",priority=TodoPriority.HIGH,
+            timeZone="Asia/Shanghai",createdAt=Instant.EPOCH,updatedAt=Instant.EPOCH)) } +
+            PlanListRow(Plan(id=7,title="已完成的计划",priority=TodoPriority.HIGH,isCompleted=true,
+                completedAt=Instant.EPOCH,timeZone="Asia/Shanghai",createdAt=Instant.EPOCH,updatedAt=Instant.EPOCH))
+        compose.setContent { LifeManagerTheme { Box(Modifier.size(320.dp,640.dp)) {
+            PlanScreen(PlanUiState(rows=rows,isAvailable=true,isLoading=false),{},{_,_->},{},{},{})
+        } } }
+        scroll(hasText("未完成6"))
+        (1L..6L).forEach { compose.onNodeWithText("未完成$it").assertExists() }
+        compose.onNodeWithText("展开其余",substring=true).assertDoesNotExist()
+        compose.onNodeWithText("收起计划").assertDoesNotExist()
+        compose.onNodeWithText("已完成的计划").assertDoesNotExist()
+        scroll(hasContentDescription("重要且紧急：已完成 1 项"))
+        compose.onNodeWithContentDescription("重要且紧急：已完成 1 项").performScrollTo().performClick()
+        compose.onNodeWithText("已完成的计划").assertExists()
+        compose.onNodeWithContentDescription("重要且紧急：已完成 1 项").performScrollTo().performClick()
+        compose.onNodeWithText("已完成的计划").assertDoesNotExist()
+    }
     @Test fun `board has four add entries and removes obsolete filter strips`() {
         compose.setContent { LifeManagerTheme { Box(Modifier.size(320.dp,640.dp)) {
             PlanScreen(PlanUiState(isAvailable=true,isLoading=false),{},{_,_->},{},{},{},onNew={})

@@ -8,7 +8,7 @@ object DiaryRules {
     const val MAX_IMAGE_BYTES = 50L * 1024 * 1024
     const val MAX_VIDEO_BYTES = 500L * 1024 * 1024
     const val MAX_ENTRY_BYTES = 1024L * 1024 * 1024
-    fun ordered(entries: List<DiaryEntry>): List<DiaryEntry> = entries.sortedWith(compareByDescending<DiaryEntry> { it.createdAt }.thenByDescending { it.id })
+    fun ordered(entries: List<DiaryEntry>): List<DiaryEntry> = entries.sortedWith(compareByDescending<DiaryEntry> { it.date }.thenByDescending { it.createdAt }.thenByDescending { it.id })
     fun statistics(entries: List<DiaryEntry>, today: LocalDate): DiaryStatistics {
         val dates = entries.map { it.date }.toSet()
         var day = if (today in dates) today else today.minusDays(1)

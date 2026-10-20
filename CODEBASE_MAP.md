@@ -2,6 +2,7 @@
 
 - domain/diary、data/diary：日记、持久草稿、媒体引用、统计/回忆、修订及Room8仓库；FileDiaryStorage实现私有流导入、暂存/pin/恢复和回收。
 - ui/diary、ui/diary/DiaryViewModelFactory.kt：列表/日历、详情/编辑、图库/图片/视频与Activity所有者；AI独立页面在ui/diary/ai。
+- ui/diary/ai/AiReviewDateInput.kt：AI回顾只读日期框、右侧日历按钮和确认/取消；DiaryRules.ordered与DiaryDao按记录日期、创建时间、ID倒序。
 - domain/diary/ai、data/diary/ai：AI五段策略、来源适配、HTTPS客户端、Keystore/noBackup配置和受授权的周期Worker。
 - data/backup/V4ArchiveContainer.kt、V4BackupManifest.kt、V4ArchiveFiles.kt、V4BackupRepository.kt：完整媒体归档、严格清单、租约、历史格式保留及原子替换；详见docs/backup-format-v4.md和docs/diary-acceptance.md。
 

@@ -8,10 +8,10 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface DiaryDao {
-    @Query("SELECT * FROM diary_entries ORDER BY createdAt DESC,id DESC") fun observeEntries(): Flow<List<DiaryEntryEntity>>
+    @Query("SELECT * FROM diary_entries ORDER BY date DESC,createdAt DESC,id DESC") fun observeEntries(): Flow<List<DiaryEntryEntity>>
     @Query("SELECT * FROM diary_drafts ORDER BY updatedAt DESC,id DESC") fun observeDrafts(): Flow<List<DiaryDraftEntity>>
     @Query("SELECT * FROM diary_reviews ORDER BY createdAt DESC,id DESC") fun observeReviews(): Flow<List<DiaryReviewEntity>>
-    @Query("SELECT * FROM diary_entries ORDER BY createdAt DESC,id DESC") suspend fun entries(): List<DiaryEntryEntity>
+    @Query("SELECT * FROM diary_entries ORDER BY date DESC,createdAt DESC,id DESC") suspend fun entries(): List<DiaryEntryEntity>
     @Query("SELECT * FROM diary_drafts ORDER BY updatedAt DESC,id DESC") suspend fun drafts(): List<DiaryDraftEntity>
     @Query("SELECT * FROM diary_media ORDER BY id") suspend fun media(): List<DiaryMediaEntity>
     @Query("SELECT * FROM diary_reviews ORDER BY createdAt DESC,id DESC") suspend fun reviews(): List<DiaryReviewEntity>
