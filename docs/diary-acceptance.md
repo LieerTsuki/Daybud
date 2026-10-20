@@ -1,6 +1,6 @@
 # 日记与AI回顾 · 1.2.0验收
 
-当前状态：源码候选1.2.0/code12，1290项JVM及78项设备测试已通过；待正式签名覆盖升级与发布。基线正式1.1.4/code11，用户批准设计后执行，沿用直接main推送与正式APK发布授权。
+当前状态：正式候选1.2.0/code12验收通过，待公开发布。1290项JVM、78项设备测试、正式签名及三条覆盖升级已通过。基线正式1.1.4/code11，用户批准设计后执行，沿用直接main推送与正式APK发布授权。[机器可读验证汇总](evidence/diary-1.2.0-validation.json)。
 
 ## 功能及数据边界
 
@@ -21,11 +21,11 @@ AI使用用户配置的HTTPS Chat Completions兼容接口，只发送确认范�
 - 第二轮81项集成中6项失败：旧schema部分表省略indices字段的夹具不兼容、维护快照测试未包Room事务、LazyColumn尚未组合目标节点的测试定位，以及取消导入时的租约交接。逐项修正，第三轮82项/19套件全部通过，failure/error/skipped均0。
 - 独立静态审查发现V4回顾可接受未知标题而读取端拒绝，已增加五个固定唯一段落和来源/字数校验，回归取得RED→GREEN，限定复核关闭此问题。
 - 额外检查确认短读取提供方需完整读取四字节归档头，增加短读/available=0回归；纳入后续全量运行。
-- 最终应用/单元测试源码的完整Gradle运行成功（16m25s）：1290项JVM/124套件全部通过，failure/error/skipped均0；Debug/androidTest/Release构建成功，lint Fatal0/Error0/Warning51。日志.tools/diary-final-validation.log。后续唯一源码修改为新设备测试中的Compose同步等待，正补构建androidTest并重跑78项设备用例。
+- 最终应用/单元测试源码的完整Gradle运行成功（16m25s）：1290项JVM/124套件全部通过，failure/error/skipped均0；Debug/androidTest/Release构建成功，lint Fatal0/Error0/Warning51。日志.tools/diary-final-validation.log。后续唯一源码修改为新设备测试中的Compose同步等待，补构建androidTest后78项设备用例全部通过。
 
 ## 设备验收与限制
 
-API35专用模拟器最终执行78项AndroidJUnit，94.197秒，全部通过（0 failure/error/skipped）。包含实际MediaStore图片和设备编码AVC视频导入、删除图库源后私有字节核对、Room重开草稿、V4完整媒体/草稿/五段回顾恢复与及时回收、真实旋转和Android Keystore。实际调用系统多选图库选择PNG和20秒MP4，生产VideoView实际播放并验证后台暂停、不自动重播、返回/旋转释放。日志.tools/diary-final-device.log；最终Debug APK SHA-256为d64dafef820879129b8d4b1d80d90d023c5d6ef23b34812e2fda1094490bac95。正式签名1.1.4覆盖升级、APK摘要和公开发布回执待追加。
+API35专用模拟器最终执行78项AndroidJUnit，94.197秒，全部通过（0 failure/error/skipped）。包含实际MediaStore图片和设备编码AVC视频导入、删除图库源后私有字节核对、Room重开草稿、V4完整媒体/草稿/五段回顾恢复与及时回收、真实旋转和Android Keystore。实际调用系统多选图库选择PNG和20秒MP4，生产VideoView实际播放并验证后台暂停、不自动重播、返回/旋转释放。日志.tools/diary-final-device.log；最终Debug APK SHA-256为d64dafef820879129b8d4b1d80d90d023c5d6ef23b34812e2fda1094490bac95。正式签名1.1.4覆盖升级及APK摘要见下文，公开发布回执待追加。
 
 实际界面截图已经人工查看：[日记列表](evidence/diary-1.2.0-images/diary-list.png)、[月历](evidence/diary-1.2.0-images/diary-calendar.png)、[详情与媒体](evidence/diary-1.2.0-images/diary-detail.png)、[原生图库多选](evidence/diary-1.2.0-images/selected.png)。标题UUID和纯色媒体均为本轮合成测试材料；对应原生无障碍树随截图留存。
 
@@ -37,4 +37,12 @@ API35专用模拟器最终执行78项AndroidJUnit，94.197秒，全部通过（0
 
 2026-10-20补充系统选择器设备回归：首轮78项中77项通过，新加视频生命周期测试等待超时。原生日志和实际选择器截图确认照片与20秒MP4成功选入；视频窗口直到测试等待结束才组合，测试只等待原生主线程，未推进Compose测试帧。仅在测试等待中增加Compose空闲同步，生产播放器未改；限定复核通过，补构建androidTest成功（50秒），新包完整78项全部通过。失败日志保留于.tools/diary-picker-failure-full-logcat.txt。
 
-最终全量运行之前的1289项首轮全量有1项GC失败，当轮Debug编译先于修正而新增测试已被纳入，不能计为通过。随后3项真实Room定向回归及上述1290项全量均通过。签名工具17项、升级证据助手8项、发布保护助手9项离线测试均通过；这些测试不代替实际签名与覆盖安装。
+最终全量运行之前的1289项首轮全量有1项GC失败，当轮Debug编译先于修正而新增测试已被纳入，不能计为通过。随后3项真实Room定向回归及上述1290项全量均通过。签名工具17项、升级证据助手最终10项、发布保护助手9项离线测试均通过；这些测试不代替实际签名与覆盖安装。
+
+## 正式签名与覆盖升级
+
+正式APK为rizhiya-1.2.0.apk，12,787,952字节，SHA-256为`8076ca536a0574abbb50d718cb7b723f2af36af4628d4b4f675e3f4398da7bf8`。非debuggable、16KiB对齐；API26/27使用既有v2证书，API28/32/33/35独立校验新v3证书及轮换链。构建提交`65141724cc50322b4e9f24b38d3ec71aeeebe4cc`，440个应用/构建/schema/测试文件与冻结清单和Git blob逐一核对一致。
+
+专用API26、28、35旧安装均从实际1.1.4/code11签名包install-r升级，不卸载、不清数据、不重置AVD。升级后Room7→8，16→23张应用表（包含Android元数据）；旧表所有列、原始值、SQLite存储类型、NULL、设置及序列逐项一致，integrity_check=ok、外键违规0。安装字节摘要与上述正式候选一致。仅清理本轮UUID合成数据，独立重读确认原先设置/旧值和序列高水位保留，关机前执行sync。
+
+升级检查前，辅助脚本对签名回执字段位置及Android随机安装目录中的波浪号识别不正确，均在安装前停止；补充两项RED→GREEN后修正，本体APK不变。API26 ADB三次只读快照命令中断均留存：两次在安装前，一次在已完成测试数据清理后的重读。保留失败目录和已准备材料，不重复安装或清理；最后以独立只读快照核对expected-after完成清理证明，实际重读未触发重试。API28/35流程完整通过。原始证据位于.tools/diary-api{26,28,35}-upgrade-20261019；日期目录沿用计划命名，实际执行日为2026-10-20。

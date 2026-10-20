@@ -1,0 +1,545 @@
+{
+  "date": "2026-10-20",
+  "versionName": "1.2.0",
+  "versionCode": 12,
+  "roomSchema": 8,
+  "backupFormat": 4,
+  "jvm": {
+    "tests": 1290,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 124
+  },
+  "lint": {
+    "Fatal": 0,
+    "Error": 0,
+    "Warning": 51
+  },
+  "device": {
+    "tests": 78,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "serial": "emulator-5580",
+    "avd": "Rizhiya_Diary_API35",
+    "androidApi": 35,
+    "appSha256": "d64dafef820879129b8d4b1d80d90d023c5d6ef23b34812e2fda1094490bac95",
+    "testApkSha256": "a93102a5d9f7438cfb297b9b31e74fa300bea0f3b2cd8743fa5bcdaeacb8df67",
+    "log": ".tools\\diary-final-device.log",
+    "commandExit": 0,
+    "passed": true
+  },
+  "signingToolTests": {
+    "tests": 17,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "upgradeHelperTests": {
+    "tests": 10,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "publisherHelperTests": {
+    "tests": 9,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "build": {
+    "status": "successful",
+    "debug": true,
+    "androidTest": true,
+    "release": true,
+    "log": ".tools/diary-final-validation.log",
+    "androidTestRebuildLog": ".tools/diary-picker-sync-rebuild.log",
+    "onlyChangeDuringFinalBuild": "AndroidTest waitForIdle synchronization; production and JVM sources unchanged",
+    "committedReleaseLog": ".tools/diary-committed-release.log",
+    "committedSource": "65141724cc50322b4e9f24b38d3ec71aeeebe4cc"
+  },
+  "sourceManifest": {
+    "files": 440,
+    "sha256": "38cb9bb352a6907950a570f0ec651a9f175707a533f5f8f2be01ce63492538a8",
+    "file": "diary-1.2.0-source-manifest.json",
+    "normalization": "CRLF to LF for source text"
+  },
+  "upgrade": {
+    "status": "verified",
+    "tablesBefore": 16,
+    "tablesAfter": 23,
+    "androidApis": [
+      26,
+      28,
+      35
+    ],
+    "scenarios": [
+      {
+        "sdk": 26,
+        "verification": {
+          "addedDiaryTables": [
+            "diary_draft_media",
+            "diary_drafts",
+            "diary_entries",
+            "diary_entry_media",
+            "diary_media",
+            "diary_review_sources",
+            "diary_reviews"
+          ],
+          "afterTypedJsonSha256": "20320437688d2f3ef6d5eeebb5b5d02d336cec51a46a5a8b8b8e1a3cc55432a4",
+          "androidApi": 26,
+          "avd": "Rizhiya_Stable_API26",
+          "evidence": "D:\\codex_work\\app\\app\\.tools\\diary-api26-upgrade-20261019",
+          "executed": true,
+          "expectedJsonSha256": "1b65ce2e53869f3cf5e4526306a9bb64acdf0e2cec173126951d1bdb0f8ef802",
+          "foreignKeyViolations": 0,
+          "fullColumnsRawValuesStorageClassesAndNullsUnchanged": true,
+          "installedApkSha256": "8076ca536a0574abbb50d718cb7b723f2af36af4628d4b4f675e3f4398da7bf8",
+          "installedCandidateBytesUnchanged": true,
+          "integrityCheck": "ok",
+          "nativeTechnicalFixtureScope": "plan_reminder_state preserved empty; nonempty coverage belongs to real Room migration test",
+          "newApplicationTables": 23,
+          "newCode": 12,
+          "newLegacyTypedFingerprint": "ceb81ad3c5e42527e2383ff950fa544f1e6c704e9cd67525687e333e5dbcfb25",
+          "newSchema": 8,
+          "newVersion": "1.2.0",
+          "oldApplicationTables": 16,
+          "oldCode": 11,
+          "oldSchema": 7,
+          "oldTypedFingerprint": "ceb81ad3c5e42527e2383ff950fa544f1e6c704e9cd67525687e333e5dbcfb25",
+          "oldVersion": "1.1.4",
+          "packageManagerActiveSigner": [
+            "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c"
+          ],
+          "packageManagerSigningHistory": [
+            "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c"
+          ],
+          "preservedLegacyTables": [
+            "android_metadata",
+            "app_maintenance",
+            "app_settings",
+            "habit_records",
+            "habit_trees",
+            "habit_waterings",
+            "habits",
+            "plan_exceptions",
+            "plan_legacy_refs",
+            "plan_reminder_state",
+            "plan_tag_cross_ref",
+            "plans",
+            "subscription_payments",
+            "subscription_reminders",
+            "subscriptions",
+            "tags"
+          ],
+          "screenshots": "Controller captures UI separately after fixture cleanup",
+          "sequenceFingerprint": "ddfcd42289438f7024efeefc79f38e049e054ee19b84b07af3b646760dd53167",
+          "sequencesExactlyUnchanged": true,
+          "serial": "emulator-5570",
+          "settingsAndMaintenanceUnchanged": true,
+          "signingHistorySemantics": "legacyCurrentSignerOnly",
+          "stableSignerPreserved": true,
+          "status": "verified"
+        },
+        "cleanup": {
+          "androidApi": 26,
+          "avd": "Rizhiya_Stable_API26",
+          "cleanupScope": "Only exact verified synthetic fixture parent IDs; cascaded own children",
+          "emptyAdbTransportReadRetries": 0,
+          "evidence": "D:\\codex_work\\app\\app\\.tools\\diary-api26-upgrade-20261019\\cleanup",
+          "executed": true,
+          "fixtureToken": "e2657b0440394dffad786757416c4c20",
+          "independentDeviceSnapshotMatched": true,
+          "priorLegacyValuesExactlyRestored": true,
+          "resumedReadOnlySnapshot": "after-resume",
+          "sequenceHighWaterUnchanged": true,
+          "serial": "emulator-5570",
+          "status": "cleaned"
+        }
+      },
+      {
+        "sdk": 28,
+        "verification": {
+          "addedDiaryTables": [
+            "diary_draft_media",
+            "diary_drafts",
+            "diary_entries",
+            "diary_entry_media",
+            "diary_media",
+            "diary_review_sources",
+            "diary_reviews"
+          ],
+          "afterTypedJsonSha256": "04479567df06f9f971f1fcca81eb7efa3a68beb5f84fc5e74442c5ce9c4ecfe5",
+          "androidApi": 28,
+          "avd": "Rizhiya_Stable_API28",
+          "evidence": "D:\\codex_work\\app\\app\\.tools\\diary-api28-upgrade-20261019",
+          "executed": true,
+          "expectedJsonSha256": "dab2759e95e9581dba867cf0b67cb0fa14bfe3d5e2dd955673e20cf212660e9f",
+          "foreignKeyViolations": 0,
+          "fullColumnsRawValuesStorageClassesAndNullsUnchanged": true,
+          "installedApkSha256": "8076ca536a0574abbb50d718cb7b723f2af36af4628d4b4f675e3f4398da7bf8",
+          "installedCandidateBytesUnchanged": true,
+          "integrityCheck": "ok",
+          "nativeTechnicalFixtureScope": "plan_reminder_state preserved empty; nonempty coverage belongs to real Room migration test",
+          "newApplicationTables": 23,
+          "newCode": 12,
+          "newLegacyTypedFingerprint": "2c7d44759a0f6290bd46d01c2b0f19a7ef2331412b09fe8ceda826175c3fa9bf",
+          "newSchema": 8,
+          "newVersion": "1.2.0",
+          "oldApplicationTables": 16,
+          "oldCode": 11,
+          "oldSchema": 7,
+          "oldTypedFingerprint": "2c7d44759a0f6290bd46d01c2b0f19a7ef2331412b09fe8ceda826175c3fa9bf",
+          "oldVersion": "1.1.4",
+          "packageManagerActiveSigner": [
+            "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a"
+          ],
+          "packageManagerSigningHistory": [
+            "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+            "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a"
+          ],
+          "preservedLegacyTables": [
+            "android_metadata",
+            "app_maintenance",
+            "app_settings",
+            "habit_records",
+            "habit_trees",
+            "habit_waterings",
+            "habits",
+            "plan_exceptions",
+            "plan_legacy_refs",
+            "plan_reminder_state",
+            "plan_tag_cross_ref",
+            "plans",
+            "subscription_payments",
+            "subscription_reminders",
+            "subscriptions",
+            "tags"
+          ],
+          "screenshots": "Controller captures UI separately after fixture cleanup",
+          "sequenceFingerprint": "ddfcd42289438f7024efeefc79f38e049e054ee19b84b07af3b646760dd53167",
+          "sequencesExactlyUnchanged": true,
+          "serial": "emulator-5572",
+          "settingsAndMaintenanceUnchanged": true,
+          "signingHistorySemantics": "actualSigningCertificateHistory",
+          "stableSignerPreserved": true,
+          "status": "verified"
+        },
+        "cleanup": {
+          "androidApi": 28,
+          "avd": "Rizhiya_Stable_API28",
+          "cleanupScope": "Only exact verified synthetic fixture parent IDs; cascaded own children",
+          "evidence": "D:\\codex_work\\app\\app\\.tools\\diary-api28-upgrade-20261019\\cleanup",
+          "executed": true,
+          "fixtureToken": "6311fe9bcaf2452b96a0adbb252954b8",
+          "independentDeviceSnapshotMatched": true,
+          "priorLegacyValuesExactlyRestored": true,
+          "sequenceHighWaterUnchanged": true,
+          "serial": "emulator-5572",
+          "status": "cleaned"
+        }
+      },
+      {
+        "sdk": 35,
+        "verification": {
+          "addedDiaryTables": [
+            "diary_draft_media",
+            "diary_drafts",
+            "diary_entries",
+            "diary_entry_media",
+            "diary_media",
+            "diary_review_sources",
+            "diary_reviews"
+          ],
+          "afterTypedJsonSha256": "a00af806467de01a8743ca0bc1471245ebbad4e22a799ec2c33689917951cd39",
+          "androidApi": 35,
+          "avd": "Rizhiya_Stable_Release",
+          "evidence": "D:\\codex_work\\app\\app\\.tools\\diary-api35-upgrade-20261019",
+          "executed": true,
+          "expectedJsonSha256": "d8575dc531ae0febc4f067d5ba47dd61ee0e87e00d74aa28cb5beaf0a07b83d8",
+          "foreignKeyViolations": 0,
+          "fullColumnsRawValuesStorageClassesAndNullsUnchanged": true,
+          "installedApkSha256": "8076ca536a0574abbb50d718cb7b723f2af36af4628d4b4f675e3f4398da7bf8",
+          "installedCandidateBytesUnchanged": true,
+          "integrityCheck": "ok",
+          "nativeTechnicalFixtureScope": "plan_reminder_state preserved empty; nonempty coverage belongs to real Room migration test",
+          "newApplicationTables": 23,
+          "newCode": 12,
+          "newLegacyTypedFingerprint": "30bf741a07bfb69ccb7de01053b4d4698b1524410aedbadedd725882199d16e2",
+          "newSchema": 8,
+          "newVersion": "1.2.0",
+          "oldApplicationTables": 16,
+          "oldCode": 11,
+          "oldSchema": 7,
+          "oldTypedFingerprint": "30bf741a07bfb69ccb7de01053b4d4698b1524410aedbadedd725882199d16e2",
+          "oldVersion": "1.1.4",
+          "packageManagerActiveSigner": [
+            "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a"
+          ],
+          "packageManagerSigningHistory": [
+            "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+            "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a"
+          ],
+          "preservedLegacyTables": [
+            "android_metadata",
+            "app_maintenance",
+            "app_settings",
+            "habit_records",
+            "habit_trees",
+            "habit_waterings",
+            "habits",
+            "plan_exceptions",
+            "plan_legacy_refs",
+            "plan_reminder_state",
+            "plan_tag_cross_ref",
+            "plans",
+            "subscription_payments",
+            "subscription_reminders",
+            "subscriptions",
+            "tags"
+          ],
+          "screenshots": "Controller captures UI separately after fixture cleanup",
+          "sequenceFingerprint": "ddfcd42289438f7024efeefc79f38e049e054ee19b84b07af3b646760dd53167",
+          "sequencesExactlyUnchanged": true,
+          "serial": "emulator-5566",
+          "settingsAndMaintenanceUnchanged": true,
+          "signingHistorySemantics": "actualSigningCertificateHistory",
+          "stableSignerPreserved": true,
+          "status": "verified"
+        },
+        "cleanup": {
+          "androidApi": 35,
+          "avd": "Rizhiya_Stable_Release",
+          "cleanupScope": "Only exact verified synthetic fixture parent IDs; cascaded own children",
+          "evidence": "D:\\codex_work\\app\\app\\.tools\\diary-api35-upgrade-20261019\\cleanup",
+          "executed": true,
+          "fixtureToken": "71aef3d9d9414fb5953c78585cd03a0c",
+          "independentDeviceSnapshotMatched": true,
+          "priorLegacyValuesExactlyRestored": true,
+          "sequenceHighWaterUnchanged": true,
+          "serial": "emulator-5566",
+          "status": "cleaned"
+        }
+      }
+    ]
+  },
+  "apk": {
+    "name": "rizhiya-1.2.0.apk",
+    "bytes": 12787952,
+    "sha256": "8076ca536a0574abbb50d718cb7b723f2af36af4628d4b4f675e3f4398da7bf8",
+    "versionName": "1.2.0",
+    "versionCode": 12,
+    "debuggable": false,
+    "zipalign16KiB": true,
+    "legacyCertificateSha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+    "certificateSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+    "rotationMinSdk": 28,
+    "lineage": {
+      "status": "verified",
+      "mode": "lineage",
+      "evidence": {
+        "certificates": [
+          {
+            "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+            "installedData": true,
+            "sharedUid": true,
+            "permission": true,
+            "rollback": false,
+            "auth": true
+          },
+          {
+            "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+            "installedData": true,
+            "sharedUid": true,
+            "permission": true,
+            "rollback": false,
+            "auth": true
+          }
+        ]
+      }
+    },
+    "verification": {
+      "status": "verified",
+      "mode": "apk",
+      "evidence": {
+        "rotationMinSdk": 28,
+        "embeddedLineage": {
+          "certificates": [
+            {
+              "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+              "installedData": true,
+              "sharedUid": true,
+              "permission": true,
+              "rollback": false,
+              "auth": true
+            },
+            {
+              "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+              "installedData": true,
+              "sharedUid": true,
+              "permission": true,
+              "rollback": false,
+              "auth": true
+            }
+          ]
+        },
+        "platforms": [
+          {
+            "sdk": 26,
+            "verified": true,
+            "effectiveSignerSha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+            "v1": false,
+            "v2": true,
+            "v3": false,
+            "v31": false,
+            "warnings": [],
+            "lineage": null
+          },
+          {
+            "sdk": 27,
+            "verified": true,
+            "effectiveSignerSha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+            "v1": false,
+            "v2": true,
+            "v3": false,
+            "v31": false,
+            "warnings": [],
+            "lineage": null
+          },
+          {
+            "sdk": 28,
+            "verified": true,
+            "effectiveSignerSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+            "v1": false,
+            "v2": false,
+            "v3": true,
+            "v31": false,
+            "warnings": [],
+            "lineage": {
+              "certificates": [
+                {
+                  "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                },
+                {
+                  "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                }
+              ]
+            }
+          },
+          {
+            "sdk": 32,
+            "verified": true,
+            "effectiveSignerSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+            "v1": false,
+            "v2": false,
+            "v3": true,
+            "v31": false,
+            "warnings": [],
+            "lineage": {
+              "certificates": [
+                {
+                  "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                },
+                {
+                  "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                }
+              ]
+            }
+          },
+          {
+            "sdk": 33,
+            "verified": true,
+            "effectiveSignerSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+            "v1": false,
+            "v2": false,
+            "v3": true,
+            "v31": false,
+            "warnings": [],
+            "lineage": {
+              "certificates": [
+                {
+                  "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                },
+                {
+                  "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                }
+              ]
+            }
+          },
+          {
+            "sdk": 35,
+            "verified": true,
+            "effectiveSignerSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+            "v1": false,
+            "v2": false,
+            "v3": true,
+            "v31": false,
+            "warnings": [],
+            "lineage": {
+              "certificates": [
+                {
+                  "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                },
+                {
+                  "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "independentReview": {
+    "status": "closed",
+    "findings": 3,
+    "scope": "V4 review structure, post-transaction GC and rollback, generated date title after date changes; final 440 source files frozen"
+  },
+  "limitations": [
+    "No user provider credentials; controlled HTTPS protocol tests only, no real provider generation or billing verification.",
+    "No new physical handset verification; native tests and signed upgrade scenarios used task-owned emulators.",
+    "No actual 8GiB provider transfer; bounds and streaming/corruption behavior tested.",
+    "Automatic AI generation is best effort after 09:00, not an exact-time guarantee."
+  ]
+}
