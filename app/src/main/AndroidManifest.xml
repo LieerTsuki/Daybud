@@ -13,6 +13,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.LifeManager">
+        <service android:name=".data.diary.ai.local.LocalInferenceService"
+            android:exported="false" android:process=":diary_inference" android:stopWithTask="true" />
         <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

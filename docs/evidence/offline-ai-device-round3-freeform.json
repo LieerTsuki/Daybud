@@ -1,0 +1,105 @@
+{
+  "setup": {
+    "state": "passed",
+    "modelId": "qwen3-1.7b-q4km-b5501",
+    "modelSha256": "54c0f1203a724e9f33e76916beab3bdfaffef56cf7b42a93b1bc21319fc0bf97",
+    "modelBytes": 1107408544,
+    "preexistingReadyModel": false,
+    "modelLeftReadyForReproduction": true,
+    "api": 35,
+    "manufacturer": "unknown",
+    "deviceModel": "Android SDK built for x86_64",
+    "abis": [
+      "x86_64"
+    ],
+    "scope": "Real JNI/private-service structural runtime on this device only; not semantic quality, ARM handset coverage or market adaptation",
+    "businessDatabaseWritesByTest": false
+  },
+  "probeAndProcess": {
+    "state": "passed",
+    "elapsedMillis": 7771,
+    "tokenCount": 31,
+    "mainPid": 1940,
+    "inferencePid": 1974,
+    "inferenceProcess": "com.example.lifemanager:diary_inference",
+    "sameUid": true,
+    "procFileDescriptorsObservable": true,
+    "observedOpenBusinessDatabase": false,
+    "procThreadsObservable": true,
+    "observedWorkerThread": false,
+    "availableDeviceMemoryBytes": 2591711232,
+    "deviceTotalMemoryBytes": 4110757888,
+    "observationLimit": "FD/thread samples only; unavailable proc access is recorded, not counted as business initialization proof"
+  },
+  "structuralGeneration": {
+    "state": "passed",
+    "elapsedMillis": 106469,
+    "semanticQualityAssessed": false,
+    "syntheticSources": true,
+    "sections": [
+      {
+        "kind": "LIFE",
+        "text": "2026年10月18日，我沿操场散步二十分钟，回来后整理了两页课程笔记。",
+        "sourceIds": [
+          1
+        ]
+      },
+      {
+        "kind": "MOOD",
+        "text": "心情平静。",
+        "sourceIds": [
+          1
+        ]
+      },
+      {
+        "kind": "MOMENTS",
+        "text": "2026年10月19日，我检查实验日志，发现一个输入问题，尚未解决，计划明天继续检查。",
+        "sourceIds": [
+          2
+        ]
+      },
+      {
+        "kind": "GROWTH",
+        "text": "通过整理课程笔记和检查实验日志，我提升了学习效率和问题解决能力。",
+        "sourceIds": [
+          1,
+          2
+        ]
+      },
+      {
+        "kind": "SUPPORT",
+        "text": "我通过持续学习和问题解决，感受到自我成长和进步。",
+        "sourceIds": [
+          1,
+          2
+        ]
+      }
+    ],
+    "nativeOutputs": [
+      {
+        "promptTokens": 385,
+        "generatedTokens": 237,
+        "reachedEos": true
+      }
+    ]
+  },
+  "cancellation": {
+    "state": "passed",
+    "cancellationMillis": 1,
+    "reopenAndCountMillis": 566,
+    "resourcesReusableAfterCancellation": true
+  },
+  "serviceDeath": {
+    "state": "passed",
+    "failure": "SERVICE_DIED",
+    "oldInferencePid": 1974,
+    "newInferencePid": 2245,
+    "mainPid": 1940,
+    "mainProcessSurvived": true
+  },
+  "guardedEngine": {
+    "state": "failed",
+    "failureType": "LocalAiException"
+  },
+  "outcome": "4 passed, three-entry freeform timed out; not release acceptance"
+}

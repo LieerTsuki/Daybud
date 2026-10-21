@@ -40,6 +40,18 @@ class DiaryAiPolicyTest {
         assertThrows(AiBudgetException::class.java) { AiInputPolicy.plan((1L..5L).map { source(it) }, maxTotalChars = 10) }
     }
 
+    @Test fun localPreviewRejectsMoreThanSixteenIncludedEntries() {
+        assertEquals(16, AiInputPolicy.planLocal((1L..16L).map { source(it) }).includedCount)
+        assertThrows(AiBudgetException::class.java) { AiInputPolicy.planLocal((1L..17L).map { source(it) }) }
+    }
+
+    @Test fun localMoodLimitCountsCodePointsBeforeModelLoading() {
+        assertEquals(1, AiInputPolicy.planLocal(listOf(source(1).copy(mood = "🙂".repeat(64)))).includedCount)
+        assertThrows(AiBudgetException::class.java) {
+            AiInputPolicy.planLocal(listOf(source(1).copy(mood = "🙂".repeat(65))))
+        }
+    }
+
     @Test fun invalidSectionOrForeignSourceCannotPublish() {
         val valid = AiSectionKind.entries.map { AiReviewSection(it, "有记录的生活", setOf(1)) }
         AiResultPolicy.validate(valid, setOf(1))

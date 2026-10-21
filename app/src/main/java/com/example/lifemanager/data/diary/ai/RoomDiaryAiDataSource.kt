@@ -32,8 +32,12 @@ class RoomDiaryAiDataSource(
         val current = repository.snapshotRange(snapshot.from, snapshot.through, DataGeneration(snapshot.generation))
         if (current.ai() != snapshot) false else {
             require(review.from == snapshot.from && review.through == snapshot.through && !review.needsUpdate)
-            AiResultPolicy.validate(review.sections, review.sources.keys)
             require(review.sources.all { (id, revision) -> current.entries.any { it.id == id && it.revision == revision } })
+            if (review.provider.startsWith("phone-offline:")) {
+                val sources = snapshot.sources.filter { it.id in review.sources }
+                if (sources.size != review.sources.size) throw AiStaleException()
+                GroundedAiResultPolicy.validate(review.sections, sources)
+            } else AiResultPolicy.validate(review.sections, review.sources.keys)
             repository.saveReview(DiaryReview(review.id, review.from, review.through, review.createdAt,
                 review.sections.map { DiaryReviewSection(it.kind.title, it.text, it.sourceIds.sorted()) },
                 review.sources.map { DiarySourceRevision(it.key, it.value) }, false, review.provider, review.model, review.inputHash), current)

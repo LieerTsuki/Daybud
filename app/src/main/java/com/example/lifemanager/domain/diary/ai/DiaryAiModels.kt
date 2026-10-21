@@ -37,10 +37,21 @@ interface DiaryAiDataSource {
 }
 
 /** Deliberately not a data class: a secret must never leak through generated toString/copy. */
-class AiServiceConfig private constructor(val endpoint: String, val model: String, internal val apiKey: String, val revision: Long) {
-    val origin: String get() { val uri = URI(endpoint); return "https://${uri.host.lowercase()}" + if (uri.port == -1 || uri.port == 443) "" else ":${uri.port}" }
+enum class AiExecutionMode { CLOUD, LOCAL }
+
+class AiServiceConfig private constructor(val endpoint: String, val model: String, internal val apiKey: String, val revision: Long,
+                                         val mode: AiExecutionMode = AiExecutionMode.CLOUD, val localModelSha256: String? = null) {
+    val origin: String get() {
+        if (mode == AiExecutionMode.LOCAL) return "phone-offline:$localModelSha256"
+        val uri = URI(endpoint); return "https://${uri.host.lowercase()}" + if (uri.port == -1 || uri.port == 443) "" else ":${uri.port}"
+    }
     override fun toString() = "AiServiceConfig(revision=$revision)"
     companion object {
+        fun local(modelId: String, sha256: String, revision: Long): AiServiceConfig {
+            require(modelId.matches(Regex("[a-zA-Z0-9][a-zA-Z0-9._-]{0,119}")) && !modelId.contains("..")) { "离线模型标识无效" }
+            require(sha256.matches(Regex("[a-f0-9]{64}"))) { "离线模型摘要无效" }
+            return AiServiceConfig("", modelId, "", revision, AiExecutionMode.LOCAL, sha256)
+        }
         fun checked(address: String, model: String, key: String, revision: Long): AiServiceConfig {
             val uri = try { URI(address.trim()) } catch (_: Exception) { throw IllegalArgumentException("请输入有效的HTTPS服务地址") }
             require(uri.scheme.equals("https", true) && !uri.host.isNullOrBlank() && uri.userInfo == null && uri.query == null && uri.fragment == null) { "服务地址必须为HTTPS且不能包含账号、查询或片段" }
@@ -60,12 +71,26 @@ class AiBudgetException : IllegalArgumentException("所选文字超出处理预�
 class AiNoContentException : IllegalStateException("这段时间还没有可总结的文字日记")
 class AiStaleException : IllegalStateException("日记、配置或授权已变化，请重新确认范围并生成")
 class AiProtocolException : IllegalStateException("服务返回的五段结构或来源无效，请检查兼容接口或重新生成")
-class AiNetworkException(val sent: Boolean, val retryable: Boolean, val pauseAutomatic: Boolean = false) : IllegalStateException(
-    if (sent) "请求可能已发送，结果未知；不会自动重发，请检查服务后手动重试" else "尚未发送日记，请检查网络和服务配置",
+class AiNetworkException(val sent: Boolean, val retryable: Boolean, val pauseAutomatic: Boolean = false, val statusCode: Int? = null) : IllegalStateException(
+    if (statusCode != null) "AI服务返回HTTP $statusCode：" + when (statusCode) {
+        401, 403 -> "请检查API Key和访问权限"
+        402 -> "请检查服务账户余额或额度"
+        404 -> "请检查服务地址和模型名称"
+        429 -> "请求过多或额度受限，请稍后手动重试"
+        in 300..399 -> "服务发生重定向，请检查服务地址"
+        in 500..599 -> "服务暂时不可用，请稍后手动重试"
+        else -> "请求未被接受，请检查服务配置"
+    } else if (sent) "请求可能已发送，结果未知；不会自动重发，请检查服务后手动重试" else "尚未发送日记，请检查网络和服务配置",
 )
 
 interface AiCompletionGateway {
     suspend fun complete(config: AiServiceConfig, sources: List<AiDiarySource>, partials: List<AiReviewSection> = emptyList(), beforeSend: suspend () -> Unit): List<AiReviewSection>
+    suspend fun probe(config: AiServiceConfig)
+}
+
+/** No network fallback: this boundary must use the selected, verified phone model. */
+interface PhoneAiRunner {
+    suspend fun generate(config: AiServiceConfig, sources: List<AiDiarySource>, beforeStep: suspend () -> Unit, progress: (String) -> Unit): List<AiReviewSection>
     suspend fun probe(config: AiServiceConfig)
 }
 

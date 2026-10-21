@@ -1,6 +1,14 @@
 # 项目架构
 
-更新：2026-10-20；当前Latest Release为正式1.2.1/code13页面调整，沿用1.2.0日记与AI回顾架构；历史1.1.4正式签名延续。
+更新：2026-10-21；当前Latest Release为正式1.2.1/code13页面调整，沿用1.2.0日记与AI回顾架构；历史1.1.4正式签名延续。
+
+开发中、尚未发布：手机离线AI增加独立本地配置类型、模型管理与提供方路由。AiModeStore在noBackup目录保存模式、配置修订和模型摘要，云端凭据仍由AiPrivateStore保管；切换模式暂停旧云端自动授权。CloudSendGate与模式变更共享发送准入，覆盖最终配置核对至实际connect/write边界，避免模式切换完成后旧请求再上传。DiaryAiEngine继续统一来源快照、世代/修订校验、五段校验与Room原子保存，回顾记录本地模型摘要，不自动退回云端。Room8与备份V4契约保持。
+
+LocalModelStore在noBackup目录流式导入并校验固定模型，临时文件通过摘要和GGUF检查后启用；只读FD租约保护正在使用的文件，删除模型撤销就绪状态并延迟回收有租约字节。LocalGroundedPipeline按实际分词和UTF8预算处理全部原文，最多16篇/8片；模型受GBNF约束只能选本篇片段编号，结果按稳定顺序收敛为每篇每类最多一段原文，不能生成新的事实句或情绪。GroundedAiResultPolicy在生成、Engine保存和Room保存三个边界逐字核对日期、字段、连续原句及引用，心情仅从标签重建；云端保持原自由生成规则。设备能力检查结合64位进程、可用内存与磁盘条件，不承诺某个总内存档位必然可用。
+
+原生CPU引擎固定llama.cpp b5501提交与源码归档SHA-256，CMake可从相同摘要的本地归档离线构建。arm64-v8a使用armv8-a基线，x86_64不依赖AVX；armeabi-v7a/x86只提供明确拒绝推理的JNI兼容层以保留原有业务安装。推理服务运行在不导出的私有进程，通过有界Binder消息传递文字与只读模型FD，原生层使用真实Jinja模板、禁用思考、分词及GBNF采样，跨线程取消并清理会话。LifeManagerApp移除急切业务字段注入，仅确认主进程后通过延迟Hilt EntryPoint获取业务图；私有进程死亡由客户端识别，加载或推理取消超时仅终止该推理进程。
+
+验证边界：自由生成候选出现内容偏差，1.7B在模拟器长材料上超时，故按用户选择收缩为原文摘选试用。逐字摘录不保证分类、代表性或上下文完整；12组人工核对与实际CPU设备证据、最终签名升级状态见docs/offline-ai-acceptance.md，不能将有限模拟器结果写成已适配市场大多数手机。
 
 1.2.1/code13页面调整已于2026-10-20发布正式版：PlanScreen完整渲染未完成列表，仅已完成保留折叠状态；DiaryDao两个查询与DiaryRules.ordered统一按记录日期、创建时间、ID倒序，DiaryViewModel沿用该规则。AI回顾由AiReviewDateInput提供只读框与右侧日期选择器，UTC转换civil date，禁用时清除临时选择；确认仍调用原range流程清除旧预览与未保存结果。Room8、V4及签名身份不变。当前验收见docs/page-polish-1.2.1-acceptance.md。
 

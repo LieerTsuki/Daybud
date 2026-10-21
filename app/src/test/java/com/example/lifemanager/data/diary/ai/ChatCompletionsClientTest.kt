@@ -71,6 +71,23 @@ class ChatCompletionsClientTest {
         assertTrue(connection.readTimeout in 1..60_000)
     }
 
+    @Test fun knownServiceRefusalShowsStatusWithoutSecretOrDiary() = runBlocking {
+        for (status in listOf(400, 401, 402, 403, 404, 429, 500, 503)) {
+            val connection = Connection(URL(config().endpoint), status, "private text never-log-this")
+            try {
+                ChatCompletionsClient { connection }.probe(config())
+                fail("service rejection accepted")
+            } catch (error: AiNetworkException) {
+                assertTrue("HTTP $status was hidden by unknown-result text", error.message!!.contains(status.toString()))
+                assertFalse(error.message!!.contains("结果未知"))
+                assertFalse(error.message!!.contains("never-log-this"))
+                assertFalse(error.message!!.contains("private text"))
+                assertFalse(error.retryable)
+            }
+            assertTrue(connection.disconnected)
+        }
+    }
+
     @Test fun cancellationDisconnectsBlockedNetworkRead() = runBlocking {
         val entered = CompletableDeferred<Unit>(); val released = CountDownLatch(1)
         val connection = Connection(URL(config().endpoint), 200, "").apply {

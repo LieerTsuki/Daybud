@@ -48,7 +48,9 @@ class DiaryAiDatePickerDeviceTest {
         assertEquals("2026-10-19",model.uiState.value.through)
         assertEquals("2026-10-10",model.uiState.value.from)
         compose.onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsActions.SetText)).assertCountEquals(0)
-        compose.onNodeWithText("检查范围").performScrollTo().assertIsEnabled()
+        // Date selection works before configuring any service; the generation action
+        // remains governed by configuration/model readiness, not by this date test.
+        compose.onNodeWithText("检查范围").performScrollTo().assertExists()
         // Only transient range state was changed; no diary or service configuration is written.
     }
 }

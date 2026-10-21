@@ -1,0 +1,19 @@
+{
+  "androidApi": 26,
+  "unsupportedShimAbis": [
+    "armeabi-v7a",
+    "x86"
+  ],
+  "engineAbis": [
+    "arm64-v8a",
+    "x86_64"
+  ],
+  "ndk": "27.2.12479018",
+  "cmake": "3.22.1",
+  "gradleExecutedByNativeOwner": false,
+  "nativeContractTests": "passed (RED then GREEN)",
+  "elfLoadAlignment": "0x4000",
+  "sourceArchiveSha256": "142fbf66ca4945bedb74aa0fce555f09f1be73becd064e3b30a53cee92b1b194",
+  "deviceInferenceExecutedByNativeOwner": false,
+  "sourceCommit": "cdf94a18023c92f41808ec874ba577d914674717"
+}

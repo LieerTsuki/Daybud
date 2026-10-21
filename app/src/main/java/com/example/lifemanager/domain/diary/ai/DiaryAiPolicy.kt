@@ -7,6 +7,18 @@ import java.time.temporal.TemporalAdjusters
 
 data class AiInputPlan(val chunks: List<List<AiDiarySource>>, val includedCount: Int, val excludedCount: Int, val limitedEvidence: Boolean)
 object AiInputPolicy {
+    /** IPC admission only. Actual model tokens and output are budgeted by the phone pipeline. */
+    fun planLocal(sources: List<AiDiarySource>): AiInputPlan {
+        require(sources.map { it.id }.distinct().size == sources.size) { "日记来源重复" }
+        val included = sources.filter { it.body.isNotBlank() || !it.mood.isNullOrBlank() ||
+            (it.title.isNotBlank() && !isGeneratedTitle(it.title)) }
+        val bytes = included.sumOf { (it.title.toByteArray(Charsets.UTF_8).size.toLong() +
+            it.body.toByteArray(Charsets.UTF_8).size + (it.mood?.toByteArray(Charsets.UTF_8)?.size ?: 0) + 128) }
+        if (included.size > GroundedAiResultPolicy.MAX_SOURCES || bytes > 256 * 1024 || included.any {
+            val mood = it.mood.orEmpty(); mood.codePointCount(0, mood.length) > GroundedAiResultPolicy.MAX_SPAN_CODE_POINTS
+        }) throw AiBudgetException()
+        return AiInputPlan(if (included.isEmpty()) emptyList() else listOf(included), included.size, sources.size - included.size, included.size < 3)
+    }
     fun plan(sources: List<AiDiarySource>, maxChunkChars: Int = 12_000, maxTotalChars: Int = 60_000, maxChunks: Int = 6): AiInputPlan {
         require(maxChunkChars > 0 && maxTotalChars > 0 && maxChunks > 0)
         require(sources.map { it.id }.distinct().size == sources.size) { "日记来源重复" }
@@ -33,11 +45,15 @@ object AiInputPolicy {
 object AiResultPolicy {
     private val prohibited = listOf("你患有", "你患了", "诊断为", "确诊", "你有抑郁症", "你有焦虑症", "你是坏人", "你真没用")
     fun validate(sections: List<AiReviewSection>, sourceIds: Set<Long>) {
+        validateStructure(sections, sourceIds)
+        if (sections.any { section -> prohibited.any { it in section.text } }) throw AiProtocolException()
+    }
+    internal fun validateStructure(sections: List<AiReviewSection>, sourceIds: Set<Long>) {
         if (sections.size != 5 || sections.map { it.kind }.toSet() != AiSectionKind.entries.toSet()) throw AiProtocolException()
         if (sections.sumOf { it.text.length } > 12_000) throw AiProtocolException()
         sections.forEach {
             if (it.text.isBlank() || it.text.length > 3000 || it.sourceIds.any { id -> id !in sourceIds } ||
-                (it.kind != AiSectionKind.SUPPORT && it.sourceIds.isEmpty()) || prohibited.any { phrase -> phrase in it.text }) throw AiProtocolException()
+                (it.kind != AiSectionKind.SUPPORT && it.sourceIds.isEmpty())) throw AiProtocolException()
         }
     }
 }

@@ -21,6 +21,7 @@ class DiaryAiEngine(
     private val store: AiStateStore,
     private val gateway: AiCompletionGateway,
     private val clock: Clock = Clock.systemDefaultZone(),
+    private val phone: PhoneAiRunner? = null,
 ) {
     private val generationMutex = Mutex()
     suspend fun preview(from: LocalDate, through: LocalDate): AiGenerationPreview {
@@ -28,10 +29,11 @@ class DiaryAiEngine(
         val config = store.config() ?: throw IllegalStateException("请先在AI服务中填写配置")
         val snapshot = source.snapshot(from, through)
         if (snapshot.from != from || snapshot.through != through || snapshot.sources.any { it.date < from || it.date > through }) throw AiStaleException()
-        return AiGenerationPreview(snapshot, AiInputPolicy.plan(snapshot.sources), config.origin, config.revision)
+        val plan = if (config.mode == AiExecutionMode.LOCAL) AiInputPolicy.planLocal(snapshot.sources) else AiInputPolicy.plan(snapshot.sources)
+        return AiGenerationPreview(snapshot, plan, config.origin, config.revision)
     }
 
-    suspend fun generate(preview: AiGenerationPreview): AiDiaryReview = generationMutex.withLock { generateInternal(preview, null, null) }
+    suspend fun generate(preview: AiGenerationPreview, progress: (String) -> Unit = {}): AiDiaryReview = generationMutex.withLock { generateInternal(preview, null, null, progress) }
 
     private suspend fun guard(preview: AiGenerationPreview, consent: AiAutoConsent?): AiServiceConfig {
         currentCoroutineContext().ensureActive()
@@ -46,11 +48,15 @@ class DiaryAiEngine(
         return config
     }
 
-    private suspend fun generateInternal(preview: AiGenerationPreview, consent: AiAutoConsent?, beforeActualSend: (suspend () -> Unit)?): AiDiaryReview {
+    private suspend fun generateInternal(preview: AiGenerationPreview, consent: AiAutoConsent?, beforeActualSend: (suspend () -> Unit)?, progress: (String) -> Unit = {}): AiDiaryReview {
         if (preview.plan.chunks.isEmpty()) throw AiNoContentException()
         val config = guard(preview, consent)
         val entries = preview.plan.chunks.flatten()
-        val sections = if (preview.plan.chunks.size == 1) {
+        val sections = if (config.mode == AiExecutionMode.LOCAL) {
+            check(consent == null) { "手机离线模式仅支持手动回顾" }
+            val runner = phone ?: throw IllegalStateException("手机离线引擎不可用，请检查应用安装")
+            runner.generate(config, entries, { guard(preview, null) }, progress)
+        } else if (preview.plan.chunks.size == 1) {
             gateway.complete(config, entries, emptyList()) { guard(preview, consent); beforeActualSend?.invoke(); guard(preview, consent) }
         } else {
             val partials = mutableListOf<AiReviewSection>()
@@ -66,23 +72,31 @@ class DiaryAiEngine(
             }
         }
         guard(preview, consent)
-        AiResultPolicy.validate(sections, entries.map { it.id }.toSet())
-        val input = "${preview.snapshot.from}/${preview.snapshot.through}/" + entries.joinToString("|") { "${it.id}:${it.revision}:" } + ChatCompletionsProtocol.request(config.model, entries)
+        if (config.mode == AiExecutionMode.LOCAL) GroundedAiResultPolicy.validate(sections, entries)
+        else AiResultPolicy.validate(sections, entries.map { it.id }.toSet())
+        val input = "${config.mode}/${config.localModelSha256.orEmpty()}/phone-excerpts-v2/${preview.snapshot.from}/${preview.snapshot.through}/" + entries.joinToString("|") { "${it.id}:${it.revision}:" } + ChatCompletionsProtocol.request(config.model, entries)
         val hash = MessageDigest.getInstance("SHA-256").digest(input.toByteArray()).joinToString("") { "%02x".format(it) }
-        return AiDiaryReview(UUID.randomUUID().toString(), preview.snapshot.from, preview.snapshot.through, Instant.now(clock), sections, entries.associate { it.id to it.revision }, provider = config.origin, model = config.model, inputHash = hash)
+        val model = if (config.mode == AiExecutionMode.LOCAL) "${config.model}@${config.localModelSha256}" else config.model
+        return AiDiaryReview(UUID.randomUUID().toString(), preview.snapshot.from, preview.snapshot.through, Instant.now(clock), sections, entries.associate { it.id to it.revision }, provider = config.origin, model = model, inputHash = hash)
     }
 
     suspend fun save(review: AiDiaryReview, preview: AiGenerationPreview): Boolean {
-        guard(preview, null)
+        val config = guard(preview, null)
         if (review.from != preview.snapshot.from || review.through != preview.snapshot.through || review.sources != preview.plan.chunks.flatten().associate { it.id to it.revision }) throw AiStaleException()
-        AiResultPolicy.validate(review.sections, review.sources.keys)
+        if (config.mode == AiExecutionMode.LOCAL) GroundedAiResultPolicy.validate(review.sections, preview.plan.chunks.flatten())
+        else AiResultPolicy.validate(review.sections, review.sources.keys)
         return source.save(review, preview.snapshot)
     }
 
-    suspend fun testConnection() { gateway.probe(store.config() ?: throw IllegalStateException("请先保存AI服务配置")) }
+    suspend fun testConnection() {
+        val config = store.config() ?: throw IllegalStateException("请先保存AI服务配置或选择离线模型")
+        if (config.mode == AiExecutionMode.LOCAL) (phone ?: throw IllegalStateException("手机离线引擎不可用")).probe(config)
+        else gateway.probe(config)
+    }
 
     suspend fun setAutomatic(kind: AiPeriodKind, enabled: Boolean) {
         val config = store.config() ?: throw IllegalStateException("请先保存AI服务配置")
+        check(!enabled || config.mode == AiExecutionMode.CLOUD) { "手机离线模式不启用云端自动回顾" }
         val generation=source.currentGeneration()
         store.setConsent(AiAutoConsent(kind, LocalDate.now(clock), config.revision, config.origin, enabled,generation))
     }
@@ -90,6 +104,7 @@ class DiaryAiEngine(
     /** One period in one run; sent-but-unknown is a durable terminal state, never a retry hint. */
     suspend fun runAutomatic() = generationMutex.withLock {
         val config = store.config() ?: return@withLock
+        if (config.mode == AiExecutionMode.LOCAL) return@withLock
         val generation=source.currentGeneration()
         val consents = store.consents().filter { it.enabled && it.configRevision == config.revision && it.origin == config.origin && it.generation==generation }
         val jobs = store.jobs().associateBy { it.period.key }
@@ -111,10 +126,10 @@ class DiaryAiEngine(
             job = AiAutoJob(period, config.revision, preview.snapshot.generation, AiJobState.RETRYABLE_UNSENT, (old?.attempts ?: 0) + 1)
             store.putJob(job)
             if (preview.plan.chunks.isEmpty()) { store.putJob(job.copy(state = AiJobState.EMPTY)); return@withLock }
-            val review = generateInternal(preview, consent) {
+            val review = generateInternal(preview, consent, beforeActualSend = {
                 // An automatic attempt may have multiple bounded chunks, but a process restart must never repeat it.
                 if (!sent) { store.putJob(job!!.copy(state = AiJobState.SENT_UNKNOWN)); sent = true }
-            }
+            })
             guard(preview, consent)
             if (!source.save(review, preview.snapshot)) throw AiStaleException()
             store.putJob(job.copy(state = AiJobState.SUCCEEDED))
@@ -122,8 +137,9 @@ class DiaryAiEngine(
         catch (error: Exception) {
             val current = job
             val definitelyUnsent = !sent && error is AiNetworkException && !error.sent && error.retryable
+            val knownRefusal = error is AiNetworkException && error.statusCode != null
             if (current != null) store.putJob(current.copy(
-                state = if (definitelyUnsent) AiJobState.RETRYABLE_UNSENT else if (sent) AiJobState.SENT_UNKNOWN else AiJobState.PAUSED,
+                state = if (knownRefusal) AiJobState.PAUSED else if (definitelyUnsent) AiJobState.RETRYABLE_UNSENT else if (sent) AiJobState.SENT_UNKNOWN else AiJobState.PAUSED,
                 notBeforeMillis = Instant.now(clock).plusSeconds(6 * 3600).toEpochMilli(),
             ))
             if (error is AiProtocolException || error is AiNetworkException && error.pauseAutomatic) store.pauseAutomatic()

@@ -115,6 +115,17 @@ class DiaryAiEngineTest {
         assertNull(source.saved)
     }
 
+    @Test fun automaticKnownHttpRefusalIsPausedWithoutBeingLabeledUnknown() = runTest {
+        val source = Source(listOf(AiDiarySource(1, 1, LocalDate.of(2026, 10, 14), "", "散步了", null)))
+        val store = automaticStore(); val gateway = Gateway().apply { failure = AiNetworkException(true, false, true, 401) }
+        val engine = DiaryAiEngine(source, store, gateway, automaticClock)
+        engine.runAutomatic(); engine.runAutomatic(); engine.runAutomatic()
+        assertEquals(AiJobState.PAUSED, store.jobValues["WEEK:2026-10-12"]?.state)
+        assertEquals(1, gateway.calls)
+        assertTrue(store.consentValues.none { it.enabled })
+        assertNull(source.saved)
+    }
+
     @Test fun eachAutomaticRunProcessesOnlyOnePeriodAndHonorsOptInFloor() = runTest {
         val source = Source(listOf(AiDiarySource(1, 1, LocalDate.of(2026, 10, 7), "", "第一周", null), AiDiarySource(2, 1, LocalDate.of(2026, 10, 14), "", "第二周", null)))
         val store = automaticStore(); val gateway = Gateway()

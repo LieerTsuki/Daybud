@@ -1,0 +1,70 @@
+{
+  "status": "development-debug-first-runtime-round",
+  "localDate": "2026-10-21",
+  "tests": 4,
+  "passed": 2,
+  "failed": 2,
+  "deviceNetwork": {
+    "airplaneMode": true,
+    "activeDefaultNetwork": "none"
+  },
+  "apkSha256": {
+    "app-debug.apk": "9354516e80f3e49e67fb6efb9a19672cccc5d3ca2a8b6e67989cbb586cd1c8ff",
+    "app-debug-androidTest.apk": "34871ddde30bd781e3cf50ef9fbd9b82b1836e0711a60d7f2df6c5649fcaecd3"
+  },
+  "runtime": {
+    "setup": {
+      "state": "passed",
+      "modelId": "qwen3-0.6b-q4km-b5501",
+      "modelSha256": "15e434d8ddf0af38fe3f7003af6ce6eac4edada6df34324aa45979f9cc79f02e",
+      "modelBytes": 396704416,
+      "preexistingReadyModel": false,
+      "modelLeftReadyForReproduction": true,
+      "api": 35,
+      "manufacturer": "unknown",
+      "deviceModel": "Android SDK built for x86_64",
+      "abis": [
+        "x86_64"
+      ],
+      "scope": "Real JNI/private-service structural runtime on this device only; not semantic quality, ARM handset coverage or market adaptation",
+      "businessDatabaseWritesByTest": false
+    },
+    "probeAndProcess": {
+      "state": "passed",
+      "elapsedMillis": 9554,
+      "tokenCount": 31,
+      "mainPid": 2209,
+      "inferencePid": 2239,
+      "inferenceProcess": "com.example.lifemanager:diary_inference",
+      "sameUid": true,
+      "procFileDescriptorsObservable": true,
+      "observedOpenBusinessDatabase": false,
+      "procThreadsObservable": true,
+      "observedWorkerThread": false,
+      "availableDeviceMemoryBytes": 1088966656,
+      "deviceTotalMemoryBytes": 2593214464,
+      "observationLimit": "FD/thread samples only; unavailable proc access is recorded, not counted as business initialization proof"
+    },
+    "structuralGeneration": {
+      "state": "failed",
+      "failureType": "TimeoutCancellationException"
+    },
+    "cancellation": {
+      "state": "failed",
+      "failureType": "LocalAiException"
+    },
+    "serviceDeath": {
+      "state": "passed",
+      "failure": "SERVICE_DIED",
+      "oldInferencePid": 2239,
+      "newInferencePid": 2271,
+      "mainPid": 2209,
+      "mainProcessSurvived": true
+    }
+  },
+  "limitations": [
+    "Debug native code at default O0; later optimization is not yet retested in this evidence",
+    "Small synthetic structural cases only, no semantic quality pass",
+    "No ARM handset or market coverage claim"
+  ]
+}

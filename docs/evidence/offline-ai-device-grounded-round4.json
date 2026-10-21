@@ -1,0 +1,163 @@
+{
+  "setup": {
+    "state": "passed",
+    "modelId": "qwen3-0.6b-q4km-b5501",
+    "modelSha256": "15e434d8ddf0af38fe3f7003af6ce6eac4edada6df34324aa45979f9cc79f02e",
+    "modelBytes": 396704416,
+    "preexistingReadyModel": true,
+    "modelLeftReadyForReproduction": true,
+    "api": 35,
+    "manufacturer": "unknown",
+    "deviceModel": "Android SDK built for x86_64",
+    "abis": [
+      "x86_64"
+    ],
+    "scope": "Real JNI/private-service structural runtime on this device only; not semantic quality, ARM handset coverage or market adaptation",
+    "businessDatabaseWritesByTest": false
+  },
+  "probeAndProcess": {
+    "state": "passed",
+    "elapsedMillis": 12165,
+    "tokenCount": 31,
+    "mainPid": 2539,
+    "inferencePid": 2572,
+    "inferenceProcess": "com.example.lifemanager:diary_inference",
+    "sameUid": true,
+    "procFileDescriptorsObservable": true,
+    "observedOpenBusinessDatabase": false,
+    "procThreadsObservable": true,
+    "observedWorkerThread": false,
+    "availableDeviceMemoryBytes": 2524356608,
+    "deviceTotalMemoryBytes": 4110757888,
+    "observationLimit": "FD/thread samples only; unavailable proc access is recorded, not counted as business initialization proof"
+  },
+  "structuralGeneration": {
+    "state": "passed",
+    "elapsedMillis": 26198,
+    "semanticQualityAssessed": false,
+    "syntheticSources": true,
+    "sections": [
+      {
+        "kind": "LIFE",
+        "text": "AI摘选原文（保留原意，不代表已核实事件）：\n2026-10-18 #1 正文：“今天傍晚沿操场散步二十分钟，回来后整理了两页课程笔记。”\n2026-10-19 #2 正文：“我计划明天继续检查。”",
+        "sourceIds": [
+          1,
+          2
+        ]
+      },
+      {
+        "kind": "MOOD",
+        "text": "已填写的心情标签（不推测正文中的情绪）：\n2026-10-18 #1：平静\n2026-10-19 #2：未填写",
+        "sourceIds": [
+          1,
+          2
+        ]
+      },
+      {
+        "kind": "MOMENTS",
+        "text": "本次AI未选出特别时刻原文片段；这不代表原文中不存在，可查看来源。",
+        "sourceIds": [
+          1,
+          2
+        ]
+      },
+      {
+        "kind": "GROWTH",
+        "text": "本次AI未选出反思原文片段；这不代表原文中不存在，可查看来源。",
+        "sourceIds": [
+          1,
+          2
+        ]
+      },
+      {
+        "kind": "SUPPORT",
+        "text": "本次AI未选出给自己的提醒原文片段；这不代表原文中不存在，可查看来源。",
+        "sourceIds": [
+          1,
+          2
+        ]
+      }
+    ],
+    "nativeOutputs": [
+      {
+        "promptTokens": 388,
+        "generatedTokens": 46,
+        "reachedEos": true
+      }
+    ]
+  },
+  "cancellation": {
+    "state": "passed",
+    "cancellationMillis": 1,
+    "reopenAndCountMillis": 631,
+    "resourcesReusableAfterCancellation": true
+  },
+  "serviceDeath": {
+    "state": "passed",
+    "failure": "SERVICE_DIED",
+    "oldInferencePid": 2572,
+    "newInferencePid": 2648,
+    "mainPid": 2539,
+    "mainProcessSurvived": true
+  },
+  "guardedEngine": {
+    "state": "passed",
+    "elapsedMillis": 181154,
+    "sourceCount": 3,
+    "hanCharacters": 1135,
+    "resourceGuardPassed": true,
+    "availableMemoryBytes": 3043368960,
+    "explicitSaveOnly": true,
+    "cloudCalled": false,
+    "semanticQualityAssessed": false,
+    "sections": [
+      {
+        "kind": "LIFE",
+        "text": "AI摘选原文（保留原意，不代表已核实事件）：\n2026-10-18 #1 正文：“今天的具体记录只有以上这些，其他日常细节没有写下，不能据此推测。”\n2026-10-19 #2 正文：“今天明确觉得有些焦虑，主要因为几项截止日期离得近。”\n2026-10-20 #3 正文：“中午把课程资料分类存进文件夹，删掉了重复下载的讲义。”",
+        "sourceIds": [
+          1,
+          2,
+          3
+        ]
+      },
+      {
+        "kind": "MOOD",
+        "text": "已填写的心情标签（不推测正文中的情绪）：\n2026-10-18 #1：平静\n2026-10-19 #2：焦虑\n2026-10-20 #3：未填写",
+        "sourceIds": [
+          1,
+          2,
+          3
+        ]
+      },
+      {
+        "kind": "MOMENTS",
+        "text": "本次AI未选出特别时刻原文片段；这不代表原文中不存在，可查看来源。",
+        "sourceIds": [
+          1,
+          2,
+          3
+        ]
+      },
+      {
+        "kind": "GROWTH",
+        "text": "本次AI未选出反思原文片段；这不代表原文中不存在，可查看来源。",
+        "sourceIds": [
+          1,
+          2,
+          3
+        ]
+      },
+      {
+        "kind": "SUPPORT",
+        "text": "本次AI未选出给自己的提醒原文片段；这不代表原文中不存在，可查看来源。",
+        "sourceIds": [
+          1,
+          2,
+          3
+        ]
+      }
+    ]
+  },
+  "apkSha256": "a63c91fdf30d42344de8e002f41898628fee7029e21e747cdb13a9e28c8ce06a",
+  "developmentSnapshot": "code13, before final quote validation and release metadata; not final APK acceptance"
+}

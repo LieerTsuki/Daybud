@@ -10,7 +10,7 @@ import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.*
 
-class ChatCompletionsClient(private val connectionFactory: (URL) -> HttpsURLConnection = { it.openConnection() as HttpsURLConnection }) : AiCompletionGateway {
+class ChatCompletionsClient(private val sends: CloudSendGate = CloudSendGate(), private val connectionFactory: (URL) -> HttpsURLConnection = { it.openConnection() as HttpsURLConnection }) : AiCompletionGateway {
     override suspend fun complete(config: AiServiceConfig, sources: List<AiDiarySource>, partials: List<AiReviewSection>, beforeSend: suspend () -> Unit): List<AiReviewSection> {
         val response = exchange(config, ChatCompletionsProtocol.request(config.model, sources, partials), beforeSend)
         return ChatCompletionsProtocol.parse(response, sources.map { it.id }.toSet())
@@ -39,18 +39,20 @@ class ChatCompletionsClient(private val connectionFactory: (URL) -> HttpsURLConn
                     connection.setRequestProperty("Authorization", "Bearer ${config.apiKey}")
                     val bytes = body.toByteArray(Charsets.UTF_8)
                     connection.setFixedLengthStreamingMode(bytes.size)
-                    ensureActive()
-                    beforeSend()
-                    ensureActive()
-                    // Some platform implementations can send headers in connect(). Treat this
-                    // boundary conservatively as sent, including uncertain TLS/socket failures.
-                    sent = true
-                    connection.connect()
-                    connection.outputStream.use { it.write(bytes); it.flush() }
+                    sends.send({ connection.disconnect() }) {
+                        ensureActive()
+                        beforeSend()
+                        ensureActive()
+                        // Keep admission through the actual connect/write boundary. A completed
+                        // mode transition cannot be followed by an older request uploading.
+                        sent = true
+                        connection.connect()
+                        connection.outputStream.use { it.write(bytes); it.flush() }
+                    }
                     val code = connection.responseCode
                     if (code !in 200..299) {
                         // Never follow even same-origin redirects: credentials remain at the configured origin.
-                        throw AiNetworkException(true, false, code in 300..499)
+                        throw AiNetworkException(true, false, code in 300..499, code)
                     }
                     val output = ByteArrayOutputStream()
                     connection.inputStream.use { stream ->

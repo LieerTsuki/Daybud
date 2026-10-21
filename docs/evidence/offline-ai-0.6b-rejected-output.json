@@ -1,0 +1,8 @@
+{
+  "promptTokens": 934,
+  "generatedTokens": 181,
+  "reachedEos": true,
+  "emptyThinkPrefix": true,
+  "elapsedMillis": 17567,
+  "text": "{\n  \"sections\": [\n    {\n      \"kind\": \"LIFE\",\n      \"text\": \"笔记与实验\",\n      \"sourceIds\": [1,2,3]\n    },\n    {\n      \"kind\": \"MOOD\",\n      \"text\": \"平静\",\n      \"sourceIds\": [1,2,3]\n    },\n    {\n      \"kind\": \"MOMENTS\",\n      \"text\": \"作业讨论\",\n      \"sourceIds\": [1,2,3]\n    },\n    {\n      \"kind\": \"GROWTH\",\n      \"text\": \"核对记录\",\n      \"sourceIds\": [1,2,3]\n    },\n    {\n      \"kind\": \"SUPPORT\",\n      \"text\": \"没有填写心情标签，也没有写明今天是什么情绪\",\n      \"sourceIds\": [1,2,3]\n    }\n  ]\n}"
+}

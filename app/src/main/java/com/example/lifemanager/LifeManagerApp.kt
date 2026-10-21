@@ -10,7 +10,10 @@ import com.example.lifemanager.data.diary.ai.DiaryAiEngine
 import com.example.lifemanager.data.diary.ai.DiaryAiWorker
 import com.example.lifemanager.data.local.LifeManagerDatabase
 import com.example.lifemanager.domain.maintenance.MaintenanceCoordinator
-import javax.inject.Inject
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.SupervisorJob
@@ -18,23 +21,39 @@ import kotlinx.coroutines.launch
 
 @HiltAndroidApp
 class LifeManagerApp : Application(), PlanReminderReceiver.Dependencies, UnifiedReminderReconciliationWorker.Dependencies,DiaryAiWorker.Dependencies {
-    @Inject lateinit var backupFiles: BackupFileStore
-    @Inject override lateinit var runner: ReminderBroadcastRunner
-    @Inject override lateinit var delivery: PlanReminderDelivery
-    @Inject override lateinit var unifiedReminderReconciliation: UnifiedReminderReconciliation
-    @Inject lateinit var planNotifications: PlanNotificationHelper
-    @Inject @IoDispatcher lateinit var ioDispatcher: CoroutineDispatcher
-    @Inject override lateinit var diaryAiEngine:DiaryAiEngine
-    @Inject lateinit var diaryStorage:FileDiaryStorage
-    @Inject lateinit var database:LifeManagerDatabase
-    @Inject lateinit var maintenance:MaintenanceCoordinator
+    // No eager injected business fields: Hilt's super.onCreate runs in the private process too.
+    private val business: MainProcessDependencies by lazy {
+        check(isBusinessProcess()) { "当前进程不能获取业务依赖" }
+        EntryPointAccessors.fromApplication(this, MainProcessDependencies::class.java)
+    }
+    val backupFiles get() = business.backupFiles()
+    override val runner get() = business.runner()
+    override val delivery get() = business.delivery()
+    override val unifiedReminderReconciliation get() = business.reconciliation()
+    val planNotifications get() = business.notifications()
+    val ioDispatcher get() = business.ioDispatcher()
+    override val diaryAiEngine get() = business.aiEngine()
+    val diaryStorage get() = business.storage()
+    val database get() = business.database()
+    val maintenance get() = business.maintenance()
+
+    private fun isBusinessProcess(): Boolean {
+        val process = if (android.os.Build.VERSION.SDK_INT >= 28) getProcessName() else {
+            runCatching { java.io.File("/proc/self/cmdline").inputStream().use { stream ->
+                val bytes = ByteArray(256); val length = stream.read(bytes)
+                if (length <= 0) "" else bytes.copyOf(length).toString(Charsets.UTF_8).substringBefore('\u0000')
+            } }.getOrDefault("")
+        }
+        // Unknown identity must not run media cleanup, business DB or upload workers.
+        return process == packageName
+    }
 
     override fun requestReconciliation() =
         UnifiedReminderReconciliationWorker.enqueueImmediate(this, resetSystem = true)
 
     override fun onCreate() {
         super.onCreate()
-        // Hilt has injected the same singleton graph used by receivers, workers and maintenance.
+        if (!isBusinessProcess()) return
         planNotifications.createChannel()
         SubscriptionNotificationHelper.createChannel(this)
         UnifiedReminderReconciliationWorker.schedule(this)
@@ -51,4 +70,19 @@ class LifeManagerApp : Application(), PlanReminderReceiver.Dependencies, Unified
             }
         }
     }
+}
+
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface MainProcessDependencies {
+    fun backupFiles(): BackupFileStore
+    fun runner(): ReminderBroadcastRunner
+    fun delivery(): PlanReminderDelivery
+    fun reconciliation(): UnifiedReminderReconciliation
+    fun notifications(): PlanNotificationHelper
+    @IoDispatcher fun ioDispatcher(): CoroutineDispatcher
+    fun aiEngine(): DiaryAiEngine
+    fun storage(): FileDiaryStorage
+    fun database(): LifeManagerDatabase
+    fun maintenance(): MaintenanceCoordinator
 }
