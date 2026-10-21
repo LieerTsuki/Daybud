@@ -4,10 +4,10 @@
 - ui/diary、ui/diary/DiaryViewModelFactory.kt：列表/日历、详情/编辑、图库/图片/视频与Activity所有者；AI独立页面在ui/diary/ai。
 - ui/diary/ai/AiReviewDateInput.kt：AI回顾只读日期框、右侧日历按钮和确认/取消；DiaryRules.ordered与DiaryDao按记录日期、创建时间、ID倒序。
 - domain/diary/ai、data/diary/ai：AI五段策略、来源适配、HTTPS客户端、Keystore/noBackup配置和受授权的周期Worker。
-- data/diary/ai/AiModeStore.kt、CloudSendGate.kt：开发中的模式/模型修订持久化、旧自动授权暂停及与实际云端发送边界共享的准入；DiaryAiEngine统一云端与手机离线路由，沿用来源及原子保存保护。
+- data/diary/ai/AiModeStore.kt、CloudSendGate.kt：1.3.0候选的模式/模型修订持久化、旧自动授权暂停及与实际云端发送边界共享的准入；DiaryAiEngine统一云端与手机离线路由，沿用来源及原子保存保护。
 - data/diary/ai/local/LocalModelCatalog.kt、LocalModelStore.kt、LocalModelDownload.kt、LocalDeviceCapability.kt：固定模型来源/摘要、流式校验导入、只读FD租约/删除保护、noBackup存储和设备资源检查。
 - data/diary/ai/local/LocalGroundedPipeline.kt、LocalAiGateway.kt、PhoneAiRunnerAdapter.kt：实际分词与UTF8预算、全材料有界分片、AI选择原文索引、仅EOS完整结果接收；domain/diary/ai/GroundedAiResultPolicy.kt严格核对原句与心情标签。摘选分类和代表性仍有限。
-- data/diary/ai/local/LocalInferenceHost.kt、LocalInferenceService.kt、AndroidLocalInferenceClient.kt、NativeLlama.kt：开发中的私有进程会话、Binder限额、取消/进程死亡处理及JNI模型FD所有权；LifeManagerApp.kt、di/DiaryModule.kt提供主进程业务图隔离与共享模式/发送依赖。
+- data/diary/ai/local/LocalInferenceHost.kt、LocalInferenceService.kt、AndroidLocalInferenceClient.kt、NativeLlama.kt：1.3.0候选的私有进程会话、Binder限额、取消/进程死亡处理及JNI模型FD所有权；LifeManagerApp.kt、di/DiaryModule.kt提供主进程业务图隔离与共享模式/发送依赖。
 - app/src/main/cpp/：固定llama.cpp源码归档与SHA-256的CMake接线、64位CPU真实推理、32位明确不支持兼容层、原生边界测试及第三方许可证。四ABI编译/16KiB检查不代表手机推理质量或兼容性通过。
 - data/backup/V4ArchiveContainer.kt、V4BackupManifest.kt、V4ArchiveFiles.kt、V4BackupRepository.kt：完整媒体归档、严格清单、租约、历史格式保留及原子替换；详见docs/backup-format-v4.md和docs/diary-acceptance.md。
 

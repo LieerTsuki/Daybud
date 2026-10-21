@@ -1,0 +1,287 @@
+{
+  "status": "passed",
+  "upgrades": {
+    "26": {
+      "preserved": true,
+      "androidApi": 26,
+      "oldVersion": "1.2.1",
+      "newVersion": "1.3.0",
+      "tables": 23,
+      "installedApkSha256": "886691788524a4f21882c28c879404dbf48c6ca134ec222cbe6691e9342cc173",
+      "evidence": ".tools/offline-1.3.0-api26-release-20261021-root1",
+      "verifiedJsonSha256": "a4585551a7c955bdb9ad8f4beffff7ecd8a6b3eaa3c0be6983c46f2f3cff6d5c",
+      "checks": {
+        "applicationUidPreserved": true,
+        "fullColumnsRawValuesStorageClassesAndNullsUnchanged": true,
+        "installedCandidateBytesUnchanged": true,
+        "schemaSqlAndRoomIdentityUnchanged": true,
+        "sequencesExactlyUnchanged": true,
+        "stableSignerPreserved": true,
+        "planReminderStateIncluded": true
+      },
+      "rows": {
+        "android_metadata": 1,
+        "app_maintenance": 1,
+        "app_settings": 1,
+        "diary_draft_media": 0,
+        "diary_drafts": 0,
+        "diary_entries": 0,
+        "diary_entry_media": 0,
+        "diary_media": 0,
+        "diary_review_sources": 0,
+        "diary_reviews": 0,
+        "habit_records": 0,
+        "habit_trees": 0,
+        "habit_waterings": 0,
+        "habits": 0,
+        "plan_exceptions": 0,
+        "plan_legacy_refs": 0,
+        "plan_reminder_state": 0,
+        "plan_tag_cross_ref": 0,
+        "plans": 0,
+        "subscription_payments": 0,
+        "subscription_reminders": 0,
+        "subscriptions": 0,
+        "tags": 0
+      },
+      "typedFingerprint": "f5e130b586bff07dd1ab95b5f5b9beca9772dcbc696425f12d2bb37fdb7139cd",
+      "packageManagerActiveSigner": [
+        "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c"
+      ],
+      "packageManagerSigningHistory": [
+        "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c"
+      ],
+      "scope": "Existing AVD data only, no fixtures; empty tables prove empty preservation. Private files/preferences, model quality and physical devices are not claimed."
+    },
+    "28": {
+      "preserved": true,
+      "androidApi": 28,
+      "oldVersion": "1.2.1",
+      "newVersion": "1.3.0",
+      "tables": 23,
+      "installedApkSha256": "886691788524a4f21882c28c879404dbf48c6ca134ec222cbe6691e9342cc173",
+      "evidence": ".tools/offline-1.3.0-api28-release-20261021-root1",
+      "verifiedJsonSha256": "eb69382e18f18799a9223e4434c4e2182027271588544616b313af040734eeb7",
+      "checks": {
+        "applicationUidPreserved": true,
+        "fullColumnsRawValuesStorageClassesAndNullsUnchanged": true,
+        "installedCandidateBytesUnchanged": true,
+        "schemaSqlAndRoomIdentityUnchanged": true,
+        "sequencesExactlyUnchanged": true,
+        "stableSignerPreserved": true,
+        "planReminderStateIncluded": true
+      },
+      "rows": {
+        "android_metadata": 1,
+        "app_maintenance": 1,
+        "app_settings": 1,
+        "diary_draft_media": 0,
+        "diary_drafts": 0,
+        "diary_entries": 0,
+        "diary_entry_media": 0,
+        "diary_media": 0,
+        "diary_review_sources": 0,
+        "diary_reviews": 0,
+        "habit_records": 0,
+        "habit_trees": 0,
+        "habit_waterings": 0,
+        "habits": 0,
+        "plan_exceptions": 0,
+        "plan_legacy_refs": 0,
+        "plan_reminder_state": 0,
+        "plan_tag_cross_ref": 0,
+        "plans": 0,
+        "subscription_payments": 0,
+        "subscription_reminders": 0,
+        "subscriptions": 0,
+        "tags": 0
+      },
+      "typedFingerprint": "f5e130b586bff07dd1ab95b5f5b9beca9772dcbc696425f12d2bb37fdb7139cd",
+      "packageManagerActiveSigner": [
+        "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a"
+      ],
+      "packageManagerSigningHistory": [
+        "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+        "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a"
+      ],
+      "scope": "Existing AVD data only, no fixtures; empty tables prove empty preservation. Private files/preferences, model quality and physical devices are not claimed."
+    },
+    "35": {
+      "preserved": true,
+      "androidApi": 35,
+      "oldVersion": "1.2.1",
+      "newVersion": "1.3.0",
+      "tables": 23,
+      "installedApkSha256": "886691788524a4f21882c28c879404dbf48c6ca134ec222cbe6691e9342cc173",
+      "evidence": ".tools/offline-1.3.0-api35-release-20261021-1792594309476",
+      "verifiedJsonSha256": "652a1bee0d308fa52a72ad32edf890a42806a5206bcb86f301d331454a73f27a",
+      "checks": {
+        "applicationUidPreserved": true,
+        "fullColumnsRawValuesStorageClassesAndNullsUnchanged": true,
+        "installedCandidateBytesUnchanged": true,
+        "schemaSqlAndRoomIdentityUnchanged": true,
+        "sequencesExactlyUnchanged": true,
+        "stableSignerPreserved": true,
+        "planReminderStateIncluded": true
+      },
+      "rows": {
+        "android_metadata": 1,
+        "app_maintenance": 1,
+        "app_settings": 1,
+        "diary_draft_media": 0,
+        "diary_drafts": 0,
+        "diary_entries": 0,
+        "diary_entry_media": 0,
+        "diary_media": 0,
+        "diary_review_sources": 0,
+        "diary_reviews": 0,
+        "habit_records": 0,
+        "habit_trees": 0,
+        "habit_waterings": 0,
+        "habits": 0,
+        "plan_exceptions": 0,
+        "plan_legacy_refs": 0,
+        "plan_reminder_state": 0,
+        "plan_tag_cross_ref": 0,
+        "plans": 0,
+        "subscription_payments": 0,
+        "subscription_reminders": 0,
+        "subscriptions": 0,
+        "tags": 0
+      },
+      "typedFingerprint": "f5e130b586bff07dd1ab95b5f5b9beca9772dcbc696425f12d2bb37fdb7139cd",
+      "packageManagerActiveSigner": [
+        "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a"
+      ],
+      "packageManagerSigningHistory": [
+        "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+        "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a"
+      ],
+      "scope": "Existing AVD data only, no fixtures; empty tables prove empty preservation. Private files/preferences, model quality and physical devices are not claimed."
+    }
+  },
+  "baselineSteps": {
+    "26": {
+      "preserved": true,
+      "androidApi": 26,
+      "oldVersion": "1.2.0",
+      "newVersion": "1.2.1",
+      "tables": 23,
+      "installedApkSha256": "78a5e5c5a51915162efb83eecead44f132cfc254fb84d08962e46bb2b1335723",
+      "evidence": ".tools/offline-1.3.0-api26-baseline-20261021-root3",
+      "verifiedJsonSha256": "1a3071ae996baed9aada1c637c891746f554082bba9f295146a56b538032c997",
+      "checks": {
+        "applicationUidPreserved": true,
+        "fullColumnsRawValuesStorageClassesAndNullsUnchanged": true,
+        "installedCandidateBytesUnchanged": true,
+        "schemaSqlAndRoomIdentityUnchanged": true,
+        "sequencesExactlyUnchanged": true,
+        "stableSignerPreserved": true,
+        "planReminderStateIncluded": true
+      },
+      "rows": {
+        "android_metadata": 1,
+        "app_maintenance": 1,
+        "app_settings": 1,
+        "diary_draft_media": 0,
+        "diary_drafts": 0,
+        "diary_entries": 0,
+        "diary_entry_media": 0,
+        "diary_media": 0,
+        "diary_review_sources": 0,
+        "diary_reviews": 0,
+        "habit_records": 0,
+        "habit_trees": 0,
+        "habit_waterings": 0,
+        "habits": 0,
+        "plan_exceptions": 0,
+        "plan_legacy_refs": 0,
+        "plan_reminder_state": 0,
+        "plan_tag_cross_ref": 0,
+        "plans": 0,
+        "subscription_payments": 0,
+        "subscription_reminders": 0,
+        "subscriptions": 0,
+        "tags": 0
+      },
+      "typedFingerprint": "f5e130b586bff07dd1ab95b5f5b9beca9772dcbc696425f12d2bb37fdb7139cd",
+      "packageManagerActiveSigner": [
+        "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c"
+      ],
+      "packageManagerSigningHistory": [
+        "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c"
+      ],
+      "scope": "Existing AVD data only, no fixtures; empty tables prove empty preservation. Private files/preferences, model quality and physical devices are not claimed."
+    },
+    "28": {
+      "preserved": true,
+      "androidApi": 28,
+      "oldVersion": "1.2.0",
+      "newVersion": "1.2.1",
+      "tables": 23,
+      "installedApkSha256": "78a5e5c5a51915162efb83eecead44f132cfc254fb84d08962e46bb2b1335723",
+      "evidence": ".tools/offline-1.3.0-api28-baseline-20261021-root1",
+      "verifiedJsonSha256": "60c740c3edd0ba9dfdd283b146146a3ccbf79e5091948b0c6c474f64090f4ed7",
+      "checks": {
+        "applicationUidPreserved": true,
+        "fullColumnsRawValuesStorageClassesAndNullsUnchanged": true,
+        "installedCandidateBytesUnchanged": true,
+        "schemaSqlAndRoomIdentityUnchanged": true,
+        "sequencesExactlyUnchanged": true,
+        "stableSignerPreserved": true,
+        "planReminderStateIncluded": true
+      },
+      "rows": {
+        "android_metadata": 1,
+        "app_maintenance": 1,
+        "app_settings": 1,
+        "diary_draft_media": 0,
+        "diary_drafts": 0,
+        "diary_entries": 0,
+        "diary_entry_media": 0,
+        "diary_media": 0,
+        "diary_review_sources": 0,
+        "diary_reviews": 0,
+        "habit_records": 0,
+        "habit_trees": 0,
+        "habit_waterings": 0,
+        "habits": 0,
+        "plan_exceptions": 0,
+        "plan_legacy_refs": 0,
+        "plan_reminder_state": 0,
+        "plan_tag_cross_ref": 0,
+        "plans": 0,
+        "subscription_payments": 0,
+        "subscription_reminders": 0,
+        "subscriptions": 0,
+        "tags": 0
+      },
+      "typedFingerprint": "f5e130b586bff07dd1ab95b5f5b9beca9772dcbc696425f12d2bb37fdb7139cd",
+      "packageManagerActiveSigner": [
+        "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a"
+      ],
+      "packageManagerSigningHistory": [
+        "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+        "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a"
+      ],
+      "scope": "Existing AVD data only, no fixtures; empty tables prove empty preservation. Private files/preferences, model quality and physical devices are not claimed."
+    }
+  },
+  "limitations": [
+    "Existing retained AVD databases contain only three default rows; business tables are empty and prove empty preservation only.",
+    "No database fixtures inserted; raw copied data stays ignored and private.",
+    "Database comparison does not validate all private files/preferences, ARM handsets or market coverage."
+  ],
+  "retainedFailedAttempts": [
+    {
+      "evidence": ".tools/offline-1.3.0-api26-baseline-20261021-root1",
+      "phase": "prepare",
+      "reason": "root identity guard rejected before preparation"
+    },
+    {
+      "evidence": ".tools/offline-1.3.0-api26-baseline-20261021-root2",
+      "phase": "preinstall snapshot",
+      "reason": "ADB transport failed before install subprocess; no install result exists"
+    }
+  ]
+}

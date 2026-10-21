@@ -1,0 +1,206 @@
+{
+  "status": "passed",
+  "versionName": "1.3.0",
+  "versionCode": 14,
+  "serial": "emulator-5580",
+  "avd": "Rizhiya_Diary_API35",
+  "api": 35,
+  "appSha256": "a374bc56a46843d57901b888af741b62899b630ae32752846ed9fe08a7977513",
+  "testApkSha256": "64eb51e86cf3b726455055d1b5c4a84dcf84f8c5bfa874e3dbffd89f2d8ca462",
+  "business": {
+    "tests": 79,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "commandExit": 0,
+    "passed": true
+  },
+  "runtime": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "commandExit": 0,
+    "passed": true
+  },
+  "native": {
+    "setup": {
+      "state": "passed",
+      "modelId": "qwen3-0.6b-q4km-b5501",
+      "modelSha256": "15e434d8ddf0af38fe3f7003af6ce6eac4edada6df34324aa45979f9cc79f02e",
+      "modelBytes": 396704416,
+      "preexistingReadyModel": true,
+      "modelLeftReadyForReproduction": true,
+      "api": 35,
+      "manufacturer": "unknown",
+      "deviceModel": "Android SDK built for x86_64",
+      "abis": [
+        "x86_64"
+      ],
+      "scope": "Real JNI/private-service structural runtime on this device only; not semantic quality, ARM handset coverage or market adaptation",
+      "businessDatabaseWritesByTest": false
+    },
+    "probeAndProcess": {
+      "state": "passed",
+      "elapsedMillis": 13625,
+      "tokenCount": 31,
+      "mainPid": 3096,
+      "inferencePid": 3138,
+      "inferenceProcess": "com.example.lifemanager:diary_inference",
+      "sameUid": true,
+      "procFileDescriptorsObservable": true,
+      "observedOpenBusinessDatabase": false,
+      "procThreadsObservable": true,
+      "observedWorkerThread": false,
+      "availableDeviceMemoryBytes": 2408939520,
+      "deviceTotalMemoryBytes": 4110761984,
+      "observationLimit": "FD/thread samples only; unavailable proc access is recorded, not counted as business initialization proof"
+    },
+    "structuralGeneration": {
+      "state": "passed",
+      "elapsedMillis": 23015,
+      "semanticQualityAssessed": false,
+      "syntheticSources": true,
+      "sections": [
+        {
+          "kind": "LIFE",
+          "text": "AI摘选原文（逐字摘录，分类仅供回看）：\n2026-10-18 #1 正文：“今天傍晚沿操场散步二十分钟，回来后整理了两页课程笔记。”\n2026-10-19 #2 正文：“今天检查实验日志，发现一个输入问题，还没有解决。”",
+          "sourceIds": [
+            1,
+            2
+          ]
+        },
+        {
+          "kind": "MOOD",
+          "text": "已填写的心情标签（不推测正文中的情绪）：\n2026-10-18 #1：平静\n2026-10-19 #2：未填写",
+          "sourceIds": [
+            1,
+            2
+          ]
+        },
+        {
+          "kind": "MOMENTS",
+          "text": "AI摘选原文（逐字摘录，分类仅供回看）：\n2026-10-18 #1 正文：“今天傍晚沿操场散步二十分钟，回来后整理了两页课程笔记。”\n2026-10-19 #2 正文：“我计划明天继续检查。”",
+          "sourceIds": [
+            1,
+            2
+          ]
+        },
+        {
+          "kind": "GROWTH",
+          "text": "本次AI未选出反思原文片段；这不代表原文中不存在，可查看来源。",
+          "sourceIds": [
+            1,
+            2
+          ]
+        },
+        {
+          "kind": "SUPPORT",
+          "text": "本次AI未选出给自己的提醒原文片段；这不代表原文中不存在，可查看来源。",
+          "sourceIds": [
+            1,
+            2
+          ]
+        }
+      ],
+      "nativeOutputs": [
+        {
+          "promptTokens": 307,
+          "generatedTokens": 48,
+          "reachedEos": true
+        }
+      ]
+    },
+    "cancellation": {
+      "state": "passed",
+      "cancellationMillis": 8,
+      "reopenAndCountMillis": 760,
+      "resourcesReusableAfterCancellation": true
+    },
+    "serviceDeath": {
+      "state": "passed",
+      "failure": "SERVICE_DIED",
+      "oldInferencePid": 3138,
+      "newInferencePid": 3258,
+      "mainPid": 3096,
+      "mainProcessSurvived": true
+    },
+    "guardedEngine": {
+      "state": "passed",
+      "elapsedMillis": 95692,
+      "sourceCount": 3,
+      "hanCharacters": 1135,
+      "resourceGuardPassed": true,
+      "availableMemoryBytes": 2883440640,
+      "explicitSaveOnly": true,
+      "cloudCalled": false,
+      "semanticQualityAssessed": false,
+      "sections": [
+        {
+          "kind": "LIFE",
+          "text": "AI摘选原文（逐字摘录，分类仅供回看）：\n2026-10-18 #1 正文：“今天的具体记录只有以上这些，其他日常细节没有写下，不能据此推测。”\n2026-10-19 #2 正文：“我提醒自己先把今天能做的事情做完，不要把尚未发生的事当成结果。”\n2026-10-20 #3 正文：“今天上午补写了前两天的日记，核对日期时发现一条记录写错了月份，已经改正。”",
+          "sourceIds": [
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "kind": "MOOD",
+          "text": "已填写的心情标签（不推测正文中的情绪）：\n2026-10-18 #1：平静\n2026-10-19 #2：焦虑\n2026-10-20 #3：未填写",
+          "sourceIds": [
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "kind": "MOMENTS",
+          "text": "本次AI未选出特别时刻原文片段；这不代表原文中不存在，可查看来源。",
+          "sourceIds": [
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "kind": "GROWTH",
+          "text": "本次AI未选出反思原文片段；这不代表原文中不存在，可查看来源。",
+          "sourceIds": [
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "kind": "SUPPORT",
+          "text": "本次AI未选出给自己的提醒原文片段；这不代表原文中不存在，可查看来源。",
+          "sourceIds": [
+            1,
+            2,
+            3
+          ]
+        }
+      ]
+    }
+  },
+  "noNetwork": {
+    "airplaneMode": true,
+    "activeDefaultNetwork": "none"
+  },
+  "memory": {
+    "metric": "Sampled RSS; shared pages may be counted twice; not true PSS peak",
+    "intervalSeconds": 2,
+    "samples": 73,
+    "combinedMaxRssKiB": 1392436,
+    "perProcessMaxRssKiB": {
+      "com.example.lifemanager": 264580,
+      "com.example.lifemanager:diary_inference": 1128228
+    }
+  },
+  "limitations": [
+    "x86_64 emulator only; no ARM handset or market coverage evidence",
+    "Process-cold start after force-stop; OS file cache was not purged",
+    "Engine explicit-save test uses a synthetic in-memory source; real Room persistence has a separate regression"
+  ]
+}

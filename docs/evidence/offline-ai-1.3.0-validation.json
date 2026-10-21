@@ -1,0 +1,531 @@
+{
+  "status": "validated-local",
+  "versionName": "1.3.0",
+  "versionCode": 14,
+  "roomSchema": 8,
+  "backupFormat": 4,
+  "jvm": {
+    "tests": 1395,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 140
+  },
+  "deviceBusiness": {
+    "tests": 79,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "deviceRuntime": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "signingTools": {
+    "tests": 17,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "lint": {
+    "debug": {
+      "errors": 0,
+      "warnings": 53
+    },
+    "release": {
+      "errors": 0,
+      "warnings": 33
+    }
+  },
+  "build": {
+    "committedSource": "1b03404833d04fcf005425326c0510c08d3fbda9",
+    "sourceManifestFiles": 485,
+    "fullLog": ".tools/offline-final-1.3.0-build-round6.log",
+    "committedReleaseLog": ".tools/offline-1.3.0-committed-release.log"
+  },
+  "apk": {
+    "path": ".tools/delivery-offline-1.3.0/rizhiya-1.3.0.apk",
+    "sha256": "886691788524a4f21882c28c879404dbf48c6ca134ec222cbe6691e9342cc173",
+    "bytes": 22282857,
+    "zipalign16KiB": true,
+    "certificateSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a"
+  },
+  "signing": {
+    "platforms": [
+      {
+        "sdk": 26,
+        "verified": true,
+        "effectiveSignerSha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+        "v1": false,
+        "v2": true,
+        "v3": false,
+        "v31": false,
+        "warnings": [],
+        "lineage": null
+      },
+      {
+        "sdk": 27,
+        "verified": true,
+        "effectiveSignerSha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+        "v1": false,
+        "v2": true,
+        "v3": false,
+        "v31": false,
+        "warnings": [],
+        "lineage": null
+      },
+      {
+        "sdk": 28,
+        "verified": true,
+        "effectiveSignerSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+        "v1": false,
+        "v2": false,
+        "v3": true,
+        "v31": false,
+        "warnings": [],
+        "lineage": {
+          "certificates": [
+            {
+              "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+              "installedData": true,
+              "sharedUid": true,
+              "permission": true,
+              "rollback": false,
+              "auth": true
+            },
+            {
+              "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+              "installedData": true,
+              "sharedUid": true,
+              "permission": true,
+              "rollback": false,
+              "auth": true
+            }
+          ]
+        }
+      },
+      {
+        "sdk": 32,
+        "verified": true,
+        "effectiveSignerSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+        "v1": false,
+        "v2": false,
+        "v3": true,
+        "v31": false,
+        "warnings": [],
+        "lineage": {
+          "certificates": [
+            {
+              "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+              "installedData": true,
+              "sharedUid": true,
+              "permission": true,
+              "rollback": false,
+              "auth": true
+            },
+            {
+              "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+              "installedData": true,
+              "sharedUid": true,
+              "permission": true,
+              "rollback": false,
+              "auth": true
+            }
+          ]
+        }
+      },
+      {
+        "sdk": 33,
+        "verified": true,
+        "effectiveSignerSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+        "v1": false,
+        "v2": false,
+        "v3": true,
+        "v31": false,
+        "warnings": [],
+        "lineage": {
+          "certificates": [
+            {
+              "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+              "installedData": true,
+              "sharedUid": true,
+              "permission": true,
+              "rollback": false,
+              "auth": true
+            },
+            {
+              "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+              "installedData": true,
+              "sharedUid": true,
+              "permission": true,
+              "rollback": false,
+              "auth": true
+            }
+          ]
+        }
+      },
+      {
+        "sdk": 35,
+        "verified": true,
+        "effectiveSignerSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+        "v1": false,
+        "v2": false,
+        "v3": true,
+        "v31": false,
+        "warnings": [],
+        "lineage": {
+          "certificates": [
+            {
+              "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+              "installedData": true,
+              "sharedUid": true,
+              "permission": true,
+              "rollback": false,
+              "auth": true
+            },
+            {
+              "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+              "installedData": true,
+              "sharedUid": true,
+              "permission": true,
+              "rollback": false,
+              "auth": true
+            }
+          ]
+        }
+      }
+    ],
+    "lineage": {
+      "certificates": [
+        {
+          "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+          "installedData": true,
+          "sharedUid": true,
+          "permission": true,
+          "rollback": false,
+          "auth": true
+        },
+        {
+          "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+          "installedData": true,
+          "sharedUid": true,
+          "permission": true,
+          "rollback": false,
+          "auth": true
+        }
+      ]
+    }
+  },
+  "quality": {
+    "cases": 12,
+    "scope": "original-excerpt-trial",
+    "evidence": "docs/evidence/offline-ai-grounded-quality.json",
+    "completeSummaryAccepted": false
+  },
+  "upgrades": {
+    "26": {
+      "preserved": true,
+      "androidApi": 26,
+      "oldVersion": "1.2.1",
+      "newVersion": "1.3.0",
+      "tables": 23,
+      "installedApkSha256": "886691788524a4f21882c28c879404dbf48c6ca134ec222cbe6691e9342cc173",
+      "evidence": ".tools/offline-1.3.0-api26-release-20261021-root1",
+      "verifiedJsonSha256": "a4585551a7c955bdb9ad8f4beffff7ecd8a6b3eaa3c0be6983c46f2f3cff6d5c",
+      "checks": {
+        "applicationUidPreserved": true,
+        "fullColumnsRawValuesStorageClassesAndNullsUnchanged": true,
+        "installedCandidateBytesUnchanged": true,
+        "schemaSqlAndRoomIdentityUnchanged": true,
+        "sequencesExactlyUnchanged": true,
+        "stableSignerPreserved": true,
+        "planReminderStateIncluded": true
+      },
+      "rows": {
+        "android_metadata": 1,
+        "app_maintenance": 1,
+        "app_settings": 1,
+        "diary_draft_media": 0,
+        "diary_drafts": 0,
+        "diary_entries": 0,
+        "diary_entry_media": 0,
+        "diary_media": 0,
+        "diary_review_sources": 0,
+        "diary_reviews": 0,
+        "habit_records": 0,
+        "habit_trees": 0,
+        "habit_waterings": 0,
+        "habits": 0,
+        "plan_exceptions": 0,
+        "plan_legacy_refs": 0,
+        "plan_reminder_state": 0,
+        "plan_tag_cross_ref": 0,
+        "plans": 0,
+        "subscription_payments": 0,
+        "subscription_reminders": 0,
+        "subscriptions": 0,
+        "tags": 0
+      },
+      "typedFingerprint": "f5e130b586bff07dd1ab95b5f5b9beca9772dcbc696425f12d2bb37fdb7139cd",
+      "packageManagerActiveSigner": [
+        "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c"
+      ],
+      "packageManagerSigningHistory": [
+        "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c"
+      ],
+      "scope": "Existing AVD data only, no fixtures; empty tables prove empty preservation. Private files/preferences, model quality and physical devices are not claimed."
+    },
+    "28": {
+      "preserved": true,
+      "androidApi": 28,
+      "oldVersion": "1.2.1",
+      "newVersion": "1.3.0",
+      "tables": 23,
+      "installedApkSha256": "886691788524a4f21882c28c879404dbf48c6ca134ec222cbe6691e9342cc173",
+      "evidence": ".tools/offline-1.3.0-api28-release-20261021-root1",
+      "verifiedJsonSha256": "eb69382e18f18799a9223e4434c4e2182027271588544616b313af040734eeb7",
+      "checks": {
+        "applicationUidPreserved": true,
+        "fullColumnsRawValuesStorageClassesAndNullsUnchanged": true,
+        "installedCandidateBytesUnchanged": true,
+        "schemaSqlAndRoomIdentityUnchanged": true,
+        "sequencesExactlyUnchanged": true,
+        "stableSignerPreserved": true,
+        "planReminderStateIncluded": true
+      },
+      "rows": {
+        "android_metadata": 1,
+        "app_maintenance": 1,
+        "app_settings": 1,
+        "diary_draft_media": 0,
+        "diary_drafts": 0,
+        "diary_entries": 0,
+        "diary_entry_media": 0,
+        "diary_media": 0,
+        "diary_review_sources": 0,
+        "diary_reviews": 0,
+        "habit_records": 0,
+        "habit_trees": 0,
+        "habit_waterings": 0,
+        "habits": 0,
+        "plan_exceptions": 0,
+        "plan_legacy_refs": 0,
+        "plan_reminder_state": 0,
+        "plan_tag_cross_ref": 0,
+        "plans": 0,
+        "subscription_payments": 0,
+        "subscription_reminders": 0,
+        "subscriptions": 0,
+        "tags": 0
+      },
+      "typedFingerprint": "f5e130b586bff07dd1ab95b5f5b9beca9772dcbc696425f12d2bb37fdb7139cd",
+      "packageManagerActiveSigner": [
+        "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a"
+      ],
+      "packageManagerSigningHistory": [
+        "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+        "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a"
+      ],
+      "scope": "Existing AVD data only, no fixtures; empty tables prove empty preservation. Private files/preferences, model quality and physical devices are not claimed."
+    },
+    "35": {
+      "preserved": true,
+      "androidApi": 35,
+      "oldVersion": "1.2.1",
+      "newVersion": "1.3.0",
+      "tables": 23,
+      "installedApkSha256": "886691788524a4f21882c28c879404dbf48c6ca134ec222cbe6691e9342cc173",
+      "evidence": ".tools/offline-1.3.0-api35-release-20261021-1792594309476",
+      "verifiedJsonSha256": "652a1bee0d308fa52a72ad32edf890a42806a5206bcb86f301d331454a73f27a",
+      "checks": {
+        "applicationUidPreserved": true,
+        "fullColumnsRawValuesStorageClassesAndNullsUnchanged": true,
+        "installedCandidateBytesUnchanged": true,
+        "schemaSqlAndRoomIdentityUnchanged": true,
+        "sequencesExactlyUnchanged": true,
+        "stableSignerPreserved": true,
+        "planReminderStateIncluded": true
+      },
+      "rows": {
+        "android_metadata": 1,
+        "app_maintenance": 1,
+        "app_settings": 1,
+        "diary_draft_media": 0,
+        "diary_drafts": 0,
+        "diary_entries": 0,
+        "diary_entry_media": 0,
+        "diary_media": 0,
+        "diary_review_sources": 0,
+        "diary_reviews": 0,
+        "habit_records": 0,
+        "habit_trees": 0,
+        "habit_waterings": 0,
+        "habits": 0,
+        "plan_exceptions": 0,
+        "plan_legacy_refs": 0,
+        "plan_reminder_state": 0,
+        "plan_tag_cross_ref": 0,
+        "plans": 0,
+        "subscription_payments": 0,
+        "subscription_reminders": 0,
+        "subscriptions": 0,
+        "tags": 0
+      },
+      "typedFingerprint": "f5e130b586bff07dd1ab95b5f5b9beca9772dcbc696425f12d2bb37fdb7139cd",
+      "packageManagerActiveSigner": [
+        "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a"
+      ],
+      "packageManagerSigningHistory": [
+        "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+        "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a"
+      ],
+      "scope": "Existing AVD data only, no fixtures; empty tables prove empty preservation. Private files/preferences, model quality and physical devices are not claimed."
+    }
+  },
+  "baselineSteps": {
+    "26": {
+      "preserved": true,
+      "androidApi": 26,
+      "oldVersion": "1.2.0",
+      "newVersion": "1.2.1",
+      "tables": 23,
+      "installedApkSha256": "78a5e5c5a51915162efb83eecead44f132cfc254fb84d08962e46bb2b1335723",
+      "evidence": ".tools/offline-1.3.0-api26-baseline-20261021-root3",
+      "verifiedJsonSha256": "1a3071ae996baed9aada1c637c891746f554082bba9f295146a56b538032c997",
+      "checks": {
+        "applicationUidPreserved": true,
+        "fullColumnsRawValuesStorageClassesAndNullsUnchanged": true,
+        "installedCandidateBytesUnchanged": true,
+        "schemaSqlAndRoomIdentityUnchanged": true,
+        "sequencesExactlyUnchanged": true,
+        "stableSignerPreserved": true,
+        "planReminderStateIncluded": true
+      },
+      "rows": {
+        "android_metadata": 1,
+        "app_maintenance": 1,
+        "app_settings": 1,
+        "diary_draft_media": 0,
+        "diary_drafts": 0,
+        "diary_entries": 0,
+        "diary_entry_media": 0,
+        "diary_media": 0,
+        "diary_review_sources": 0,
+        "diary_reviews": 0,
+        "habit_records": 0,
+        "habit_trees": 0,
+        "habit_waterings": 0,
+        "habits": 0,
+        "plan_exceptions": 0,
+        "plan_legacy_refs": 0,
+        "plan_reminder_state": 0,
+        "plan_tag_cross_ref": 0,
+        "plans": 0,
+        "subscription_payments": 0,
+        "subscription_reminders": 0,
+        "subscriptions": 0,
+        "tags": 0
+      },
+      "typedFingerprint": "f5e130b586bff07dd1ab95b5f5b9beca9772dcbc696425f12d2bb37fdb7139cd",
+      "packageManagerActiveSigner": [
+        "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c"
+      ],
+      "packageManagerSigningHistory": [
+        "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c"
+      ],
+      "scope": "Existing AVD data only, no fixtures; empty tables prove empty preservation. Private files/preferences, model quality and physical devices are not claimed."
+    },
+    "28": {
+      "preserved": true,
+      "androidApi": 28,
+      "oldVersion": "1.2.0",
+      "newVersion": "1.2.1",
+      "tables": 23,
+      "installedApkSha256": "78a5e5c5a51915162efb83eecead44f132cfc254fb84d08962e46bb2b1335723",
+      "evidence": ".tools/offline-1.3.0-api28-baseline-20261021-root1",
+      "verifiedJsonSha256": "60c740c3edd0ba9dfdd283b146146a3ccbf79e5091948b0c6c474f64090f4ed7",
+      "checks": {
+        "applicationUidPreserved": true,
+        "fullColumnsRawValuesStorageClassesAndNullsUnchanged": true,
+        "installedCandidateBytesUnchanged": true,
+        "schemaSqlAndRoomIdentityUnchanged": true,
+        "sequencesExactlyUnchanged": true,
+        "stableSignerPreserved": true,
+        "planReminderStateIncluded": true
+      },
+      "rows": {
+        "android_metadata": 1,
+        "app_maintenance": 1,
+        "app_settings": 1,
+        "diary_draft_media": 0,
+        "diary_drafts": 0,
+        "diary_entries": 0,
+        "diary_entry_media": 0,
+        "diary_media": 0,
+        "diary_review_sources": 0,
+        "diary_reviews": 0,
+        "habit_records": 0,
+        "habit_trees": 0,
+        "habit_waterings": 0,
+        "habits": 0,
+        "plan_exceptions": 0,
+        "plan_legacy_refs": 0,
+        "plan_reminder_state": 0,
+        "plan_tag_cross_ref": 0,
+        "plans": 0,
+        "subscription_payments": 0,
+        "subscription_reminders": 0,
+        "subscriptions": 0,
+        "tags": 0
+      },
+      "typedFingerprint": "f5e130b586bff07dd1ab95b5f5b9beca9772dcbc696425f12d2bb37fdb7139cd",
+      "packageManagerActiveSigner": [
+        "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a"
+      ],
+      "packageManagerSigningHistory": [
+        "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+        "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a"
+      ],
+      "scope": "Existing AVD data only, no fixtures; empty tables prove empty preservation. Private files/preferences, model quality and physical devices are not claimed."
+    }
+  },
+  "runtime": {
+    "model": {
+      "state": "passed",
+      "modelId": "qwen3-0.6b-q4km-b5501",
+      "modelSha256": "15e434d8ddf0af38fe3f7003af6ce6eac4edada6df34324aa45979f9cc79f02e",
+      "modelBytes": 396704416,
+      "preexistingReadyModel": true,
+      "modelLeftReadyForReproduction": true,
+      "api": 35,
+      "manufacturer": "unknown",
+      "deviceModel": "Android SDK built for x86_64",
+      "abis": [
+        "x86_64"
+      ],
+      "scope": "Real JNI/private-service structural runtime on this device only; not semantic quality, ARM handset coverage or market adaptation",
+      "businessDatabaseWritesByTest": false
+    },
+    "benchmarkMillis": 95692,
+    "hanCharacters": 1135,
+    "cancelMillis": 8,
+    "memory": {
+      "metric": "Sampled RSS; shared pages may be counted twice; not true PSS peak",
+      "intervalSeconds": 2,
+      "samples": 73,
+      "combinedMaxRssKiB": 1392436,
+      "perProcessMaxRssKiB": {
+        "com.example.lifemanager": 264580,
+        "com.example.lifemanager:diary_inference": 1128228
+      }
+    }
+  },
+  "limitations": [
+    "No ARM physical handset or market coverage validation",
+    "Offline mode selects original excerpts, with possible omissions and incorrect classifications",
+    "Runtime measurements are from one 4GiB x86_64 API35 emulator; sampled RSS is not true PSS peak",
+    "1.7B optional model has no completed handset performance benchmark"
+  ]
+}

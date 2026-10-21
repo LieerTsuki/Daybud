@@ -1,0 +1,93 @@
+{
+  "status": "passed",
+  "artifact": "unsigned Release prior to signing; final zip alignment is checked by signer",
+  "libraries": [
+    {
+      "path": "lib/arm64-v8a/libandroidx.graphics.path.so",
+      "bytes": 10096,
+      "sha256": "41e9a793c43a0f4fddb19e33f346bace464f30f888ba7b9eaf96294ea115bfb6",
+      "loadAlignments": [
+        "0x4000",
+        "0x4000",
+        "0x4000"
+      ]
+    },
+    {
+      "path": "lib/arm64-v8a/libdiary_llama.so",
+      "bytes": 4477104,
+      "sha256": "22e95b015fa308f6b442ad40e872d527c485ff5c5da00c81ada232dc079ad769",
+      "loadAlignments": [
+        "0x4000",
+        "0x4000",
+        "0x4000"
+      ]
+    },
+    {
+      "path": "lib/armeabi-v7a/libandroidx.graphics.path.so",
+      "bytes": 7252,
+      "sha256": "41399eba6fc2a60f6f14642375c1824f3cf25eb8fec7397d753730a3ceda3e2b",
+      "loadAlignments": [
+        "0x4000",
+        "0x4000",
+        "0x4000"
+      ]
+    },
+    {
+      "path": "lib/armeabi-v7a/libdiary_llama.so",
+      "bytes": 3740,
+      "sha256": "05e530679f746429d54b9126992c9e00c33a2927905b0671a9ab6aa8483de0c3",
+      "loadAlignments": [
+        "0x4000",
+        "0x4000"
+      ]
+    },
+    {
+      "path": "lib/x86/libandroidx.graphics.path.so",
+      "bytes": 9284,
+      "sha256": "eb0570b41fd3bff25d8204a967c03bd7550719e768b791f680cc40cbe35f29af",
+      "loadAlignments": [
+        "0x4000",
+        "0x4000",
+        "0x4000"
+      ]
+    },
+    {
+      "path": "lib/x86/libdiary_llama.so",
+      "bytes": 4428,
+      "sha256": "9154c4dce1de7f7c1cd4e761566e7f2deabb4004321cd71da65a20795e42841f",
+      "loadAlignments": [
+        "0x4000",
+        "0x4000"
+      ]
+    },
+    {
+      "path": "lib/x86_64/libandroidx.graphics.path.so",
+      "bytes": 10760,
+      "sha256": "4e56c996f13670e70082658de7880c4020eabf4f25e43387f88ed78a713fc9f0",
+      "loadAlignments": [
+        "0x4000",
+        "0x4000",
+        "0x4000"
+      ]
+    },
+    {
+      "path": "lib/x86_64/libdiary_llama.so",
+      "bytes": 4879304,
+      "sha256": "cbd9b58249e5905901f0abb40a5d19ddf5712122fdde6020db70a4a3b20952a3",
+      "loadAlignments": [
+        "0x4000",
+        "0x4000",
+        "0x4000"
+      ]
+    }
+  ],
+  "engineAbis": [
+    "arm64-v8a",
+    "x86_64"
+  ],
+  "explicitlyUnsupportedInferenceAbis": [
+    "armeabi-v7a",
+    "x86"
+  ],
+  "embeddedVersionControl": "repositories {\n  system: GIT\n  local_root_path: \"$PROJECT_DIR\"\n  revision: \"1b03404833d04fcf005425326c0510c08d3fbda9\"\n}\n"
+}
