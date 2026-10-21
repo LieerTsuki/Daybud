@@ -1,8 +1,8 @@
 # 项目架构
 
-更新：2026-10-21；当前Latest Release为正式1.2.1/code13页面调整，沿用1.2.0日记与AI回顾架构；历史1.1.4正式签名延续。
+更新：2026-10-22；当前Latest Release为1.3.0/code14，新增手机离线原文摘选试用，沿用日记与AI回顾架构及正式签名；Room8与备份V4不变。
 
-1.3.0候选已完成本地验收、待公开发布：手机离线AI增加独立本地配置类型、模型管理与提供方路由。AiModeStore在noBackup目录保存模式、配置修订和模型摘要，云端凭据仍由AiPrivateStore保管；切换模式暂停旧云端自动授权。CloudSendGate与模式变更共享发送准入，覆盖最终配置核对至实际connect/write边界，避免模式切换完成后旧请求再上传。DiaryAiEngine继续统一来源快照、世代/修订校验、五段校验与Room原子保存，回顾记录本地模型摘要，不自动退回云端。Room8与备份V4契约保持。
+1.3.0已发布，离线功能为原文摘选试用：手机离线AI增加独立本地配置类型、模型管理与提供方路由。AiModeStore在noBackup目录保存模式、配置修订和模型摘要，云端凭据仍由AiPrivateStore保管；切换模式暂停旧云端自动授权。CloudSendGate与模式变更共享发送准入，覆盖最终配置核对至实际connect/write边界，避免模式切换完成后旧请求再上传。DiaryAiEngine继续统一来源快照、世代/修订校验、五段校验与Room原子保存，回顾记录本地模型摘要，不自动退回云端。Room8与备份V4契约保持。
 
 LocalModelStore在noBackup目录流式导入并校验固定模型，临时文件通过摘要和GGUF检查后启用；只读FD租约保护正在使用的文件，删除模型撤销就绪状态并延迟回收有租约字节。LocalGroundedPipeline按实际分词和UTF8预算处理全部原文，最多16篇/8片；模型受GBNF约束只能选本篇片段编号，结果按稳定顺序收敛为每篇每类最多一段原文，不能生成新的事实句或情绪。GroundedAiResultPolicy在生成、Engine保存和Room保存三个边界逐字核对日期、字段、连续原句及引用，心情仅从标签重建；云端保持原自由生成规则。设备能力检查结合64位进程、可用内存与磁盘条件，不承诺某个总内存档位必然可用。
 
@@ -10,7 +10,7 @@ LocalModelStore在noBackup目录流式导入并校验固定模型，临时文件
 
 验证边界：自由生成候选出现内容偏差，1.7B在模拟器长材料上超时，故按用户选择收缩为原文摘选试用。逐字摘录不保证分类、代表性或上下文完整；12组人工核对与实际CPU设备证据、最终签名升级状态见docs/offline-ai-acceptance.md，不能将有限模拟器结果写成已适配市场大多数手机。
 
-1.2.1/code13页面调整已于2026-10-20发布正式版：PlanScreen完整渲染未完成列表，仅已完成保留折叠状态；DiaryDao两个查询与DiaryRules.ordered统一按记录日期、创建时间、ID倒序，DiaryViewModel沿用该规则。AI回顾由AiReviewDateInput提供只读框与右侧日期选择器，UTC转换civil date，禁用时清除临时选择；确认仍调用原range流程清除旧预览与未保存结果。Room8、V4及签名身份不变。当前验收见docs/page-polish-1.2.1-acceptance.md。
+1.2.1/code13页面调整已于2026-10-20发布正式版：PlanScreen完整渲染未完成列表，仅已完成保留折叠状态；DiaryDao两个查询与DiaryRules.ordered统一按记录日期、创建时间、ID倒序，DiaryViewModel沿用该规则。AI回顾由AiReviewDateInput提供只读框与右侧日期选择器，UTC转换civil date，禁用时清除临时选择；确认仍调用原range流程清除旧预览与未保存结果。Room8、V4及签名身份不变。页面调整历史验收见docs/page-polish-1.2.1-acceptance.md；本轮离线验收见docs/offline-ai-acceptance.md。
 
 当前版本使用Room8、计划/打卡/日记/订阅/设置五入口。7→8仅新增七张日记表，旧15张Room表定义不变；DiaryViewModel与DiaryAiViewModel由Activity保留的独立工厂创建。DiaryScreen组合列表/日历、草稿箱、详情、编辑和媒体查看，草稿落Room且1秒空闲/5秒连续输入保存；回调捕获原世代/会话/修订，普通写入由仓库内部获取全局准入，调用方不得再嵌套。
 

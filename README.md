@@ -2,13 +2,17 @@
 
 日子芽是 Kotlin + Jetpack Compose 的离线生活管理工具；V1 将待办与日程统一为计划，同时保留习惯打卡和订阅费用管理。
 
-更新日期：2026-10-21。
+更新日期：2026-10-22。
 
 每次版本更新附带[更新内容文档](CHANGELOG.md)；开发中分批结果与已发布版本分开记录，此约定已写入仓库 `AGENTS.md`。
 
-1.3.0/code14正在完成发布验证，新增手机离线原文摘选试用。按用户选择，AI只挑原文片段，心情直接展示已填标签；模型准备好后无需电脑、网络或Key。小模型可能遗漏、重复或分错类别，不是完整总结；目前没有多数品牌真机覆盖证据。[当前验收与限制](docs/offline-ai-acceptance.md) · [模型来源](docs/offline-ai-models.md)。本轮1395项JVM、79项业务设备、5项真实离线及17项签名工具测试通过，API26/28/35覆盖升级保留23张表和应用身份；[验证汇总](docs/evidence/offline-ai-1.3.0-validation.json)。候选尚未发布，当前正式下载仍为下面的1.2.1。
+1.3.0/code14已发布，新增手机离线原文摘选试用。按用户选择，AI只挑原文片段，心情直接展示已填标签；模型准备好后无需电脑、网络或Key。小模型可能遗漏、重复或分错类别，不是完整总结；目前没有多数品牌真机覆盖证据。[当前验收与限制](docs/offline-ai-acceptance.md) · [模型来源](docs/offline-ai-models.md)。本轮1395项JVM、79项业务设备、5项真实离线及17项签名工具测试通过，API26/28/35覆盖升级保留23张表和应用身份；[验证汇总](docs/evidence/offline-ai-1.3.0-validation.json)。已于2026-10-22T00:11:09+08:00发布正式Latest Release（离线原文摘选功能为试用），发布源码`bca5e2f5e1c76c25a7f86c814097d223d6080246`已推送main；APK、两份模型、许可证及校验文件均经匿名完整回下载核对。
 
-## 1.2.1正式版 · 页面体验调整
+[下载1.3.0 APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.3.0/rizhiya-1.3.0.apk) · [Release与模型](https://github.com/LieerTsuki/Daybud/releases/tag/v1.3.0) · [发布回执](docs/evidence/offline-ai-1.3.0-publication.json)
+
+使用：日记 → AI回顾 → AI服务 → 手机离线 → 下载Qwen3 0.6B（约397MB）并等待校验就绪，返回选日期生成。模型准备后无需电脑、网络或Key；需要64位Android进程并通过资源检查。
+
+## 历史1.2.1正式版 · 页面体验调整
 
 本轮源码1.2.1/code13：计划四象限完整展示全部未完成项，仅已完成可折叠；日记按记录日期倒序，同日按创建时间与ID倒序；AI回顾开始/结束日期通过右侧日历按钮选择，无需输入。Room8、V4备份和正式签名身份沿用1.2.0，无数据库迁移。本轮1295项JVM/125套件、79项API35设备测试、17项签名工具测试全部通过，failure/error/skipped均为0；Debug/androidTest/Release构建成功，lint0错误/51警告。正式签名六个SDK检查点及16KiB对齐通过。现有API35正式1.2.0覆盖升级到1.2.1后，23张表全部字段、类型、NULL值及序列逐值一致，应用UID和签名身份保持。已于2026-10-20T15:43:28+08:00发布正式Latest Release，发布源码`636e8510ace3dc6d530722263796386164d145b3`已推送main；公开APK及SHA256SUMS回下载一致。[更新说明](CHANGELOG.md) · [本轮验收](docs/page-polish-1.2.1-acceptance.md)。
 

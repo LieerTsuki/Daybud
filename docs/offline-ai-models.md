@@ -1,6 +1,6 @@
 # 离线AI底层与模型来源
 
-本文记录1.3.0候选的固定源、真实产物与验证限制。正式公开状态以[本轮验收](offline-ai-acceptance.md)为准，模型与APK在同一Release发布。
+本文记录已发布1.3.0离线原文摘选试用的固定源、真实产物与验证限制。正式公开状态以[本轮验收](offline-ai-acceptance.md)为准，模型与APK已在同一[1.3.0 Release](https://github.com/LieerTsuki/Daybud/releases/tag/v1.3.0)发布，并经匿名完整下载核对。
 
 ## 推理底层
 
@@ -9,14 +9,14 @@
 - Android NDK27.2.12479018、CMake3.22.1、最低API26，静态C++运行库。禁用网络推理、GPU与宿主特定指令；ARM64按armv8-a编译。
 - APK的离线许可证入口包括llama.cpp、minja与nlohmann JSON完整MIT通知，Qwen3模型使用Apache-2.0。
 
-## 已校验小模型与候选
+## 已校验来源与发布模型
 
 | 权重 | 固定官方源 | 字节数 | SHA256 |
 | --- | --- | ---: | --- |
 | Qwen3 0.6B Q8_0 | Qwen/Qwen3-0.6B-GGUF，修订23749fefcc72300e3a2ad315e1317431b06b590a，Qwen3-0.6B-Q8_0.gguf | 639446688 | 9465e63a22add5354d9bb4b99e90117043c7124007664907259bd16d043bb031 |
 | Qwen3 0.6B Q4_K_M（本项目二次量化） | 上述Q8_0，llama.cpp b5501 `--allow-requantize` | 396704416 | 15e434d8ddf0af38fe3f7003af6ce6eac4edada6df34324aa45979f9cc79f02e |
-| Qwen3 1.7B Q8_0（候选） | Qwen/Qwen3-1.7B-GGUF，修订90862c4b9d2787eaed51d12237eafdfe7c5f6077，Qwen3-1.7B-Q8_0.gguf | 1834426016 | 061b54daade076b5d3362dac252678d17da8c68f07560be70818cace6590cb1a |
-| Qwen3 1.7B Q4_K_M（本项目二次量化候选） | 上述Q8_0，同版量化器`--allow-requantize Q4_K_M 2` | 1107408544 | 54c0f1203a724e9f33e76916beab3bdfaffef56cf7b42a93b1bc21319fc0bf97 |
+| Qwen3 1.7B Q8_0（量化来源） | Qwen/Qwen3-1.7B-GGUF，修订90862c4b9d2787eaed51d12237eafdfe7c5f6077，Qwen3-1.7B-Q8_0.gguf | 1834426016 | 061b54daade076b5d3362dac252678d17da8c68f07560be70818cace6590cb1a |
+| Qwen3 1.7B Q4_K_M（本项目二次量化，可选） | 上述Q8_0，同版量化器`--allow-requantize Q4_K_M 2` | 1107408544 | 54c0f1203a724e9f33e76916beab3bdfaffef56cf7b42a93b1bc21319fc0bf97 |
 
 四个文件均已实际计算完整SHA。1.7B官方Q8经官方Modelscope端点验证TLS续传，最终与固定Hugging Face官方摘要完全相同；Q4由同一量化器产生。1.7B Q4也通过真实文件Store导入、摘要、GGUF、只读FD及删除租约检查；这些检查不代表回顾语义质量。固定官方模型卡：[0.6B](https://huggingface.co/Qwen/Qwen3-0.6B-GGUF/tree/23749fefcc72300e3a2ad315e1317431b06b590a)、[1.7B](https://huggingface.co/Qwen/Qwen3-1.7B-GGUF/tree/90862c4b9d2787eaed51d12237eafdfe7c5f6077)。
 

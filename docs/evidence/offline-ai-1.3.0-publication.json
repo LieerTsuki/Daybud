@@ -1,0 +1,70 @@
+{
+  "status": "publicly-verified",
+  "versionName": "1.3.0",
+  "versionCode": 14,
+  "releaseId": 419711019,
+  "releaseUrl": "https://github.com/LieerTsuki/Daybud/releases/tag/v1.3.0",
+  "tag": "v1.3.0",
+  "publishedAt": "2026-10-21T16:11:09Z",
+  "publishedAtShanghai": "2026-10-22T00:11:09+08:00",
+  "releaseSourceCommit": "bca5e2f5e1c76c25a7f86c814097d223d6080246",
+  "embeddedBuildCommit": "1b03404833d04fcf005425326c0510c08d3fbda9",
+  "mainAtVerification": "bca5e2f5e1c76c25a7f86c814097d223d6080246",
+  "latestVerified": true,
+  "draft": false,
+  "prerelease": false,
+  "metadataAuthenticatedFallback": true,
+  "assets": [
+    {
+      "name": "rizhiya-1.3.0.apk",
+      "assetId": 662908110,
+      "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.3.0/rizhiya-1.3.0.apk",
+      "bytes": 22282857,
+      "sha256": "886691788524a4f21882c28c879404dbf48c6ca134ec222cbe6691e9342cc173",
+      "anonymousDownloadVerified": true,
+      "githubDigest": "sha256:886691788524a4f21882c28c879404dbf48c6ca134ec222cbe6691e9342cc173",
+      "verifiedAt": "2026-10-21T16:12:17.345551+00:00"
+    },
+    {
+      "name": "qwen3-0.6b-q4_k_m-b5501.gguf",
+      "assetId": 662937325,
+      "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.3.0/qwen3-0.6b-q4_k_m-b5501.gguf",
+      "bytes": 396704416,
+      "sha256": "15e434d8ddf0af38fe3f7003af6ce6eac4edada6df34324aa45979f9cc79f02e",
+      "anonymousDownloadVerified": true,
+      "githubDigest": "sha256:15e434d8ddf0af38fe3f7003af6ce6eac4edada6df34324aa45979f9cc79f02e",
+      "verifiedAt": "2026-10-21T16:14:13.833412+00:00"
+    },
+    {
+      "name": "qwen3-1.7b-q4_k_m-b5501.gguf",
+      "assetId": 662957850,
+      "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.3.0/qwen3-1.7b-q4_k_m-b5501.gguf",
+      "bytes": 1107408544,
+      "sha256": "54c0f1203a724e9f33e76916beab3bdfaffef56cf7b42a93b1bc21319fc0bf97",
+      "anonymousDownloadVerified": true,
+      "githubDigest": "sha256:54c0f1203a724e9f33e76916beab3bdfaffef56cf7b42a93b1bc21319fc0bf97",
+      "verifiedAt": "2026-10-21T16:17:33.903737+00:00"
+    },
+    {
+      "name": "MODEL-LICENSES.txt",
+      "assetId": 663057819,
+      "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.3.0/MODEL-LICENSES.txt",
+      "bytes": 14916,
+      "sha256": "848b25b3e3e42d858f53d2b4972a80076c7aef81ec6a503b6902cb9ca7373bdb",
+      "anonymousDownloadVerified": true,
+      "githubDigest": "sha256:848b25b3e3e42d858f53d2b4972a80076c7aef81ec6a503b6902cb9ca7373bdb",
+      "verifiedAt": "2026-10-21T16:17:43.111453+00:00"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "assetId": 663058064,
+      "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.3.0/SHA256SUMS.txt",
+      "bytes": 363,
+      "sha256": "10892f3b47c6e8dce16617dafd171884de12a409c772b0607fd424218665b403",
+      "anonymousDownloadVerified": true,
+      "githubDigest": "sha256:10892f3b47c6e8dce16617dafd171884de12a409c772b0607fd424218665b403",
+      "verifiedAt": "2026-10-21T16:17:46.419212+00:00"
+    }
+  ],
+  "limitations": "Public artifact integrity only; ARM handset and market coverage not verified"
+}
