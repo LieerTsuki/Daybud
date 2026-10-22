@@ -1,6 +1,6 @@
 # 1.3.1-preview 测试版发布验收
 
-日期：2026-10-22。版本：1.3.1-preview/code15，Room8、备份V4、包名与正式签名轮换链保持。状态：准备发布，尚未公开。
+日期：2026-10-22。版本：1.3.1-preview/code15，Room8、备份V4、包名与正式签名轮换链保持。状态：已公开发布为预发布测试版，1.3.0正式Latest保留。
 
 用户在获知新总结仍有误述、模拟器三篇约53秒及无Pura70测速后，明确要求“发布”。因此本轮发布当前实现的测试版，不再等待内容/ARM性能正式门槛；这项发布指令不代表模型准确性或速度通过。计划使用独立预发布Release，保留1.3.0正式Latest与所有旧资源。
 
@@ -21,6 +21,12 @@
 
 开发基线1462项JVM及85项设备检查已通过，详见[开发验证证据](evidence/offline-only-fast-reviews-20261022-validation.json)；本轮除版本号外app/src及schemas与该轮源码一致，未重复运行全套测试，不将它们描述为本轮重跑结果。
 
-已签名APK：`rizhiya-1.3.1-preview.apk`，22348722字节，SHA256 `a3f06977c22402a244532dc675ac9cff10890067a0932bec3583993b7971a877`。内嵌构建提交为`dd70ef5196548426e8e0b3f8f0d9e9a441c67c03`，最终发布提交通过501文件完整来源清单另行绑定，包含版本号变更。公开发布和回下载尚待执行。
+已签名APK：`rizhiya-1.3.1-preview.apk`，22348722字节，SHA256 `a3f06977c22402a244532dc675ac9cff10890067a0932bec3583993b7971a877`。内嵌构建提交为`dd70ef5196548426e8e0b3f8f0d9e9a441c67c03`，最终发布提交通过501文件完整来源清单另行绑定，包含版本号变更。公开发布及匿名完整回下载已完成，见下方回执。
 
 覆盖升级不得卸载或清空用户数据；保留历史Release与同名旧资产，不覆盖。APK、SHA256、更新说明和签名公开回执准备完成后才发布，公开成功后再记录发布时间和下载入口。
+
+## 发布回执
+
+已于2026-10-22T17:20:29+08:00公开发布为预发布测试版，源码`0fe9f8d49e6833c46c86281fe1a19d66c4798746`已推送main；APK、更新说明、签名回执、许可证及SHA256SUMS均经匿名完整回下载核对。1.3.0正式Latest保留。
+
+[下载APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.3.1-offline-preview/rizhiya-1.3.1-preview.apk) · [Release](https://github.com/LieerTsuki/Daybud/releases/tag/v1.3.1-offline-preview) · [机器可读回执](evidence/offline-preview-1.3.1-publication.json)。

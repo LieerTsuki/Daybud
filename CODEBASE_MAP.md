@@ -1,6 +1,6 @@
 # 代码索引
 
-开发分支变更（未发布，2026-10-22）：
+1.3.1-preview测试版变更（2026-10-22已发布预发布版，质量/ARM速度未过正式门槛）：
 
 - AiModeStore、DiaryAiEngine、LegacyCloudRetirement、DiaryAiWorker：独立离线设置、仅手机生成、收据与配置保存准入、旧云端任务/凭据退役。下方CloudSendGate/HTTPS说明仅对应历史1.3.0，生产DI已不构造这些网络对象。
 - local/BoundedModelReader、LocalModelStore：最多64KiB GGUF目录窗口与完整文件校验；LocalSummaryPipeline、domain/diary/ai/PhoneSummaryResultPolicy：单批完整来源、320token短总结/两条建议、独立新协议；旧Grounded策略保留历史校验。

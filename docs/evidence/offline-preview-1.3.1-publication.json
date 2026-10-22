@@ -1,0 +1,72 @@
+{
+  "status": "publicly-verified",
+  "versionName": "1.3.1-preview",
+  "versionCode": 15,
+  "releaseId": 420512056,
+  "releaseUrl": "https://github.com/LieerTsuki/Daybud/releases/tag/v1.3.1-offline-preview",
+  "tag": "v1.3.1-offline-preview",
+  "publishedAt": "2026-10-22T09:20:29Z",
+  "publishedAtShanghai": "2026-10-22T17:20:29+08:00",
+  "releaseSourceCommit": "0fe9f8d49e6833c46c86281fe1a19d66c4798746",
+  "embeddedBuildCommit": "dd70ef5196548426e8e0b3f8f0d9e9a441c67c03",
+  "draft": false,
+  "prerelease": true,
+  "formalLatestPreserved": true,
+  "formalLatestReleaseId": 419711019,
+  "metadataAuthenticated": true,
+  "assets": [
+    {
+      "name": "rizhiya-1.3.1-preview.apk",
+      "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.3.1-offline-preview/rizhiya-1.3.1-preview.apk",
+      "assetId": 665288736,
+      "bytes": 22348722,
+      "sha256": "a3f06977c22402a244532dc675ac9cff10890067a0932bec3583993b7971a877",
+      "anonymousDownloadVerified": true,
+      "githubDigest": "sha256:a3f06977c22402a244532dc675ac9cff10890067a0932bec3583993b7971a877",
+      "verifiedAt": "2026-10-22T09:29:36.915015+00:00"
+    },
+    {
+      "name": "UPDATE.md",
+      "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.3.1-offline-preview/UPDATE.md",
+      "assetId": 665310399,
+      "bytes": 2677,
+      "sha256": "ccea21322af4e4c1d7e9d5a92d051e52afa98c65befa856936c10dcbd62e7150",
+      "anonymousDownloadVerified": true,
+      "githubDigest": "sha256:ccea21322af4e4c1d7e9d5a92d051e52afa98c65befa856936c10dcbd62e7150",
+      "verifiedAt": "2026-10-22T09:29:38.987138+00:00"
+    },
+    {
+      "name": "SIGNING.json",
+      "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.3.1-offline-preview/SIGNING.json",
+      "assetId": 665310757,
+      "bytes": 6572,
+      "sha256": "1ad6cf6fa4d7af93e85a90965f7f94401d8dc28575c84d7acfc5795d9805e07d",
+      "anonymousDownloadVerified": true,
+      "githubDigest": "sha256:1ad6cf6fa4d7af93e85a90965f7f94401d8dc28575c84d7acfc5795d9805e07d",
+      "verifiedAt": "2026-10-22T09:29:41.151918+00:00"
+    },
+    {
+      "name": "MODEL-LICENSES.txt",
+      "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.3.1-offline-preview/MODEL-LICENSES.txt",
+      "assetId": 665311111,
+      "bytes": 14916,
+      "sha256": "848b25b3e3e42d858f53d2b4972a80076c7aef81ec6a503b6902cb9ca7373bdb",
+      "anonymousDownloadVerified": true,
+      "githubDigest": "sha256:848b25b3e3e42d858f53d2b4972a80076c7aef81ec6a503b6902cb9ca7373bdb",
+      "verifiedAt": "2026-10-22T09:29:43.458492+00:00"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.3.1-offline-preview/SHA256SUMS.txt",
+      "assetId": 665311521,
+      "bytes": 336,
+      "sha256": "11151b11b0f2346fbfb07497c93afd4253c1ff731cf992faf3d503597896d79d",
+      "anonymousDownloadVerified": true,
+      "githubDigest": "sha256:11151b11b0f2346fbfb07497c93afd4253c1ff731cf992faf3d503597896d79d",
+      "verifiedAt": "2026-10-22T09:29:45.831153+00:00"
+    }
+  ],
+  "qualityPassed": false,
+  "physicalArmPerformanceVerified": false,
+  "downloadEvidenceFolder": ".tools\\offline-preview-1.3.1-public-download-071e0e031ee2495c89d4fa4639d00428"
+}
