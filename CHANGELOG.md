@@ -2,12 +2,14 @@
 
 本文件随每次版本更新维护。未发布区是开发进度，不代表手机安装包已经包含新功能。
 
-## 1.4.0 / code16 · 保留普通日记、移除AI（验证通过，待发布）
+## 1.4.0 / code16 · 保留普通日记、移除AI（2026-10-22已发布）
 
 - 按用户要求移除全部AI日记功能：AI回顾、AI设置、云端/手机推理、模型下载/导入、原生推理库和联网权限；普通日记、草稿、心情、照片/视频、列表/日历、统计和那年今日保留。
 - 沿用Room8与V4，旧回顾仅作为历史备份数据保留，不再提供AI页面或运行入口。已排队的旧AI Worker保留不执行的退役类，避免旧任务恢复；备份/恢复不再依赖AI设置。
 - README改为项目介绍、功能与安装指南，原全部发布流水和验收链接保留到历史记录部分。
 - 使用更高版本号覆盖升级，不以降级、卸载或清数据实现回退。本轮1269项JVM、77项API35设备及17项签名工具测试通过；Debug/androidTest/Release构建成功，Debug/Release lint均0错误/23警告，APK残留检查、正式签名与16KiB对齐通过。API26/28/35覆盖升级保留23张表、UID及签名；现有升级库仅三条默认行，业务空表的保留不代表真实非空用户库。验收与限制见[本轮验收](docs/diary-only-1.4.0-acceptance.md)和[验证汇总](docs/evidence/diary-only-1.4.0-validation.json)。
+
+已于2026-10-22T19:10:12+08:00发布正式Latest Release，发布源码`548b4e288b6577c5a2428ea3ce3cfb585df05ce1`已推送main。APK、更新说明、签名回执和校验文件四个资产均经匿名完整回下载核对。[下载APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.4.0/rizhiya-1.4.0.apk) · [Release](https://github.com/LieerTsuki/Daybud/releases/tag/v1.4.0) · [发布回执](docs/evidence/diary-only-1.4.0-publication.json)。
 
 ## 1.3.1-preview / code15 · 纯离线总结测试版（2026-10-22已发布预发布版）
 

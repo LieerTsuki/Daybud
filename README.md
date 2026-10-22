@@ -4,9 +4,9 @@
 
 应用以手机本地数据库和文件保存记录，不需要账号，也不提供应用内云同步。换手机时，可以手动导出完整备份，再在新手机恢复。
 
-> **版本状态：** 当前正在准备 **1.4.0 / code16 普通日记版**，移除全部日记 AI 入口、模型下载与推理功能。这个版本尚未发布；下方历史记录中的 1.3.x 是旧 AI 版本，不代表当前新版已经可下载。无 AI 版不需要 API Key、模型文件或电脑。
+> **当前版本：1.4.0 / code16 普通日记版**，已于2026-10-22发布。日记 AI 功能已移除，写日记无需 API Key、模型文件或电脑。下方 1.3.x 的 AI 说明仅为历史记录。
 
-[查看安装包与版本说明](https://github.com/LieerTsuki/Daybud/releases) · [更新内容](CHANGELOG.md) · [历史记录](#历史发布与验收记录)
+[下载1.4.0安装包](https://github.com/LieerTsuki/Daybud/releases/download/v1.4.0/rizhiya-1.4.0.apk) · [查看版本说明](https://github.com/LieerTsuki/Daybud/releases/tag/v1.4.0) · [更新内容](CHANGELOG.md) · [历史记录](#历史发布与验收记录)
 
 ## 可以做什么
 
@@ -24,8 +24,8 @@
 
 需要 **Android 8.0（API 26）或更新版本**。普通用户无需安装 Android Studio、配置开发环境或开启 USB 调试。
 
-1. 用手机浏览器打开 [GitHub Releases](https://github.com/LieerTsuki/Daybud/releases)，选择说明中标明“普通日记版 / 已移除 AI”的版本。**1.4.0 目前尚未发布，请以 Release 的实际状态为准。**
-2. 展开该版本的 **Assets（资源）**，下载文件名以 **`.apk`** 结尾的安装包。`Source code (zip)`、`Source code (tar.gz)` 是开发者使用的源码压缩包，不能直接安装。
+1. 用手机浏览器[直接下载1.4.0 APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.4.0/rizhiya-1.4.0.apk)，或打开 [1.4.0 Release](https://github.com/LieerTsuki/Daybud/releases/tag/v1.4.0)。这是已移除 AI 的普通日记版。
+2. 如果从 Release 页面下载，请展开 **Assets（资源）**，选择文件名以 **`.apk`** 结尾的安装包；使用上面的直接下载链接可跳过这一步。`Source code (zip)`、`Source code (tar.gz)` 是开发者使用的源码压缩包，不能直接安装。
 3. 下载完成后，在浏览器下载列表或文件管理器中打开 APK，按系统提示允许这个浏览器或文件管理器“安装未知应用 / 允许来自此来源的应用”。不同品牌的菜单名称可能不同。
 4. 完成安装后打开“日子芽”即可使用。安装完成后，可以关闭刚才授予的安装权限。
 
@@ -79,7 +79,7 @@ Debug 安装包输出到 `app/build/outputs/apk/debug/app-debug.apk`。正式发
 
 ## 更新与历史
 
-每次版本更新的内容、数据兼容、验证范围和限制写入 [CHANGELOG.md](CHANGELOG.md)。详细发布与验收记录按原文保留在下面，避免把项目首页继续写成更新流水。
+每次版本更新的内容、数据兼容、验证范围和限制写入 [CHANGELOG.md](CHANGELOG.md)。[1.4.0验收](docs/diary-only-1.4.0-acceptance.md) · [公开下载核对回执](docs/evidence/diary-only-1.4.0-publication.json)。详细发布与验收记录按原文保留在下面，避免把项目首页继续写成更新流水。
 
 ## 历史发布与验收记录
 

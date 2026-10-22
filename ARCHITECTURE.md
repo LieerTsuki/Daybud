@@ -1,6 +1,8 @@
 # 项目架构
 
-1.4.0/code16普通日记版正在验证：生产依赖图仅创建普通DiaryViewModel，日记和设置均无AI入口；移除AI域/运行/页面、模型管理、Binder服务、INTERNET权限及CMake/NDK推理构建。Room8/V4和历史回顾类型仍保留，仅用于旧数据兼容；旧Worker无执行退役类和旧凭据定向清理类继续保留。备份恢复/清空不再依赖AI配置。README改为用户说明，原历史完整归档。当前进度见docs/diary-only-1.4.0-acceptance.md。以下AI架构内容属于历史版本，不能作为当前功能说明。
+1.4.0/code16普通日记版已发布为正式Latest：生产依赖图仅创建普通DiaryViewModel，日记和设置均无AI入口；移除AI域/运行/页面、模型管理、Binder服务、INTERNET权限及CMake/NDK推理构建。Room8/V4和历史回顾类型仍保留，仅用于旧数据兼容；旧Worker无执行退役类和旧凭据定向清理类继续保留。备份恢复/清空不再依赖AI配置。README改为用户说明，原历史完整归档。当前进度见docs/diary-only-1.4.0-acceptance.md。以下AI架构内容属于历史版本，不能作为当前功能说明。
+
+## 历史架构记录（以下为当时状态）
 
 更新：2026-10-22；当前Latest Release为1.3.0/code14，新增手机离线原文摘选试用，沿用日记与AI回顾架构及正式签名；Room8与备份V4不变。
 

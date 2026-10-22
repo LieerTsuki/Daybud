@@ -1,0 +1,61 @@
+{
+  "status": "publicly-verified",
+  "versionName": "1.4.0",
+  "versionCode": 16,
+  "releaseId": 420620223,
+  "releaseUrl": "https://github.com/LieerTsuki/Daybud/releases/tag/v1.4.0",
+  "tag": "v1.4.0",
+  "publishedAt": "2026-10-22T11:10:12Z",
+  "publishedAtShanghai": "2026-10-22T19:10:12+08:00",
+  "releaseSourceCommit": "548b4e288b6577c5a2428ea3ce3cfb585df05ce1",
+  "embeddedBuildCommit": "7be6687665588a6ede3cbd65b72027a16833452e",
+  "draft": false,
+  "prerelease": false,
+  "formalLatestReleaseId": 420620223,
+  "metadataAuthenticated": true,
+  "assets": [
+    {
+      "name": "rizhiya-1.4.0.apk",
+      "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.4.0/rizhiya-1.4.0.apk",
+      "assetId": 665601162,
+      "bytes": 12689648,
+      "sha256": "921a24431235faafed217ef2531b7b95595f296b7450441ed6d8c19b17280877",
+      "anonymousDownloadVerified": true,
+      "githubDigest": "sha256:921a24431235faafed217ef2531b7b95595f296b7450441ed6d8c19b17280877",
+      "verifiedAt": "2026-10-22T11:11:00.100797+00:00"
+    },
+    {
+      "name": "UPDATE.md",
+      "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.4.0/UPDATE.md",
+      "assetId": 665601825,
+      "bytes": 2185,
+      "sha256": "bcb76902ff8ce5e285fb98be7324a3862060248c9acd921803e8e099e3254c8e",
+      "anonymousDownloadVerified": true,
+      "githubDigest": "sha256:bcb76902ff8ce5e285fb98be7324a3862060248c9acd921803e8e099e3254c8e",
+      "verifiedAt": "2026-10-22T11:11:09.945226+00:00"
+    },
+    {
+      "name": "SIGNING.json",
+      "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.4.0/SIGNING.json",
+      "assetId": 665602035,
+      "bytes": 6556,
+      "sha256": "fea555aca86ea8553bc4dfcdf284928b1fa90aedd80329656f6e5a3081374040",
+      "anonymousDownloadVerified": true,
+      "githubDigest": "sha256:fea555aca86ea8553bc4dfcdf284928b1fa90aedd80329656f6e5a3081374040",
+      "verifiedAt": "2026-10-22T11:11:12.500469+00:00"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.4.0/SHA256SUMS.txt",
+      "assetId": 665602174,
+      "bytes": 242,
+      "sha256": "64599aeb6a0b034b83941e7d8b65f56826931558a82a340386d6e524dc8f510c",
+      "anonymousDownloadVerified": true,
+      "githubDigest": "sha256:64599aeb6a0b034b83941e7d8b65f56826931558a82a340386d6e524dc8f510c",
+      "verifiedAt": "2026-10-22T11:11:17.735195+00:00"
+    }
+  ],
+  "diaryAiRemoved": true,
+  "physicalPhoneCoverageVerified": false,
+  "downloadEvidenceFolder": ".tools\\diary-only-1.4.0-public-download-1801ef15b227441badf5e45479efed91"
+}
