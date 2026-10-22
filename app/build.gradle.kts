@@ -69,8 +69,8 @@ extensions.configure<ApplicationExtension> {
         applicationId = "com.example.lifemanager"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 14
-        versionName = "1.3.0"
+        versionCode = 15
+        versionName = "1.3.1-preview"
         buildConfigField("boolean", "DIARY_DOTPROD_CANDIDATE", diaryDotprodCandidate.get().toString())
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true

@@ -2,13 +2,14 @@
 
 本文件随每次版本更新维护。未发布区是开发进度，不代表手机安装包已经包含新功能。
 
-## 未发布 · 纯离线总结与建议改造
+## 1.3.1-preview / code15 · 纯离线总结测试版（准备发布，尚未公开）
 
 - 按已确认的[设计](docs/superpowers/specs/2026-10-22-offline-only-fast-reviews-design.md)实施：设置与生成只使用手机模型，移除云端入口和生产网络生成依赖；旧自动回顾工作退役，独立离线配置不读取旧密钥，定向清理旧专用凭据。
 - GGUF 元数据改为有界缓冲读取，保留完整大小、SHA256、结构与张量校验；显示实际已用时间，区分加载超时、生成超时、进程退出和输出不合格。
 - 新增独立的短总结与两条建议协议，按真实分词预算一次纳入全部有效来源；不再因超过8篇强制分批，不静默截断。新旧结果分别校验，保留旧五段存储、Room8、备份V4及历史回顾。新增 ARM dotprod 候选构建与独立能力探测，默认关闭，尚未作手机性能启用判断。
-- 处于开发验证阶段，未增加版本号、未发布新 APK/Release。多组真实模型生成仍有事实误述和建议相关性问题；没有 Pura 70 或其他 ARM 真机速度证据，不能宣称已解决等待或满足多数手机。[本轮调查](docs/offline-only-fast-reviews-feasibility.md) · [实施验收进度](docs/offline-only-fast-reviews-acceptance.md)。
-- 本轮1462项JVM、79项业务设备、5项实际JNI运行及1项引擎映射检查通过；Debug/androidTest构建成功、lint0错误/34警告、默认APK的8个日记原生库ELF与ZIP满足16KiB检查。模拟器三篇1135汉字一次观测53234ms，内容质量仍不合格，不是手机速度或可发布证明。[验证汇总](docs/evidence/offline-only-fast-reviews-20261022-validation.json)。
+- 用户于2026-10-22明确要求发布当前实现，本轮以测试版发布准备，不将质量/速度未通过的结果改记为通过。多组真实模型生成仍有事实误述和建议相关性问题；没有 Pura 70 或其他 ARM 真机速度证据，不能宣称已解决等待或满足多数手机。[本轮调查](docs/offline-only-fast-reviews-feasibility.md) · [实施验收进度](docs/offline-only-fast-reviews-acceptance.md) · [测试版发布验收](docs/offline-only-preview-1.3.1-acceptance.md)。
+- 开发阶段1462项JVM、79项业务设备、5项实际JNI运行及1项引擎映射检查通过；Debug/androidTest构建成功、lint0错误/34警告。模拟器三篇1135汉字一次观测53234ms，内容质量仍不合格，不是手机速度证明。[开发验证](docs/evidence/offline-only-fast-reviews-20261022-validation.json)。
+- 本次发布步骤重新完成Release构建、lint0错误/33警告、17项签名工具测试、正式签名六个SDK点及16KiB检查；API26/28/35覆盖升级保留23张表、UID及签名。测试库为三条默认行/业务空表，不代表非空真实用户库；app/src和schemas与开发测试提交一致，仅版本号改变，未重跑全套开发测试。[发布验证](docs/evidence/offline-preview-1.3.1-validation.json)。
 
 ## 1.3.0 / code14 · 手机离线原文摘选（2026-10-22已发布，离线功能试用）
 

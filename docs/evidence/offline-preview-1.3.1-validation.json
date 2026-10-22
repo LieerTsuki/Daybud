@@ -1,0 +1,514 @@
+{
+  "status": "validated-preview-known-limitations",
+  "date": "2026-10-22",
+  "versionName": "1.3.1-preview",
+  "versionCode": 15,
+  "roomSchema": 8,
+  "backupFormat": 4,
+  "qualityPassed": false,
+  "armPhonePerformanceVerified": false,
+  "releaseBuild": {
+    "command": ":app:assembleRelease :app:lintRelease --offline --no-daemon --max-workers=2",
+    "exit": 0,
+    "logSha256": "9346d86abe7906bc0e7219926bb8eb0bd6128b03b32e462c538cf6ff1130ddef"
+  },
+  "lint": {
+    "Warning": 33,
+    "Error": 0,
+    "Fatal": 0
+  },
+  "signingToolTests": {
+    "tests": 17,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "logSha256": "f05311211a2e215873428f7fa8c87c07c86bb1ace1d2afa46f26f28d9fff5f35"
+  },
+  "apk": {
+    "name": "rizhiya-1.3.1-preview.apk",
+    "bytes": 22348722,
+    "sha256": "a3f06977c22402a244532dc675ac9cff10890067a0932bec3583993b7971a877",
+    "versionName": "1.3.1-preview",
+    "versionCode": 15,
+    "debuggable": false,
+    "zipalign16KiB": true,
+    "legacyCertificateSha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+    "certificateSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+    "rotationMinSdk": 28,
+    "lineage": {
+      "status": "verified",
+      "mode": "lineage",
+      "evidence": {
+        "certificates": [
+          {
+            "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+            "installedData": true,
+            "sharedUid": true,
+            "permission": true,
+            "rollback": false,
+            "auth": true
+          },
+          {
+            "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+            "installedData": true,
+            "sharedUid": true,
+            "permission": true,
+            "rollback": false,
+            "auth": true
+          }
+        ]
+      }
+    },
+    "verification": {
+      "status": "verified",
+      "mode": "apk",
+      "evidence": {
+        "rotationMinSdk": 28,
+        "embeddedLineage": {
+          "certificates": [
+            {
+              "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+              "installedData": true,
+              "sharedUid": true,
+              "permission": true,
+              "rollback": false,
+              "auth": true
+            },
+            {
+              "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+              "installedData": true,
+              "sharedUid": true,
+              "permission": true,
+              "rollback": false,
+              "auth": true
+            }
+          ]
+        },
+        "platforms": [
+          {
+            "sdk": 26,
+            "verified": true,
+            "effectiveSignerSha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+            "v1": false,
+            "v2": true,
+            "v3": false,
+            "v31": false,
+            "warnings": [],
+            "lineage": null
+          },
+          {
+            "sdk": 27,
+            "verified": true,
+            "effectiveSignerSha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+            "v1": false,
+            "v2": true,
+            "v3": false,
+            "v31": false,
+            "warnings": [],
+            "lineage": null
+          },
+          {
+            "sdk": 28,
+            "verified": true,
+            "effectiveSignerSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+            "v1": false,
+            "v2": false,
+            "v3": true,
+            "v31": false,
+            "warnings": [],
+            "lineage": {
+              "certificates": [
+                {
+                  "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                },
+                {
+                  "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                }
+              ]
+            }
+          },
+          {
+            "sdk": 32,
+            "verified": true,
+            "effectiveSignerSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+            "v1": false,
+            "v2": false,
+            "v3": true,
+            "v31": false,
+            "warnings": [],
+            "lineage": {
+              "certificates": [
+                {
+                  "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                },
+                {
+                  "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                }
+              ]
+            }
+          },
+          {
+            "sdk": 33,
+            "verified": true,
+            "effectiveSignerSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+            "v1": false,
+            "v2": false,
+            "v3": true,
+            "v31": false,
+            "warnings": [],
+            "lineage": {
+              "certificates": [
+                {
+                  "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                },
+                {
+                  "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                }
+              ]
+            }
+          },
+          {
+            "sdk": 35,
+            "verified": true,
+            "effectiveSignerSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+            "v1": false,
+            "v2": false,
+            "v3": true,
+            "v31": false,
+            "warnings": [],
+            "lineage": {
+              "certificates": [
+                {
+                  "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                },
+                {
+                  "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+                  "installedData": true,
+                  "sharedUid": true,
+                  "permission": true,
+                  "rollback": false,
+                  "auth": true
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "elf": {
+    "status": "verified",
+    "libraries": [
+      {
+        "entry": "lib/arm64-v8a/libandroidx.graphics.path.so",
+        "loadAlignments": [
+          16384,
+          16384,
+          16384
+        ],
+        "sha256": "41e9a793c43a0f4fddb19e33f346bace464f30f888ba7b9eaf96294ea115bfb6"
+      },
+      {
+        "entry": "lib/arm64-v8a/libdiary_cpu_features.so",
+        "loadAlignments": [
+          16384,
+          16384
+        ],
+        "sha256": "7d2794a9d902b568cf3eb6b6fbbc0f51c700aeab866caffa37f9315615b11a50"
+      },
+      {
+        "entry": "lib/arm64-v8a/libdiary_llama.so",
+        "loadAlignments": [
+          16384,
+          16384,
+          16384
+        ],
+        "sha256": "22e95b015fa308f6b442ad40e872d527c485ff5c5da00c81ada232dc079ad769"
+      },
+      {
+        "entry": "lib/armeabi-v7a/libandroidx.graphics.path.so",
+        "loadAlignments": [
+          16384,
+          16384,
+          16384
+        ],
+        "sha256": "41399eba6fc2a60f6f14642375c1824f3cf25eb8fec7397d753730a3ceda3e2b"
+      },
+      {
+        "entry": "lib/armeabi-v7a/libdiary_cpu_features.so",
+        "loadAlignments": [
+          16384,
+          16384
+        ],
+        "sha256": "f3a75291763857742d3ef5272eed4f42cf46d8f46e87505f502df88e7095e7e2"
+      },
+      {
+        "entry": "lib/armeabi-v7a/libdiary_llama.so",
+        "loadAlignments": [
+          16384,
+          16384
+        ],
+        "sha256": "05e530679f746429d54b9126992c9e00c33a2927905b0671a9ab6aa8483de0c3"
+      },
+      {
+        "entry": "lib/x86/libandroidx.graphics.path.so",
+        "loadAlignments": [
+          16384,
+          16384,
+          16384
+        ],
+        "sha256": "eb0570b41fd3bff25d8204a967c03bd7550719e768b791f680cc40cbe35f29af"
+      },
+      {
+        "entry": "lib/x86/libdiary_cpu_features.so",
+        "loadAlignments": [
+          16384,
+          16384
+        ],
+        "sha256": "05716d00a187c4a1313e5f9712b2544909316563d9a390b9d0204ad93a8af8e7"
+      },
+      {
+        "entry": "lib/x86/libdiary_llama.so",
+        "loadAlignments": [
+          16384,
+          16384
+        ],
+        "sha256": "9154c4dce1de7f7c1cd4e761566e7f2deabb4004321cd71da65a20795e42841f"
+      },
+      {
+        "entry": "lib/x86_64/libandroidx.graphics.path.so",
+        "loadAlignments": [
+          16384,
+          16384,
+          16384
+        ],
+        "sha256": "4e56c996f13670e70082658de7880c4020eabf4f25e43387f88ed78a713fc9f0"
+      },
+      {
+        "entry": "lib/x86_64/libdiary_cpu_features.so",
+        "loadAlignments": [
+          16384,
+          16384
+        ],
+        "sha256": "b35130f9a4343533681bf2c0f838f3cfc04c94808a558514c76be1a29f78feff"
+      },
+      {
+        "entry": "lib/x86_64/libdiary_llama.so",
+        "loadAlignments": [
+          16384,
+          16384,
+          16384
+        ],
+        "sha256": "cbd9b58249e5905901f0abb40a5d19ddf5712122fdde6020db70a4a3b20952a3"
+      }
+    ],
+    "dotprodPackaged": false
+  },
+  "upgrades": {
+    "26": {
+      "status": "verified",
+      "androidApi": 26,
+      "oldVersion": "1.3.0",
+      "oldCode": 14,
+      "newVersion": "1.3.1-preview",
+      "newCode": 15,
+      "applicationTables": 23,
+      "rows": {
+        "android_metadata": 1,
+        "app_maintenance": 1,
+        "app_settings": 1,
+        "diary_draft_media": 0,
+        "diary_drafts": 0,
+        "diary_entries": 0,
+        "diary_entry_media": 0,
+        "diary_media": 0,
+        "diary_review_sources": 0,
+        "diary_reviews": 0,
+        "habit_records": 0,
+        "habit_trees": 0,
+        "habit_waterings": 0,
+        "habits": 0,
+        "plan_exceptions": 0,
+        "plan_legacy_refs": 0,
+        "plan_reminder_state": 0,
+        "plan_tag_cross_ref": 0,
+        "plans": 0,
+        "subscription_payments": 0,
+        "subscription_reminders": 0,
+        "subscriptions": 0,
+        "tags": 0
+      },
+      "typedFingerprint": "f5e130b586bff07dd1ab95b5f5b9beca9772dcbc696425f12d2bb37fdb7139cd",
+      "installedApkSha256": "a3f06977c22402a244532dc675ac9cff10890067a0932bec3583993b7971a877",
+      "packageManagerActiveSigner": [
+        "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c"
+      ],
+      "packageManagerSigningHistory": [
+        "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c"
+      ],
+      "applicationUidPreserved": true,
+      "stableSignerPreserved": true,
+      "fullColumnsRawValuesStorageClassesAndNullsUnchanged": true,
+      "sequencesExactlyUnchanged": true,
+      "schemaSqlAndRoomIdentityUnchanged": true,
+      "installedCandidateBytesUnchanged": true,
+      "verifiedJsonSha256": "887e3d706ac90337379bc047cc951b4b055310de3b700426efa3a1869299c361",
+      "evidence": ".tools\\offline-1.3.1-api26-release-20261022-1",
+      "scope": "Existing AVD data only, no fixtures; empty tables prove empty preservation. Private files/preferences, model quality and physical devices are not claimed."
+    },
+    "28": {
+      "status": "verified",
+      "androidApi": 28,
+      "oldVersion": "1.3.0",
+      "oldCode": 14,
+      "newVersion": "1.3.1-preview",
+      "newCode": 15,
+      "applicationTables": 23,
+      "rows": {
+        "android_metadata": 1,
+        "app_maintenance": 1,
+        "app_settings": 1,
+        "diary_draft_media": 0,
+        "diary_drafts": 0,
+        "diary_entries": 0,
+        "diary_entry_media": 0,
+        "diary_media": 0,
+        "diary_review_sources": 0,
+        "diary_reviews": 0,
+        "habit_records": 0,
+        "habit_trees": 0,
+        "habit_waterings": 0,
+        "habits": 0,
+        "plan_exceptions": 0,
+        "plan_legacy_refs": 0,
+        "plan_reminder_state": 0,
+        "plan_tag_cross_ref": 0,
+        "plans": 0,
+        "subscription_payments": 0,
+        "subscription_reminders": 0,
+        "subscriptions": 0,
+        "tags": 0
+      },
+      "typedFingerprint": "f5e130b586bff07dd1ab95b5f5b9beca9772dcbc696425f12d2bb37fdb7139cd",
+      "installedApkSha256": "a3f06977c22402a244532dc675ac9cff10890067a0932bec3583993b7971a877",
+      "packageManagerActiveSigner": [
+        "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a"
+      ],
+      "packageManagerSigningHistory": [
+        "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+        "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a"
+      ],
+      "applicationUidPreserved": true,
+      "stableSignerPreserved": true,
+      "fullColumnsRawValuesStorageClassesAndNullsUnchanged": true,
+      "sequencesExactlyUnchanged": true,
+      "schemaSqlAndRoomIdentityUnchanged": true,
+      "installedCandidateBytesUnchanged": true,
+      "verifiedJsonSha256": "0793c93c41506a1c7c1b20a4a907d15a1680e96773310900afff95fefef86e98",
+      "evidence": ".tools\\offline-1.3.1-api28-release-20261022-1",
+      "scope": "Existing AVD data only, no fixtures; empty tables prove empty preservation. Private files/preferences, model quality and physical devices are not claimed."
+    },
+    "35": {
+      "status": "verified",
+      "androidApi": 35,
+      "oldVersion": "1.3.0",
+      "oldCode": 14,
+      "newVersion": "1.3.1-preview",
+      "newCode": 15,
+      "applicationTables": 23,
+      "rows": {
+        "android_metadata": 1,
+        "app_maintenance": 1,
+        "app_settings": 1,
+        "diary_draft_media": 0,
+        "diary_drafts": 0,
+        "diary_entries": 0,
+        "diary_entry_media": 0,
+        "diary_media": 0,
+        "diary_review_sources": 0,
+        "diary_reviews": 0,
+        "habit_records": 0,
+        "habit_trees": 0,
+        "habit_waterings": 0,
+        "habits": 0,
+        "plan_exceptions": 0,
+        "plan_legacy_refs": 0,
+        "plan_reminder_state": 0,
+        "plan_tag_cross_ref": 0,
+        "plans": 0,
+        "subscription_payments": 0,
+        "subscription_reminders": 0,
+        "subscriptions": 0,
+        "tags": 0
+      },
+      "typedFingerprint": "f5e130b586bff07dd1ab95b5f5b9beca9772dcbc696425f12d2bb37fdb7139cd",
+      "installedApkSha256": "a3f06977c22402a244532dc675ac9cff10890067a0932bec3583993b7971a877",
+      "packageManagerActiveSigner": [
+        "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a"
+      ],
+      "packageManagerSigningHistory": [
+        "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+        "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a"
+      ],
+      "applicationUidPreserved": true,
+      "stableSignerPreserved": true,
+      "fullColumnsRawValuesStorageClassesAndNullsUnchanged": true,
+      "sequencesExactlyUnchanged": true,
+      "schemaSqlAndRoomIdentityUnchanged": true,
+      "installedCandidateBytesUnchanged": true,
+      "verifiedJsonSha256": "da1aa65ae8b3b631804152b11e5774972f2faf73b65b1348c4a88b1215bdc72e",
+      "evidence": ".tools\\offline-1.3.1-api35-release-20261022-1",
+      "scope": "Existing AVD data only, no fixtures; empty tables prove empty preservation. Private files/preferences, model quality and physical devices are not claimed."
+    }
+  },
+  "sourceManifestSha256": "4ec66b15f60438c5a2499d2ef9b77e2714496c9c8cd4e360951765a10d82b2bb",
+  "embeddedBuildCommit": "dd70ef5196548426e8e0b3f8f0d9e9a441c67c03",
+  "priorFullTests": {
+    "evidence": "offline-only-fast-reviews-20261022-validation.json",
+    "jvmTests": 1462,
+    "deviceTests": 85,
+    "rerunInThisReleaseStep": false,
+    "sourceDifference": "Only app/build.gradle.kts versionName/code changed; app/src and schemas equal tested dd70ef5"
+  },
+  "publication": "not_published_yet",
+  "limitations": [
+    "Preview explicitly requested after quality and latency limits were reported; they remain unpassed.",
+    "Three retained upgrade AVDs contain only three default rows; empty business tables prove empty preservation, not nonempty user libraries or private-file preservation.",
+    "No Pura70 or physical ARM test; source manifest and signed APK independently bound."
+  ]
+}
