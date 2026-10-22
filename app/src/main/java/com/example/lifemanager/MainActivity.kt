@@ -9,7 +9,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import com.example.lifemanager.ui.navigation.*
 import com.example.lifemanager.ui.diary.DiaryViewModel
 import com.example.lifemanager.ui.diary.DiaryViewModelFactory
-import com.example.lifemanager.ui.diary.ai.DiaryAiViewModel
 import com.example.lifemanager.ui.plan.*
 import com.example.lifemanager.ui.habit.HabitViewModel
 import com.example.lifemanager.ui.subscription.SubscriptionViewModel
@@ -25,7 +24,6 @@ class MainActivity : ComponentActivity() {
     @Inject lateinit var v1Factory: V1ViewModelFactory
     @Inject lateinit var diaryFactory: DiaryViewModelFactory
     private val diary: DiaryViewModel by viewModels { diaryFactory }
-    private val diaryAi: DiaryAiViewModel by viewModels { diaryFactory }
     // The Activity ViewModelStore retains every real owner across destinations and rotation.
     private val navigation: PlanNavigationViewModel by viewModels { v1Factory }
     private val plans: PlanViewModel by viewModels { v1Factory }
@@ -39,7 +37,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         if (savedInstanceState == null) receiveNotificationIntent(intent)
         setContent {
-            V1NavGraph(navigation, plans, editor, calendar, settings, habits, subscriptions, backup, diary, diaryAi)
+            V1NavGraph(navigation, plans, editor, calendar, settings, habits, subscriptions, backup, diary)
         }
     }
 

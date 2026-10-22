@@ -21,8 +21,7 @@ class V4BackupRepository(private val db:LifeManagerDatabase, private val legacy:
 
 /** Older portable files omit diary; omission preserves the current diary graph. */
 class V4BackupMutationRepository(private val db:LifeManagerDatabase, private val legacy:V2BackupMutationRepository,
-    private val diary:DiaryRepository, private val storage:FileDiaryStorage?=null,
-    private val pauseAutomatic:suspend ()->Unit={}):V2BackupMutationRepository {
+    private val diary:DiaryRepository, private val storage:FileDiaryStorage?=null):V2BackupMutationRepository {
     override suspend fun replace(expected:DataGeneration,payload:V2BackupPayload):DataGeneration = mutate {
         payload.diary?.let(com.example.lifemanager.domain.diary.DiaryBackupValidator::validate)
         val next=legacy.replace(expected,payload.copy(diary=null))
@@ -38,8 +37,6 @@ class V4BackupMutationRepository(private val db:LifeManagerDatabase, private val
     }
     private suspend fun <T> mutate(block:suspend ()->T):T {
         checkWriter()
-        // Pause external sending before replacement; rollback may conservatively leave it paused.
-        pauseAutomatic()
         suspend fun write():T = db.withTransaction {
             checkWriter();val result=block();checkWriter();result
         }

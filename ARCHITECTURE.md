@@ -1,5 +1,7 @@
 # 项目架构
 
+1.4.0/code16普通日记版正在验证：生产依赖图仅创建普通DiaryViewModel，日记和设置均无AI入口；移除AI域/运行/页面、模型管理、Binder服务、INTERNET权限及CMake/NDK推理构建。Room8/V4和历史回顾类型仍保留，仅用于旧数据兼容；旧Worker无执行退役类和旧凭据定向清理类继续保留。备份恢复/清空不再依赖AI配置。README改为用户说明，原历史完整归档。当前进度见docs/diary-only-1.4.0-acceptance.md。以下AI架构内容属于历史版本，不能作为当前功能说明。
+
 更新：2026-10-22；当前Latest Release为1.3.0/code14，新增手机离线原文摘选试用，沿用日记与AI回顾架构及正式签名；Room8与备份V4不变。
 
 1.3.1-preview测试版已按用户后续发布指令公开，1.3.0仍为正式Latest。新版本接入纯离线短总结，质量和ARM速度限制仍保留。AiModeStore独立读取noBackup离线配置，生产DI不再构造AiPrivateStore/CloudSendGate/ChatCompletionsClient；LegacyCloudRetirement定向清理旧专用凭据，旧Worker保留为无网络退役实现，仅取消旧AI唯一工作。LocalModelStore使用BoundedModelReader减少GGUF单字节磁盘读取，完整摘要和张量检查不变。LocalSummaryPipeline按真实token一次处理全部有效来源，最多16篇、输出320token；PhoneSummaryResultPolicy执行版本化结构、长度、来源和确定心情校验。Engine用本地输入摘要及生成收据约束保存，Room另核对完整来源；旧原文策略仍单独校验历史结果。结构规则不能证明模型事实准确，当前内容质量及ARM真机速度尚未过门槛，见docs/offline-only-fast-reviews-acceptance.md。

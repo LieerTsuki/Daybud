@@ -132,7 +132,6 @@ fun SettingsPlatformSection(enabled: Boolean = true) {
                     // Separate paragraphs let accessibility and tests reach the end of long text.
                     text.split("\n\n").forEach { Text(it) }
                     if (asset != "apache-2.0.txt") TextButton(onClick = { licenseAsset = "apache-2.0.txt" }, modifier = Modifier.heightIn(min = 48.dp)) { Text("Apache License 2.0 原文") }
-                    if (asset == "third-party-licenses.txt") TextButton(onClick = { licenseAsset = "offline-ai-licenses.txt" }, modifier = Modifier.heightIn(min = 48.dp)) { Text("手机离线AI许可证") }
                 }
             },
             confirmButton = { TextButton(onClick = { licenseAsset = null }, modifier = Modifier.heightIn(min = 48.dp)) { Text("关闭许可证") } },

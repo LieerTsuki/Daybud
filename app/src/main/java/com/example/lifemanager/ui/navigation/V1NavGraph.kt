@@ -7,9 +7,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import com.example.lifemanager.ui.diary.DiaryScreen
 import com.example.lifemanager.ui.diary.DiaryViewModel
 import com.example.lifemanager.ui.diary.DiarySaveStatus
-import com.example.lifemanager.ui.diary.ai.DiaryAiViewModel
-import com.example.lifemanager.ui.diary.ai.DiaryAiScreen
-import com.example.lifemanager.ui.diary.ai.AiSettingsScreen
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,15 +37,13 @@ import kotlinx.coroutines.launch
 fun V1NavGraph(navigation:PlanNavigationViewModel,list:PlanViewModel,editor:PlanEditorViewModel,
     calendar:PlanCalendarViewModel,settings:V1SettingsViewModel,
     habits:HabitViewModel,subscriptions:SubscriptionViewModel,backup:V1BackupSettingsViewModel,
-    diary:DiaryViewModel?=null,diaryAi:DiaryAiViewModel?=null) {
+    diary:DiaryViewModel?=null) {
     val state=navigation.uiState.collectAsStateWithLifecycle().value
     val edit=editor.uiState.collectAsStateWithLifecycle().value
     val prefs=settings.uiState.collectAsStateWithLifecycle().value
     val operation=backup.uiState.collectAsStateWithLifecycle().value
     val sub=subscriptions.uiState.collectAsStateWithLifecycle().value
     val diaryState=diary?.uiState?.collectAsStateWithLifecycle()?.value
-    var diaryPage by rememberSaveable(state.generation) { mutableStateOf("home") }
-    var settingsAi by rememberSaveable(state.generation) { mutableStateOf(false) }
     val stamp=edit.stamp // Immutable rendering stamp for every captured tab callback.
     val scope=rememberCoroutineScope()
     val pages=rememberSaveableStateHolder()
@@ -101,23 +96,10 @@ fun V1NavGraph(navigation:PlanNavigationViewModel,list:PlanViewModel,editor:Plan
                         when(state.destination) {
                             V1Destination.PLAN->PlanWorkspace(list,editor,calendar)
                             V1Destination.HABIT->HabitScreen(habits)
-                            V1Destination.DIARY->if(diary!=null && diaryAi!=null) {
-                                when(diaryPage) {
-                                    "ai"->DiaryAiScreen(diaryAi,{ diaryPage="home" },{ diaryPage="settings" }) { id->
-                                        diaryState?.stamp?.let { diary.openEntry(id,it) };diaryPage="home"
-                                    }
-                                    "settings"->AiSettingsScreen(diaryAi) { diaryPage="ai" }
-                                    else->DiaryScreen(diary,{ diaryPage="ai" },enabled)
-                                }
-                                BackHandler(enabled=diaryPage!="home") { diaryPage=if(diaryPage=="settings")"ai"else "home" }
-                            }
+                            V1Destination.DIARY->if(diary!=null) DiaryScreen(diary,enabled)
                             V1Destination.SUBSCRIPTION->SubscriptionScreen(subscriptions)
-                            V1Destination.SETTINGS->if(settingsAi && diaryAi!=null) {
-                                AiSettingsScreen(diaryAi) { settingsAi=false }
-                                BackHandler { settingsAi=false }
-                            } else V1SettingsScreen(settings,backup,
+                            V1Destination.SETTINGS->V1SettingsScreen(settings,backup,
                                 onBack={ if(liveNavigationAllowed())navigation.requestDestination(V1Destination.PLAN,stamp) },
-                                onOpenAi=diaryAi?.let { { settingsAi=true } },
                                 canStartBackup={ diary?.uiState?.value?.let { !it.busy && it.saveStatus==DiarySaveStatus.SAVED }!=false && !editor.uiState.value.isBusy && !editor.uiState.value.isMaintaining &&
                                     subscriptions.uiState.value.let { !it.isBusy && !it.isMaintaining && !it.isExporting && !it.isExportPending && !it.editor.isOpen && !it.paymentEditor.isOpen } &&
                                     navigation.uiState.value.let { it.destination==V1Destination.SETTINGS && it.pending==null && it.confirmation==null } })

@@ -1,5 +1,7 @@
 # 代码索引
 
+1.4.0普通日记版（开发验证中）：ui/diary/DiaryScreen、DiaryViewModel、DiaryViewModelFactory和MainActivity/V1NavGraph只创建普通日记；AI页面/域/模型/推理目录及cpp/native构建已删除。data/diary/ai仅保留DiaryAiWorker与LegacyCloudRetirement退役兼容，无生成能力。domain/diary中的历史回顾数据与Room8/V4继续用于旧备份往返；tools/verify_diary_only_apk.py核验最终APK无AI运行组件和联网权限。下方1.3.x说明为历史索引。
+
 1.3.1-preview测试版变更（2026-10-22已发布预发布版，质量/ARM速度未过正式门槛）：
 
 - AiModeStore、DiaryAiEngine、LegacyCloudRetirement、DiaryAiWorker：独立离线设置、仅手机生成、收据与配置保存准入、旧云端任务/凭据退役。下方CloudSendGate/HTTPS说明仅对应历史1.3.0，生产DI已不构造这些网络对象。

@@ -46,7 +46,7 @@ import kotlinx.coroutines.withContext
 
 /** The Activity retains this owner. Only presentation state lives in the composition. */
 @Composable
-fun DiaryScreen(viewModel:DiaryViewModel,onOpenAi:()->Unit,canNavigate:Boolean=true) {
+fun DiaryScreen(viewModel:DiaryViewModel,canNavigate:Boolean=true) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val rendered=state
     val stamp=rendered.stamp
@@ -90,12 +90,12 @@ fun DiaryScreen(viewModel:DiaryViewModel,onOpenAi:()->Unit,canNavigate:Boolean=t
                 rendered.detail!=null -> DiaryDetail(rendered.detail,enabled,{ viewModel.leave(stamp) },{ viewModel.editEntry(stamp) },{ viewModel.askDelete(stamp) },viewModel::mediaFile) { viewing=it }
                 else -> DiaryHome(rendered,enabled,{ viewModel.newEntry(stamp) },{ viewModel.openEntry(it,stamp) },
                     { viewModel.toggleCalendar(it,stamp) },{ viewModel.changeMonth(it,stamp) },{ viewModel.selectDate(it,stamp) },
-                    { viewModel.resumeDraft(it,stamp) },{ viewModel.anotherMemory(stamp) },{ viewModel.flush();onOpenAi() },viewModel::mediaFile)
+                    { viewModel.resumeDraft(it,stamp) },{ viewModel.anotherMemory(stamp) },viewModel::mediaFile)
             }
         }
     }
     if(rendered.confirmDelete)AlertDialog(onDismissRequest={ viewModel.cancelConfirmation(stamp) },title={ Text("删除这篇日记？") },
-        text={ Text("本条日记及其附件将删除，引用它的AI回顾也会删除。手机图库原文件不受影响。") },
+        text={ Text("本条日记及其附件将删除。手机图库原文件不受影响。") },
         confirmButton={ TextButton(onClick={ viewModel.confirmDelete(stamp) },enabled=enabled) { Text("删除") } },
         dismissButton={ TextButton(onClick={ viewModel.cancelConfirmation(stamp) }) { Text("取消") } })
     if(rendered.confirmDiscard)AlertDialog(onDismissRequest={ viewModel.cancelConfirmation(stamp) },title={ Text("丢弃这份草稿？") },
@@ -107,12 +107,11 @@ fun DiaryScreen(viewModel:DiaryViewModel,onOpenAi:()->Unit,canNavigate:Boolean=t
 
 @Composable
 private fun DiaryHome(state:DiaryUiState,enabled:Boolean,onNew:()->Unit,onOpen:(Long)->Unit,onCalendar:(Boolean)->Unit,
-    onMonth:(Long)->Unit,onDate:(LocalDate)->Unit,onDraft:(String)->Unit,onMemory:()->Unit,onAi:()->Unit,file:(DiaryMedia)->File?) {
+    onMonth:(Long)->Unit,onDate:(LocalDate)->Unit,onDraft:(String)->Unit,onMemory:()->Unit,file:(DiaryMedia)->File?) {
     LazyColumn(Modifier.fillMaxSize(),contentPadding=PaddingValues(16.dp),verticalArrangement=Arrangement.spacedBy(12.dp)) {
         item {
             Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically) {
                 Text("日记手账",style=MaterialTheme.typography.headlineMedium,modifier=Modifier.weight(1f))
-                TextButton(onClick=onAi,enabled=enabled) { Text("AI回顾") }
             }
             Text("把平凡日子，写成自己的故事",style=MaterialTheme.typography.bodyMedium)
         }

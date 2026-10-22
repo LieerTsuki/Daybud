@@ -33,7 +33,6 @@ import com.example.lifemanager.domain.plan.PlanRepository
 import com.example.lifemanager.domain.model.TodoPriority
 import com.example.lifemanager.ui.subscription.SubscriptionViewModel
 import com.example.lifemanager.ui.diary.DiaryViewModel
-import com.example.lifemanager.ui.diary.ai.DiaryAiViewModel
 import org.junit.Rule
 import org.junit.Before
 import org.junit.After
@@ -187,10 +186,10 @@ class V1ActivityActivationTest {
         ready()
         val owners=ViewModelProvider(activity,activity.diaryFactory)
         val diary=owners[DiaryViewModel::class.java]
-        val ai=owners[DiaryAiViewModel::class.java]
         compose.onNodeWithContentDescription("日记入口").performClick()
         awaitDestination(V1Destination.DIARY)
         waitFor { !diary.uiState.value.loading }
+        compose.onNodeWithText("AI回顾").assertDoesNotExist()
         compose.onNodeWithText("写日记").performClick()
         waitFor { diary.uiState.value.draft!=null && !diary.uiState.value.busy }
         val body="通过真实日记入口写入，并在切页和旋转后继续。"
@@ -199,13 +198,13 @@ class V1ActivityActivationTest {
         val draftId=diary.uiState.value.draft!!.id
         compose.onNodeWithContentDescription("设置入口").performClick()
         awaitDestination(V1Destination.SETTINGS)
+        compose.onNodeWithText("AI服务").assertDoesNotExist()
         waitFor { diary.uiState.value.drafts.any { it.id==draftId && it.body==body } }
         compose.onNodeWithContentDescription("日记入口").performClick()
         awaitDestination(V1Destination.DIARY)
         controller.recreate()
         val restored=ViewModelProvider(activity,activity.diaryFactory)
         assertSame(diary,restored[DiaryViewModel::class.java])
-        assertSame(ai,restored[DiaryAiViewModel::class.java])
         assertEquals(body,diary.uiState.value.draft!!.body)
         scrollTo(hasText("完成") and hasClickAction())
         compose.onNodeWithText("完成").performClick()

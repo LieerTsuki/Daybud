@@ -92,7 +92,7 @@ fun V1BackupSettingsDialogs(state: V1BackupUiState, answerFirst: (String, Boolea
     val id = state.operationId ?: return
     when (state.step) {
         BackupStep.EXPORT_NOTICE -> AlertDialog(onDismissRequest = { answerFirst(id, false) },
-            title = { Text("导出明文备份") }, text = { Text("包含计划、打卡、订阅、日记、草稿、照片、视频、已保存的AI回顾及设置。API Key和自动总结授权不会导出。V4归档未加密，任何获得文件的人都可以读取；请保存到可信位置，勿安装旧版降级。") },
+            title = { Text("导出明文备份") }, text = { Text("包含计划、打卡、订阅、日记、草稿、照片、视频、历史回顾及设置。V4归档未加密，任何获得文件的人都可以读取；请保存到可信位置，勿安装旧版降级。") },
             confirmButton = { TextButton({ answerFirst(id, true) }) { Text("选择保存位置") } },
             dismissButton = { TextButton({ answerFirst(id, false) }) { Text("取消") } })
         BackupStep.RESTORE_PREVIEW -> AlertDialog(onDismissRequest = { answerFirst(id, false) },
@@ -108,12 +108,12 @@ fun V1BackupSettingsDialogs(state: V1BackupUiState, answerFirst: (String, Boolea
                     Text("导出时间：${state.sourceDate.orEmpty()}")
                     v1BackupTableLabels.forEach { (table, label) -> Text("$label：${state.rowCounts[table] ?: 0}") }
                     Text(if(state.sourceFormat==BackupSourceFormat.V4) "将替换全部业务数据、日记、草稿、媒体、已保存回顾及设置，不合并。" else "将替换旧格式中包含的业务数据及设置，现有日记、日记草稿、媒体和回顾会保留。")
-                    Text("接下来先另存并验证当前数据的 V4 保护备份，再独立最终确认。取消会保留当前数据。AI服务密钥和自动总结授权不从备份导入。")
+                    Text("接下来先另存并验证当前数据的 V4 保护备份，再独立最终确认。取消会保留当前数据。")
                 }
             }, confirmButton = { TextButton({ answerFirst(id, true) }) { Text("同意并备份当前数据") } },
             dismissButton = { TextButton({ answerFirst(id, false) }) { Text("取消") } })
         BackupStep.CLEAR_CHOICE -> AlertDialog(onDismissRequest = { answerFirst(id, null) },
-            title = { Text("清空前先保留备份") }, text = { Text("将删除计划、打卡、订阅、日记、日记草稿、媒体、AI回顾及关联记录，保留设置。建议先备份，下一步还需独立最终确认。") },
+            title = { Text("清空前先保留备份") }, text = { Text("将删除计划、打卡、订阅、日记、日记草稿、媒体、历史回顾及关联记录，保留设置。建议先备份，下一步还需独立最终确认。") },
             confirmButton = { Column {
                 TextButton({ answerFirst(id, true) }) { Text("先备份当前数据") }
                 TextButton({ answerFirst(id, false) }) { Text("跳过备份，继续确认") }
@@ -142,4 +142,4 @@ private fun BackupDialogColumn(content: @Composable ColumnScope.() -> Unit) {
 private val v1BackupTableLabels = listOf("plans" to "计划", "tags" to "标签", "plan_tag_cross_ref" to "计划标签关联",
     "plan_exceptions" to "计划例外", "plan_legacy_refs" to "旧来源映射", "habits" to "习惯", "habit_records" to "打卡记录", "habit_trees" to "林场树木", "habit_waterings" to "浇水记录",
     "subscriptions" to "订阅", "subscription_payments" to "扣费记录", "subscription_reminders" to "订阅提醒配置",
-    "diary_entries" to "日记", "diary_drafts" to "日记草稿", "diary_media" to "照片和视频", "diary_reviews" to "AI回顾")
+    "diary_entries" to "日记", "diary_drafts" to "日记草稿", "diary_media" to "照片和视频", "diary_reviews" to "历史回顾（旧版兼容）")

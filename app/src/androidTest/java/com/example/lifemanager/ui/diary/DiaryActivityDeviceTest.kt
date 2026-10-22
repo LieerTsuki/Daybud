@@ -28,7 +28,9 @@ class DiaryActivityDeviceTest {
         var ownedDraftId: String? = null
         try {
             listOf("计划", "打卡", "日记", "订阅", "设置").forEach(::selectTab)
+            compose.onNodeWithText("AI服务").assertDoesNotExist()
             selectTab("日记")
+            compose.onNodeWithText("AI回顾").assertDoesNotExist()
             node("写日记").performClick()
             awaitText("标题（可不填）")
             ownedDraftId = owner().uiState.value.draft?.id
