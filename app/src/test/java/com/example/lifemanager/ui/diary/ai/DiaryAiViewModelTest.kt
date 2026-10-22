@@ -26,7 +26,7 @@ class DiaryAiViewModelTest {
                 override suspend fun deleteReview(id: String) = Unit
                 override fun observeInvalidations() = changes
             }
-            val config = AiServiceConfig.checked("https://a.example/v1", "model", "synthetic", 1)
+            val config = AiServiceConfig.local("small", "a".repeat(64), 1)
             val store = object : AiStateStore {
                 override suspend fun config() = config
                 override suspend fun saveConfig(address: String, model: String, key: String) = config
@@ -36,14 +36,20 @@ class DiaryAiViewModelTest {
                 override suspend fun putJob(job: AiAutoJob) = Unit
                 override suspend fun pauseAutomatic() = Unit
             }
-            val gateway = object : AiCompletionGateway {
-                override suspend fun complete(config: AiServiceConfig, sources: List<AiDiarySource>, partials: List<AiReviewSection>, beforeSend: suspend () -> Unit): List<AiReviewSection> {
-                    beforeSend()
-                    return AiSectionKind.entries.map { AiReviewSection(it, "私密散步经历", setOf(1)) }
+            val phone = object : PhoneAiRunner {
+                override suspend fun generate(config: AiServiceConfig, sources: List<AiDiarySource>, beforeStep: suspend () -> Unit, progress: (String) -> Unit): List<AiReviewSection> {
+                    beforeStep()
+                    return listOf(
+                        AiReviewSection(AiSectionKind.LIFE, "这段时间你记下了散步经历，可以回看具体的记录。", setOf(1)),
+                        AiReviewSection(AiSectionKind.MOOD, PhoneSummaryResultPolicy.moodText(sources), setOf(1)),
+                        AiReviewSection(AiSectionKind.MOMENTS, PhoneSummaryResultPolicy.sourceText(sources), setOf(1)),
+                        AiReviewSection(AiSectionKind.GROWTH, "参考建议：可以补记散步后的感受，方便之后回看。", setOf(1)),
+                        AiReviewSection(AiSectionKind.SUPPORT, "参考建议：不妨先安排一点空闲，按自己的状态选择。", setOf(1)),
+                    )
                 }
                 override suspend fun probe(config: AiServiceConfig) = Unit
             }
-            val viewModel = DiaryAiViewModel(DiaryAiEngine(source, store, gateway), source, store)
+            val viewModel = DiaryAiViewModel(DiaryAiEngine(source, store, phone = phone), source, store)
             viewModel.range(day.toString(), day.toString())
             viewModel.prepare()
             viewModel.generate(viewModel.uiState.value.preview!!)

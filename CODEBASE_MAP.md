@@ -1,5 +1,14 @@
 # 代码索引
 
+开发分支变更（未发布，2026-10-22）：
+
+- AiModeStore、DiaryAiEngine、LegacyCloudRetirement、DiaryAiWorker：独立离线设置、仅手机生成、收据与配置保存准入、旧云端任务/凭据退役。下方CloudSendGate/HTTPS说明仅对应历史1.3.0，生产DI已不构造这些网络对象。
+- local/BoundedModelReader、LocalModelStore：最多64KiB GGUF目录窗口与完整文件校验；LocalSummaryPipeline、domain/diary/ai/PhoneSummaryResultPolicy：单批完整来源、320token短总结/两条建议、独立新协议；旧Grounded策略保留历史校验。
+- local/EngineLibraryLoader、NativeLlama、cpp/cpu_features.cpp、tools/native：独立基线CPU探测、首次JNI前选择唯一引擎、默认关闭的ARM dotprod候选与ELF核验。未验证ARM手机速度。
+- ui/diary/ai：离线模型设置、短总结/两条建议/确定心情的展示、真实已用时间及分层失败提示。质量和真机验收状态见docs/offline-only-fast-reviews-acceptance.md。
+
+已发布旧版与保留模块：
+
 - domain/diary、data/diary：日记、持久草稿、媒体引用、统计/回忆、修订及Room8仓库；FileDiaryStorage实现私有流导入、暂存/pin/恢复和回收。
 - ui/diary、ui/diary/DiaryViewModelFactory.kt：列表/日历、详情/编辑、图库/图片/视频与Activity所有者；AI独立页面在ui/diary/ai。
 - ui/diary/ai/AiReviewDateInput.kt：AI回顾只读日期框、右侧日历按钮和确认/取消；DiaryRules.ordered与DiaryDao按记录日期、创建时间、ID倒序。

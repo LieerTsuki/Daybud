@@ -173,6 +173,34 @@ class LocalModelStoreTest {
         expectFailure(LocalModelFailure.INVALID_MODEL) { models.acquire(spec.id, spec.sha256) }
     }
 
+    @Test fun everyAcquisitionRevalidatesDigestAfterPreviousSuccessfulLeases() = runBlocking {
+        val models = store(temporary.newFolder())
+        val ready = models.importModel(spec.id, { ByteArrayInputStream(bytes) })
+        repeat(2) {
+            models.acquire(spec.id, spec.sha256).use { lease ->
+                ParcelFileDescriptor.AutoCloseInputStream(lease.descriptor.dup()).use {
+                    assertEquals('G'.code, it.read())
+                }
+            }
+        }
+        ready.file.writeBytes(bytes.copyOf().also { it[it.lastIndex] = 88 })
+        expectFailure(LocalModelFailure.INVALID_MODEL) { models.acquire(spec.id, spec.sha256) }
+    }
+
+    @Test fun largeSkippedMetadataStillValidatesFollowingTensorDirectory() = runBlocking {
+        val value = largeMetadataGguf()
+        val metadata = fixtureSpec(value)
+        val models = store(temporary.newFolder(), metadata)
+        models.importModel(metadata.id, { ByteArrayInputStream(value) })
+        models.acquire(metadata.id, metadata.sha256).use { assertTrue(it.descriptor.fileDescriptor.valid()) }
+
+        // A matching catalog digest cannot legitimize an overlapping / out-of-file tensor range.
+        val malformed = largeMetadataGguf(tensorOffset = 32)
+        val badSpec = fixtureSpec(malformed)
+        val badModels = store(temporary.newFolder(), badSpec)
+        expectFailure(LocalModelFailure.INVALID_MODEL) { badModels.importModel(badSpec.id, { ByteArrayInputStream(malformed) }) }
+    }
+
     @Test fun acquiredDescriptorRejectsWritesWithoutMutatingReadyBytes() = runBlocking {
         val models = store(temporary.newFolder())
         val ready = models.importModel(spec.id, { ByteArrayInputStream(bytes) })
@@ -288,6 +316,21 @@ internal fun tinyGguf(architecture: String = "qwen3"): ByteArray {
     string("general.architecture"); number(8, 4); string(architecture)
     string("general.file_type"); number(4, 4); number(7, 4)
     string("weight"); number(1, 4); number(1, 8); number(0, 4); number(0, 8)
+    while (out.size() % 32 != 0) out.write(0)
+    number(0x3f800000, 4)
+    return out.toByteArray()
+}
+
+private fun largeMetadataGguf(tensorOffset: Long = 0): ByteArray {
+    val out = ByteArrayOutputStream()
+    fun number(value: Long, width: Int) { repeat(width) { out.write((value ushr (it * 8)).toInt() and 255) } }
+    fun string(value: String) { val encoded = value.toByteArray(); number(encoded.size.toLong(), 8); out.write(encoded) }
+    out.write("GGUF".toByteArray()); number(3, 4); number(1, 8); number(3, 8)
+    string("general.architecture"); number(8, 4); string("qwen3")
+    string("general.file_type"); number(4, 4); number(7, 4)
+    string("tokenizer.test.padding"); number(9, 4); number(8, 4); number(3, 8)
+    string("x".repeat(65_533)); string("y".repeat(65_539)); string("last metadata")
+    string("weight"); number(1, 4); number(1, 8); number(0, 4); number(tensorOffset, 8)
     while (out.size() % 32 != 0) out.write(0)
     number(0x3f800000, 4)
     return out.toByteArray()

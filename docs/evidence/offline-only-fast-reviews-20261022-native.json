@@ -1,0 +1,165 @@
+{
+  "schema": 1,
+  "date": "2026-10-22",
+  "debugApkLibraries": [
+    {
+      "apkEntry": "lib/arm64-v8a/libdiary_cpu_features.so",
+      "bytes": 4200,
+      "sha256": "ec784d0409d34add3407c672d48f2dd5e873b19c16dee3e34192d6b9c220cd51",
+      "loadAlignments": [
+        16384,
+        16384
+      ]
+    },
+    {
+      "apkEntry": "lib/arm64-v8a/libdiary_llama.so",
+      "bytes": 4933440,
+      "sha256": "a86ac922083392cd77998d5b2df4d19c452e057d429f63488a885c58e9dc8620",
+      "loadAlignments": [
+        16384,
+        16384,
+        16384
+      ]
+    },
+    {
+      "apkEntry": "lib/armeabi-v7a/libdiary_cpu_features.so",
+      "bytes": 2840,
+      "sha256": "8ea32790fb36212a40e765d0eae3b92e6fec5d617791d4c2a520c8c6e6d9c7e5",
+      "loadAlignments": [
+        16384,
+        16384
+      ]
+    },
+    {
+      "apkEntry": "lib/armeabi-v7a/libdiary_llama.so",
+      "bytes": 3740,
+      "sha256": "0fdb6b492650b8f90f45a4acd8651f7f34ed8d0faa3ac7f1b6bfcbc7e8539aba",
+      "loadAlignments": [
+        16384,
+        16384
+      ]
+    },
+    {
+      "apkEntry": "lib/x86/libdiary_cpu_features.so",
+      "bytes": 3180,
+      "sha256": "cfd627ce0c98917eb95e11a66ae8b3fed2fdd8808ea094df8f2531e5f06f0c34",
+      "loadAlignments": [
+        16384,
+        16384
+      ]
+    },
+    {
+      "apkEntry": "lib/x86/libdiary_llama.so",
+      "bytes": 4428,
+      "sha256": "bf483a3cb2a3e8b16a6d2a83e076286f2cfb1a1453fc63cc9337c9bc397c5ab2",
+      "loadAlignments": [
+        16384,
+        16384
+      ]
+    },
+    {
+      "apkEntry": "lib/x86_64/libdiary_cpu_features.so",
+      "bytes": 4080,
+      "sha256": "501688a50c0271eaa230044dd8e5e737275b9020ae62f89bbfcd37b134003315",
+      "loadAlignments": [
+        16384,
+        16384
+      ]
+    },
+    {
+      "apkEntry": "lib/x86_64/libdiary_llama.so",
+      "bytes": 5394096,
+      "sha256": "6f35e0945b01ef0f162b7e5adfa8649dd243c59927e6e9e5cb46fdf89c3caec2",
+      "loadAlignments": [
+        16384,
+        16384,
+        16384
+      ]
+    }
+  ],
+  "defaultDotprodPackaged": false,
+  "candidateStandaloneBuild": {
+    "status": "pass",
+    "devicePerformanceVerified": false,
+    "runtimeDispatchVerifiedOnArm": false,
+    "note": "Pinned upstream engines contain optional assembly guarded by upstream CPU checks; instruction counts alone do not prove ISA requirements or dispatch correctness.",
+    "libraries": {
+      "baseline": {
+        "path": ".tools\\native-arm64-build\\libdiary_llama.so",
+        "bytes": 48436488,
+        "sha256": "25648d84096963c263d6b7b8bb33b8543aeaf100ac2377a403e7a80b76ced135",
+        "loadAlignments": [
+          16384,
+          16384,
+          16384
+        ],
+        "dotProductInstructions": 160,
+        "i8mmInstructions": 0,
+        "inferenceJni": [
+          "Java_com_example_lifemanager_data_diary_ai_local_NativeLlamaBindings_cancel",
+          "Java_com_example_lifemanager_data_diary_ai_local_NativeLlamaBindings_close",
+          "Java_com_example_lifemanager_data_diary_ai_local_NativeLlamaBindings_countTokens",
+          "Java_com_example_lifemanager_data_diary_ai_local_NativeLlamaBindings_generate",
+          "Java_com_example_lifemanager_data_diary_ai_local_NativeLlamaBindings_open"
+        ],
+        "probeJni": false,
+        "dependencies": [
+          "libandroid.so",
+          "liblog.so",
+          "libm.so",
+          "libdl.so",
+          "libc.so"
+        ]
+      },
+      "dotprod": {
+        "path": ".tools\\engine-build-contract-b774365efc484e459e52fffd32eeeeca\\dotprod-arm64-v8a\\libdiary_llama_dotprod.so",
+        "bytes": 48736888,
+        "sha256": "51d7b2139a88f208702331b21f21a536447cd07ceaefe6baa74820ed771aa0cb",
+        "loadAlignments": [
+          16384,
+          16384,
+          16384
+        ],
+        "dotProductInstructions": 404,
+        "i8mmInstructions": 0,
+        "inferenceJni": [
+          "Java_com_example_lifemanager_data_diary_ai_local_NativeLlamaBindings_cancel",
+          "Java_com_example_lifemanager_data_diary_ai_local_NativeLlamaBindings_close",
+          "Java_com_example_lifemanager_data_diary_ai_local_NativeLlamaBindings_countTokens",
+          "Java_com_example_lifemanager_data_diary_ai_local_NativeLlamaBindings_generate",
+          "Java_com_example_lifemanager_data_diary_ai_local_NativeLlamaBindings_open"
+        ],
+        "probeJni": false,
+        "dependencies": [
+          "libandroid.so",
+          "liblog.so",
+          "libm.so",
+          "libdl.so",
+          "libc.so"
+        ]
+      },
+      "probe": {
+        "path": ".tools\\engine-build-contract-b774365efc484e459e52fffd32eeeeca\\baseline-arm64-v8a\\libdiary_cpu_features.so",
+        "bytes": 7584,
+        "sha256": "6ef6147fa2b0f475aba05a87245a7c763cd97938ccc4cbb3e2712376aaf119ef",
+        "loadAlignments": [
+          16384,
+          16384
+        ],
+        "dotProductInstructions": 0,
+        "i8mmInstructions": 0,
+        "inferenceJni": [],
+        "probeJni": true,
+        "dependencies": [
+          "libm.so",
+          "libdl.so",
+          "libc.so"
+        ]
+      }
+    }
+  },
+  "limits": [
+    "ELF/compiler checks do not prove runtime ARM dispatch or phone latency.",
+    "Candidate standalone build is not an enabled or published APK."
+  ]
+}

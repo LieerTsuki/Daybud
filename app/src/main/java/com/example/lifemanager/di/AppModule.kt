@@ -78,8 +78,8 @@ object ProviderModule {
 
     @Provides @Singleton
     fun provideBackupMutations(database: LifeManagerDatabase,diary:DiaryRepository,storage:FileDiaryStorage,
-        aiStore:com.example.lifemanager.data.diary.ai.AiPrivateStore): V2BackupMutationRepository =
-        V4BackupMutationRepository(database,V2BackupMutationRepositoryImpl(database, database.backupSnapshotDao()),diary,storage,aiStore::pauseAutomatic)
+        aiStore:com.example.lifemanager.data.diary.ai.AiModeStore): V2BackupMutationRepository =
+        V4BackupMutationRepository(database,V2BackupMutationRepositoryImpl(database, database.backupSnapshotDao()),diary,storage,aiStore::invalidateRequests)
 
     @Provides @Singleton
     fun provideBackupCodec(): VersionedBackupCodec = VersionedBackupJsonCodec()

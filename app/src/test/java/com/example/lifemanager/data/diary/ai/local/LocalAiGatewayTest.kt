@@ -36,7 +36,7 @@ class LocalAiGatewayTest {
         override suspend fun generate(system: String, user: String, grammar: String, maxOutputTokens: Int): LocalInferenceOutput {
             generated++
             if (wait) awaitCancellation()
-            return LocalInferenceOutput("""{"items":[{"sourceId":1,"life":2,"moment":0,"reflection":0,"reminder":0}]}""", 400, 100, true)
+            return LocalInferenceOutput("""{"summary":"你在傍晚安排了一次散步，给当天留出了休息和活动的时间。","advice":["可以记下散步后的感受，看看哪条路线更适合放松。","不妨给明天留出一小段空闲，按自己的状态决定是否继续散步。"]}""", 400, 100, true)
         }
         override fun cancel() { cancelled = true }
         override fun close() { closed = true }
@@ -76,7 +76,7 @@ class LocalAiGatewayTest {
                     override fun countTokens(system: String, user: String) = 400
                     override fun generate(system: String, user: String, grammar: String, maxOutputTokens: Int): LocalInferenceOutput {
                         generations++
-                        return LocalInferenceOutput("""{"items":[{"sourceId":1,"life":2,"moment":0,"reflection":0,"reminder":0}]}""", 400, 100, true)
+                        return LocalInferenceOutput("""{"summary":"你在傍晚安排了一次散步，给当天留出了休息和活动的时间。","advice":["可以记下散步后的感受，看看哪条路线更适合放松。","不妨给明天留出一小段空闲，按自己的状态决定是否继续散步。"]}""", 400, 100, true)
                     }
                     override fun cancel() = Unit
                     override fun close() = Unit
@@ -120,6 +120,84 @@ class LocalAiGatewayTest {
             job.cancel(); runCurrent()
             assertTrue(session.cancelled); assertTrue(session.closed); assertTrue(job.isCancelled)
         }
+    }
+
+    @Test fun generationDeadlineIsReportedSeparatelyAndDoesNotLeaveNativeWorkRunning() = runTest {
+        val session = Session().apply { wait = true }
+        val source = AiDiarySource(1, 1, LocalDate.of(2026, 10, 19), "散步", "今天傍晚散步", null)
+        try {
+            lease().use { LocalAiGateway(LocalInferenceSessionFactory { session }).generate(it, listOf(source), {}) }
+            fail("An expired generation must not produce a review")
+        } catch (error: LocalAiException) {
+            assertEquals("TIMEOUT", error.code.name)
+        }
+        assertEquals(1, session.generated)
+        assertTrue(session.cancelled)
+        assertTrue(session.closed)
+    }
+
+    @Test fun processExitIsPreservedWithoutRetryingDecode() = runTest {
+        var attempts = 0
+        var closed = false
+        val session = object : LocalInferenceSession {
+            override suspend fun countTokens(system: String, user: String) = 400
+            override suspend fun generate(system: String, user: String, grammar: String, maxOutputTokens: Int): LocalInferenceOutput {
+                attempts++
+                throw LocalAiException(LocalAiFailure.SERVICE_DIED)
+            }
+            override fun cancel() = Unit
+            override fun close() { closed = true }
+        }
+        val source = AiDiarySource(1, 1, LocalDate.of(2026, 10, 19), "散步", "今天傍晚散步", null)
+        try {
+            lease().use { LocalAiGateway(LocalInferenceSessionFactory { session }).generate(it, listOf(source), {}) }
+            fail("A lost inference process cannot produce a review")
+        } catch (error: LocalAiException) {
+            assertEquals(LocalAiFailure.SERVICE_DIED, error.code)
+        }
+        assertEquals(1, attempts)
+        assertTrue(closed)
+    }
+
+    @Test fun loadingDeadlineIsReportedBeforeAnyDiaryIsDecoded() = runTest {
+        var opens = 0
+        val gateway = LocalAiGateway(LocalInferenceSessionFactory { opens++; awaitCancellation() })
+        val source = AiDiarySource(1, 1, LocalDate.of(2026, 10, 19), "散步", "今天傍晚散步", null)
+        try {
+            lease().use { gateway.generate(it, listOf(source), {}) }
+            fail("A model that never loads cannot produce a review")
+        } catch (error: LocalAiException) {
+            assertEquals("LOAD_TIMEOUT", error.code.name)
+        }
+        assertEquals(1, opens)
+    }
+
+    @Test fun probeDeadlineDoesNotReportAnImmediateModelLoadFailure() = runTest {
+        val gateway = LocalAiGateway(LocalInferenceSessionFactory { awaitCancellation() })
+        try {
+            lease().use { gateway.probe(it) }
+            fail("A model that never loads cannot pass a probe")
+        } catch (error: LocalAiException) {
+            assertEquals("LOAD_TIMEOUT", error.code.name)
+        }
+    }
+
+    @Test fun shorterConfiguredDeadlineCancelsTheOnlyDecode() = runTest {
+        val session = Session().apply { wait = true }
+        val source = AiDiarySource(1, 1, LocalDate.of(2026, 10, 19), "散步", "今天傍晚散步", null)
+        try {
+            lease().use {
+                LocalAiGateway(LocalInferenceSessionFactory { session }, generationTimeoutMillis = 250)
+                    .generate(it, listOf(source), {})
+            }
+            fail("The configured deadline must bound generation")
+        } catch (error: LocalAiException) {
+            assertEquals("TIMEOUT", error.code.name)
+        }
+        assertEquals(250L, testScheduler.currentTime)
+        assertEquals(1, session.generated)
+        assertTrue(session.cancelled)
+        assertTrue(session.closed)
     }
 
     @Test fun immediateProbeAfterSlowNativeCloseUsesProductionRecovery() = runTest {

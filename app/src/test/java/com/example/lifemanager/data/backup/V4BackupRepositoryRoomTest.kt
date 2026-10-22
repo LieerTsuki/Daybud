@@ -2,6 +2,9 @@ package com.example.lifemanager.data.backup
 
 import android.app.Application
 import com.example.lifemanager.data.diary.RoomDiaryRepository
+import com.example.lifemanager.data.diary.ai.RoomDiaryAiDataSource
+import com.example.lifemanager.domain.diary.ai.*
+import java.time.Instant
 import com.example.lifemanager.data.local.V6RoomFixture
 import com.example.lifemanager.data.repository.DataGenerationRepositoryImpl
 import com.example.lifemanager.domain.backup.*
@@ -20,6 +23,53 @@ import kotlin.test.*
 @Config(sdk=[28],application=Application::class)
 @SQLiteMode(SQLiteMode.Mode.NATIVE)
 class V4BackupRepositoryRoomTest {
+    @Test fun mixedCloudExcerptAndSummaryReviewsSurviveManifestRestoreAndDeleteWithTheirSource():Unit=runBlocking {
+        V6RoomFixture().use { fixture ->
+            val db = fixture.database
+            val generations = DataGenerationRepositoryImpl(db)
+            val maintenance = MaintenanceCoordinator(generations)
+            val diary = RoomDiaryRepository(db, maintenance, Clock.systemUTC())
+            val adapter = RoomDiaryAiDataSource(diary, maintenance, generations, db)
+            val repo = V4BackupRepository(db, V2BackupRepositoryImpl(db, db.backupSnapshotDao()), diary)
+            val mutations = V4BackupMutationRepository(db, V2BackupMutationRepositoryImpl(db, db.backupSnapshotDao()), diary)
+            val day = LocalDate.now(Clock.systemUTC())
+            val draft = diary.createDraft(DataGeneration(0), day)
+            val updated = diary.saveDraft(draft.copy(body="散步后准备学习。"), draft.revision, DataGeneration(0))
+            val entry = diary.commitDraft(updated.id, updated.revision, DataGeneration(0))
+            val snapshot = adapter.snapshot(day, day)
+            val ids = setOf(entry.id)
+            val sha = "a".repeat(64)
+            val summary = AiDiaryReview("summary", day, day,
+                Instant.ofEpochMilli(123), listOf(
+                    AiReviewSection(AiSectionKind.LIFE,"记录了散步和学习安排。",ids),
+                    AiReviewSection(AiSectionKind.MOOD,PhoneSummaryResultPolicy.moodText(snapshot.sources),ids),
+                    AiReviewSection(AiSectionKind.MOMENTS,PhoneSummaryResultPolicy.sourceText(snapshot.sources),ids),
+                    AiReviewSection(AiSectionKind.GROWTH,"参考建议：可以先整理学习资料。",ids),
+                    AiReviewSection(AiSectionKind.SUPPORT,"参考建议：不妨先选择一个小任务。",ids),
+                ), mapOf(entry.id to entry.revision), provider="phone-summary:v1:$sha",model="small@$sha",inputHash="b".repeat(64))
+            assertTrue(adapter.save(summary, snapshot))
+            val excerpt = summary.copy(id="excerpt", provider="phone-offline:$sha", sections=summary.sections.map {
+                it.copy(text=when(it.kind) {
+                    AiSectionKind.LIFE -> GroundedAiResultPolicy.EXCERPT_PREFIX + "$day #${entry.id} 正文：“散步后准备学习。”"
+                    AiSectionKind.MOOD -> GroundedAiResultPolicy.moodText(snapshot.sources)
+                    else -> GroundedAiResultPolicy.emptySelectionText(it.kind)
+                })
+            })
+            assertTrue(adapter.save(excerpt, snapshot))
+            assertTrue(adapter.save(summary.copy(id="cloud-history",provider="https://old.example",model="historical"),snapshot))
+            val full = repo.snapshot()
+            val codec = V4BackupManifest()
+            val decoded = codec.decode(codec.encode(V2BackupFixtures.document(full))).payload
+            assertEquals(full, decoded)
+            mutations.clearBusinessData(DataGeneration(0))
+            assertTrue(repo.snapshot().diary!!.reviews.isEmpty())
+            mutations.replace(DataGeneration(1), decoded)
+            assertEquals(full, repo.snapshot())
+            assertFalse(adapter.save(summary.copy(id="late-result"), snapshot))
+            diary.deleteEntry(entry.id, entry.revision, DataGeneration(2))
+            assertTrue(repo.snapshot().diary!!.reviews.isEmpty())
+        }
+    }
     @Test fun durableReferencesAndExportPinsProtectRollbackAndRestoreButClearCollectsOrphans():Unit=runBlocking {
         val folder=java.nio.file.Files.createTempDirectory("v4-commit-gc").toFile()
         try { V6RoomFixture().use { fixture ->

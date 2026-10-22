@@ -1,0 +1,182 @@
+{
+  "setup": {
+    "state": "passed",
+    "modelId": "qwen3-0.6b-q4km-b5501",
+    "modelSha256": "15e434d8ddf0af38fe3f7003af6ce6eac4edada6df34324aa45979f9cc79f02e",
+    "modelBytes": 396704416,
+    "preexistingReadyModel": true,
+    "modelLeftReadyForReproduction": true,
+    "api": 35,
+    "manufacturer": "unknown",
+    "deviceModel": "Android SDK built for x86_64",
+    "abis": [
+      "x86_64"
+    ],
+    "scope": "Real JNI/private-service structural runtime on this device only; not semantic quality, ARM handset coverage or market adaptation",
+    "businessDatabaseWritesByTest": false
+  },
+  "probeAndProcess": {
+    "state": "passed",
+    "elapsedMillis": 5094,
+    "tokenCount": 31,
+    "mainPid": 1688,
+    "inferencePid": 1718,
+    "inferenceProcess": "com.example.lifemanager:diary_inference",
+    "sameUid": true,
+    "procFileDescriptorsObservable": true,
+    "observedOpenBusinessDatabase": false,
+    "procThreadsObservable": true,
+    "observedWorkerThread": false,
+    "availableDeviceMemoryBytes": 2472501248,
+    "deviceTotalMemoryBytes": 4111228928,
+    "observationLimit": "FD/thread samples only; unavailable proc access is recorded, not counted as business initialization proof"
+  },
+  "structuralGeneration": {
+    "state": "passed",
+    "elapsedMillis": 14157,
+    "semanticQualityAssessed": false,
+    "syntheticSources": true,
+    "protocol": "phone-summary:v1",
+    "singleCompleteRequest": true,
+    "sections": [
+      {
+        "kind": "LIFE",
+        "text": "今天散步和实验记录，整理笔记，但实验日志仍有问题。",
+        "sourceIds": [
+          1,
+          2
+        ]
+      },
+      {
+        "kind": "MOOD",
+        "text": "已填写的心情标签（不推测正文中的情绪）：\n2026-10-18 #1：平静\n2026-10-19 #2：未填写",
+        "sourceIds": [
+          1,
+          2
+        ]
+      },
+      {
+        "kind": "MOMENTS",
+        "text": "本次回顾来源（可打开原始日记核对）：\n2026-10-18 #1\n2026-10-19 #2",
+        "sourceIds": [
+          1,
+          2
+        ]
+      },
+      {
+        "kind": "GROWTH",
+        "text": "参考建议：可以继续检查实验日志，",
+        "sourceIds": [
+          1,
+          2
+        ]
+      },
+      {
+        "kind": "SUPPORT",
+        "text": "参考建议：不妨记录下问题所在。",
+        "sourceIds": [
+          1,
+          2
+        ]
+      }
+    ],
+    "nativeOutputs": [
+      {
+        "text": "{\"summary\":\"今天散步和实验记录，整理笔记，但实验日志仍有问题。\",\"advice\":[\"可以继续检查实验日志，\",\"不妨记录下问题所在。\"]}",
+        "promptTokens": 281,
+        "generatedTokens": 39,
+        "reachedEos": true
+      }
+    ]
+  },
+  "structuralNativeOutputs": {
+    "syntheticSources": true,
+    "semanticQualityAssessed": false,
+    "nativeOutputs": [
+      {
+        "text": "{\"summary\":\"今天散步和实验记录，整理笔记，但实验日志仍有问题。\",\"advice\":[\"可以继续检查实验日志，\",\"不妨记录下问题所在。\"]}",
+        "promptTokens": 281,
+        "generatedTokens": 39,
+        "reachedEos": true
+      }
+    ]
+  },
+  "cancellation": {
+    "state": "passed",
+    "cancellationMillis": 5,
+    "reopenAndCountMillis": 681,
+    "resourcesReusableAfterCancellation": true
+  },
+  "serviceDeath": {
+    "state": "passed",
+    "failure": "SERVICE_DIED",
+    "oldInferencePid": 1718,
+    "newInferencePid": 1798,
+    "mainPid": 1688,
+    "mainProcessSurvived": true
+  },
+  "guardedEngine": {
+    "state": "passed",
+    "elapsedMillis": 53234,
+    "sourceCount": 3,
+    "hanCharacters": 1135,
+    "resourceGuardPassed": true,
+    "availableMemoryBytes": 2873769984,
+    "explicitSaveOnly": true,
+    "cloudGatewayDependencyPresent": false,
+    "semanticQualityAssessed": false,
+    "protocol": "phone-summary:v1",
+    "sections": [
+      {
+        "kind": "LIFE",
+        "text": "今天整理笔记和实验，核对记录，完成实验任务，整理日常细节。",
+        "sourceIds": [
+          1,
+          2,
+          3
+        ]
+      },
+      {
+        "kind": "MOOD",
+        "text": "已填写的心情标签（不推测正文中的情绪）：\n2026-10-18 #1：平静\n2026-10-19 #2：焦虑\n2026-10-20 #3：未填写",
+        "sourceIds": [
+          1,
+          2,
+          3
+        ]
+      },
+      {
+        "kind": "MOMENTS",
+        "text": "本次回顾来源（可打开原始日记核对）：\n2026-10-18 #1\n2026-10-19 #2\n2026-10-20 #3",
+        "sourceIds": [
+          1,
+          2,
+          3
+        ]
+      },
+      {
+        "kind": "GROWTH",
+        "text": "参考建议：可以先完成当天能做的事，不要把未完成的事当成结果。",
+        "sourceIds": [
+          1,
+          2,
+          3
+        ]
+      },
+      {
+        "kind": "SUPPORT",
+        "text": "参考建议：不妨记录下当天的进展，但不要过度推测。",
+        "sourceIds": [
+          1,
+          2,
+          3
+        ]
+      }
+    ]
+  },
+  "manualQualityFindings": [
+    "Two-entry output advice ends in a comma: 可以继续检查实验日志，. EOS/JSON validity does not prove a complete suggestion.",
+    "Three-day 1135-Han summary says today and completed experiment tasks; it does not adequately preserve the unresolved final-day experiment/log issue or represent all dates.",
+    "Advice remains generic; these runtime checks are structural and not a semantic pass."
+  ]
+}

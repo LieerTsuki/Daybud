@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "date": "2026-10-22",
+  "baselineCommit": "1d6afb48fd0b2304c52328d7faccfe9733355ad4",
+  "branch": "feat/offline-only-fast-reviews",
+  "publication": "not_released",
+  "versionName": "1.3.0",
+  "versionCode": 14,
+  "productionReleaseUnchanged": true,
+  "gradle": {
+    "command": ":app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug",
+    "offline": true,
+    "exit": 0,
+    "logSha256": "b80bfe8ee4b60177415966f39f02a29f0d14f1a6351e1de461f2b77c059ad574",
+    "suites": 149,
+    "tests": 1462,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "lint": {
+    "Warning": 34,
+    "Error": 0
+  },
+  "qualityGate": "not_passed",
+  "armPhysicalDeviceSpeed": "not_measured",
+  "deviceTests": {
+    "environment": "API35 x86_64 emulator with 4096MB RAM and 2 CPU cores; not physical ARM",
+    "runtime": {
+      "tests": 5,
+      "failures": 0,
+      "logSha256": "290d5d349d6dffb979b208e8392c0954a4f21b87af6895bca6f13be12ff637b3",
+      "threeEntry1135HanMillis": 53234,
+      "cancelMillis": 5,
+      "semanticQualityPassed": false
+    },
+    "nativeSelection": {
+      "tests": 1,
+      "failures": 0,
+      "logSha256": "a0a91188cc2b365bc302534dc8a5827ab397a64e6f65d50ee29522d8037a9d36",
+      "priorFailure": "Initial test wrongly assumed maps named the .so; changed to APK ZIP entry offset mapping and reran successfully."
+    },
+    "businessRegression": {
+      "tests": 79,
+      "failures": 0,
+      "logSha256": "1acfaa98100ad45b578dc4d1daa22b33128e9fc4fcc941445ea11dcfb0370d6f",
+      "invocation": "manual am instrument with native classes excluded; no uninstall/data clear"
+    },
+    "totalExecuted": 85
+  },
+  "limits": [
+    "No new Release/APK publication. Debug validation only; production signing and upgrade checks are not current.",
+    "Unit tests prove deterministic boundaries, not factual accuracy or phone speed."
+  ],
+  "debugApk": {
+    "file": "app/build/outputs/apk/debug/app-debug.apk",
+    "bytes": 35478769,
+    "sha256": "632efdc3cdf970bb6ca349d7c4844bd9471f79d2ae9db592cc147a6875035b3d",
+    "zipalign16KiB": "pass",
+    "dotprodCandidatePackaged": false,
+    "published": false
+  },
+  "androidTestRebuild": {
+    "exit": 0,
+    "logSha256": "fe4cc5204009dcf1c03b2a05057ebe6412df24a5f7e22f42c334f632fef50200"
+  },
+  "nativeElfEvidence": "offline-only-fast-reviews-20261022-native.json",
+  "nativeElfLibrariesChecked": 8
+}

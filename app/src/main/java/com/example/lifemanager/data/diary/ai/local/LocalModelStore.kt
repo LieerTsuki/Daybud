@@ -7,7 +7,6 @@ import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.io.FileOutputStream
-import java.io.RandomAccessFile
 import java.nio.charset.CodingErrorAction
 import java.nio.ByteBuffer
 import java.nio.file.Files
@@ -321,7 +320,7 @@ class LocalModelStore(
 
     /** Bounded GGUFv3 directory validation, in addition to the catalog SHA256. */
     private class GgufReader(file: File, private val checkCancelled: () -> Unit) : Closeable {
-        private val input = RandomAccessFile(file, "r")
+        private val input = BoundedModelReader(file)
         private val length = input.length()
         private val headerLimit = minOf(length, 32L * 1024 * 1024)
         override fun close() = input.close()

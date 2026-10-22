@@ -11,18 +11,19 @@ import java.io.InputStream
 import java.time.LocalDate
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 data class DiaryAiUiState(
     val from: String = LocalDate.now().withDayOfMonth(1).toString(), val through: String = LocalDate.now().toString(),
     val preview: AiGenerationPreview? = null, val result: AiDiaryReview? = null, val reviews: List<AiDiaryReview> = emptyList(),
-    val busy: Boolean = false, val message: String? = null, val endpoint: String = "", val model: String = "",
-    val serviceOrigin: String = "", val configured: Boolean = false, val consents: List<AiAutoConsent> = emptyList(),
-    val jobs: List<AiAutoJob> = emptyList(), val generation: Long? = null,
-    val mode: AiExecutionMode = AiExecutionMode.CLOUD,
+    val busy: Boolean = false, val message: String? = null, val model: String = "",
+    val serviceOrigin: String = "", val configured: Boolean = false, val generation: Long? = null,
+    val mode: AiExecutionMode = AiExecutionMode.LOCAL,
     val localModels: List<LocalModelSpec> = emptyList(), val readyModelIds: Set<String> = emptySet(),
-    val progress: String? = null,
+    val progress: String? = null, val elapsedSeconds: Long = 0,
     val localPreparationBlocked: Set<String> = emptySet(), val localDeviceMessage: String? = null,
 )
 
@@ -110,13 +111,12 @@ class DiaryAiViewModel(private val engine: DiaryAiEngine, private val source: Di
         viewModelScope.launch {
             try { readSettings() }
             catch (error: CancellationException) { throw error }
-            catch (_: Exception) { if (request == token) mutableState.update { it.copy(configured = false, message = "AI配置或密钥不可用，请重新填写或选择模式") } }
+            catch (_: Exception) { if (request == token) mutableState.update { it.copy(configured = false, message = "离线模型设置读取失败，请重新选择模型") } }
         }
     }
     private suspend fun readSettings() {
         val token = request
-        val config = store.config(); val generation=source.currentGeneration()
-        val consents = store.consents().map { if(it.generation==generation)it else it.copy(enabled=false) }; val jobs = store.jobs()
+        val config = store.config()?.takeIf { it.mode == AiExecutionMode.LOCAL }
         val ready = models?.readyModels()?.map { it.id }?.toSet().orEmpty()
         val snapshot = device()
         val blocked = if (snapshot == null) emptySet() else LocalModelCatalog.models.filter {
@@ -128,24 +128,15 @@ class DiaryAiViewModel(private val engine: DiaryAiEngine, private val source: Di
             snapshot.lowMemory -> "系统当前可用内存较少，建议关闭其他应用后再生成。"
             else -> "当前可用内存约${snapshot.availableMemoryBytes / (1024 * 1024)} MB；运行时会再次检查资源。"
         }
-        val mode = config?.mode ?: (store as? AiModeStore)?.mode() ?: AiExecutionMode.CLOUD
-        if (request == token) mutableState.update { it.copy(endpoint = config?.endpoint.orEmpty(), model = config?.model.orEmpty(), serviceOrigin = config?.origin.orEmpty(),
-            configured = config != null && (mode == AiExecutionMode.CLOUD || config.model in ready), consents = consents, jobs = jobs,
+        val mode = AiExecutionMode.LOCAL
+        if (request == token) mutableState.update { it.copy(model = config?.model.orEmpty(), serviceOrigin = config?.origin.orEmpty(),
+            configured = config != null && config.model in ready,
             mode = mode, localModels = if (models == null) emptyList() else LocalModelCatalog.models, readyModelIds = ready,
             localPreparationBlocked = blocked, localDeviceMessage = deviceMessage) }
     }
-    fun selectCloud() {
-        cancel()
-        launchAction {
-            (store as? AiModeStore)?.selectCloud() ?: return@launchAction
-            reviewedPreview = null
-            mutableState.update { it.copy(preview = null, result = null) }
-            readSettings()
-        }
-    }
     fun selectLocal(modelId: String? = null) {
         val current = mutableState.value
-        if (current.mode == AiExecutionMode.LOCAL && (modelId == null || modelId == current.model)) return
+        if (current.model.isNotEmpty() && (modelId == null || modelId == current.model)) return
         cancel()
         launchAction {
             val spec = LocalModelCatalog.models.firstOrNull { it.id == modelId } ?: LocalModelCatalog.models.first()
@@ -153,7 +144,7 @@ class DiaryAiViewModel(private val engine: DiaryAiEngine, private val source: Di
             reviewedPreview = null
             mutableState.update { it.copy(preview = null, result = null) }
             readSettings()
-            mutableState.update { it.copy(message = "已选择手机离线；云端自动回顾已暂停。模型就绪后可断网生成。") }
+            mutableState.update { it.copy(message = "已选择离线模型，校验就绪后可断网生成。") }
         }
     }
     fun importLocal(modelId: String, open: () -> InputStream) = launchAction {
@@ -176,33 +167,29 @@ class DiaryAiViewModel(private val engine: DiaryAiEngine, private val source: Di
         readSettings()
         mutableState.update { it.copy(message = "离线模型已删除，日记和已保存回顾仍保留") }
     }
-    fun saveConfiguration(address: String, model: String, key: String, onSaved: () -> Unit = {}) = launchAction {
-        store.saveConfig(address, model, key)
-        reviewedPreview = null
-        mutableState.update { it.copy(preview = null, result = null) }
-        readSettings(); onSaved()
-        mutableState.update { it.copy(message = "配置已保存；自动总结已暂停，请重新确认开启") }
-    }
-    fun testConnection() = launchAction { engine.testConnection(); mutableState.update { it.copy(message = if (it.mode == AiExecutionMode.LOCAL) "离线模型加载和分词检查通过，未发送日记" else "连接检查通过，未发送日记") } }
-    fun automatic(kind: AiPeriodKind, enabled: Boolean) = launchAction {
-        engine.setAutomatic(kind, enabled); readSettings()
-        mutableState.update { it.copy(message = if (enabled) "已开启，起点为当前所在周/月；当地09:00后由系统择机处理" else "自动总结已关闭，尚未发送的请求已失效") }
-    }
+    fun testConnection() = launchAction { engine.testConnection(); mutableState.update { it.copy(message = "离线模型加载和分词检查通过，未发送日记") } }
     private fun launchAction(action: suspend () -> Unit) {
         if (mutableState.value.busy) return
         val token = ++request
-        mutableState.update { it.copy(busy = true, message = null) }
+        mutableState.update { it.copy(busy = true, message = null, elapsedSeconds = 0) }
         work = viewModelScope.launch {
+            val startedAt = System.nanoTime()
+            val ticker = launch {
+                while (isActive) {
+                    delay(1_000)
+                    if (request == token) mutableState.update { it.copy(elapsedSeconds = (System.nanoTime() - startedAt) / 1_000_000_000) }
+                }
+            }
             try { cancellation?.join(); action() }
             catch (error: CancellationException) { throw error }
             catch (error: Exception) {
                 if (request == token) mutableState.update { it.copy(message = when (error) {
                     is AiStaleException, is AiBudgetException, is AiNoContentException, is AiProtocolException, is AiNetworkException,
                     is LocalAiException, is LocalModelStoreException, is PhoneAiUnavailableException -> error.message
-                    is IllegalArgumentException -> "请检查日期、HTTPS服务地址、模型和API Key"
+                    is IllegalArgumentException -> "请检查日期和所选离线模型"
                     else -> "操作未完成，请检查配置或稍后重试"
                 }) }
-            } finally { if (request == token) mutableState.update { it.copy(busy = false, progress = null) } }
+            } finally { ticker.cancel(); if (request == token) mutableState.update { it.copy(busy = false, progress = null) } }
         }
     }
 }

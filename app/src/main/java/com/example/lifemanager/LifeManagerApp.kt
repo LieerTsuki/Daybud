@@ -6,7 +6,7 @@ import com.example.lifemanager.notification.*
 import com.example.lifemanager.di.IoDispatcher
 import com.example.lifemanager.domain.backup.BackupFileStore
 import com.example.lifemanager.data.diary.FileDiaryStorage
-import com.example.lifemanager.data.diary.ai.DiaryAiEngine
+import com.example.lifemanager.data.diary.ai.LegacyCloudRetirement
 import com.example.lifemanager.data.diary.ai.DiaryAiWorker
 import com.example.lifemanager.data.local.LifeManagerDatabase
 import com.example.lifemanager.domain.maintenance.MaintenanceCoordinator
@@ -20,7 +20,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
 @HiltAndroidApp
-class LifeManagerApp : Application(), PlanReminderReceiver.Dependencies, UnifiedReminderReconciliationWorker.Dependencies,DiaryAiWorker.Dependencies {
+class LifeManagerApp : Application(), PlanReminderReceiver.Dependencies, UnifiedReminderReconciliationWorker.Dependencies {
     // No eager injected business fields: Hilt's super.onCreate runs in the private process too.
     private val business: MainProcessDependencies by lazy {
         check(isBusinessProcess()) { "当前进程不能获取业务依赖" }
@@ -32,7 +32,6 @@ class LifeManagerApp : Application(), PlanReminderReceiver.Dependencies, Unified
     override val unifiedReminderReconciliation get() = business.reconciliation()
     val planNotifications get() = business.notifications()
     val ioDispatcher get() = business.ioDispatcher()
-    override val diaryAiEngine get() = business.aiEngine()
     val diaryStorage get() = business.storage()
     val database get() = business.database()
     val maintenance get() = business.maintenance()
@@ -57,9 +56,10 @@ class LifeManagerApp : Application(), PlanReminderReceiver.Dependencies, Unified
         planNotifications.createChannel()
         SubscriptionNotificationHelper.createChannel(this)
         UnifiedReminderReconciliationWorker.schedule(this)
-        DiaryAiWorker.schedule(this)
+        DiaryAiWorker.retire(this)
         requestReconciliation()
         CoroutineScope(SupervisorJob() + ioDispatcher).launch {
+            runCatching { business.retiredCloud().retire() }
             // A failed cleanup is retried before the next import; unrelated CRUD remains available.
             runCatching { backupFiles.initializePrivateStorage() }
             runCatching {
@@ -81,7 +81,7 @@ interface MainProcessDependencies {
     fun reconciliation(): UnifiedReminderReconciliation
     fun notifications(): PlanNotificationHelper
     @IoDispatcher fun ioDispatcher(): CoroutineDispatcher
-    fun aiEngine(): DiaryAiEngine
+    fun retiredCloud(): LegacyCloudRetirement
     fun storage(): FileDiaryStorage
     fun database(): LifeManagerDatabase
     fun maintenance(): MaintenanceCoordinator

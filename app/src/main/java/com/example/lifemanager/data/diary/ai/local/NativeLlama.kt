@@ -1,5 +1,7 @@
 package com.example.lifemanager.data.diary.ai.local
 
+import android.os.Build
+import com.example.lifemanager.BuildConfig
 import java.util.concurrent.atomic.AtomicLong
 
 /** Used only in the inference service. It owns a native duplicate of the model FD. */
@@ -31,10 +33,22 @@ class NativeLlama private constructor(handle: Long) : AutoCloseable {
 }
 
 private object NativeLlamaBindings {
-    init { System.loadLibrary("diary_llama") }
+    init {
+        EngineLibraryLoader(
+            isArm64 = Build.SUPPORTED_ABIS.firstOrNull() == "arm64-v8a",
+            candidateEnabled = BuildConfig.DIARY_DOTPROD_CANDIDATE,
+            hasDotProduct = { NativeCpuFeatures.hasArmDotProduct() },
+            loadLibrary = System::loadLibrary,
+        ).load()
+    }
     external fun open(modelFd: Int, contextTokens: Int, threads: Int): Long
     external fun countTokens(handle: Long, system: ByteArray, user: ByteArray): Int
     external fun generate(handle: Long, system: ByteArray, user: ByteArray, grammar: ByteArray, maxOutputTokens: Int): NativeLlama.Output
     external fun cancel(handle: Long)
     external fun close(handle: Long)
+}
+
+private object NativeCpuFeatures {
+    init { System.loadLibrary("diary_cpu_features") }
+    external fun hasArmDotProduct(): Boolean
 }

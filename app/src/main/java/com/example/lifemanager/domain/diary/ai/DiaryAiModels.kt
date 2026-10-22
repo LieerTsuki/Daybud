@@ -46,6 +46,9 @@ class AiServiceConfig private constructor(val endpoint: String, val model: Strin
         val uri = URI(endpoint); return "https://${uri.host.lowercase()}" + if (uri.port == -1 || uri.port == 443) "" else ":${uri.port}"
     }
     override fun toString() = "AiServiceConfig(revision=$revision)"
+    fun isSameLocalConfiguration(other: AiServiceConfig?): Boolean = other != null &&
+        mode == AiExecutionMode.LOCAL && other.mode == AiExecutionMode.LOCAL &&
+        revision == other.revision && model == other.model && localModelSha256 == other.localModelSha256
     companion object {
         fun local(modelId: String, sha256: String, revision: Long): AiServiceConfig {
             require(modelId.matches(Regex("[a-zA-Z0-9][a-zA-Z0-9._-]{0,119}")) && !modelId.contains("..")) { "离线模型标识无效" }
@@ -67,10 +70,10 @@ class AiServiceConfig private constructor(val endpoint: String, val model: Strin
     }
 }
 
-class AiBudgetException : IllegalArgumentException("所选文字超出处理预算，请缩小日期范围；未发送任何日记")
+class AiBudgetException : IllegalArgumentException("所选文字超出处理预算，请缩小日期范围后重新生成")
 class AiNoContentException : IllegalStateException("这段时间还没有可总结的文字日记")
 class AiStaleException : IllegalStateException("日记、配置或授权已变化，请重新确认范围并生成")
-class AiProtocolException : IllegalStateException("服务返回的五段结构或来源无效，请检查兼容接口或重新生成")
+class AiProtocolException : IllegalStateException("回顾输出不合格，本次未保存，请重新生成并核对来源")
 class AiNetworkException(val sent: Boolean, val retryable: Boolean, val pauseAutomatic: Boolean = false, val statusCode: Int? = null) : IllegalStateException(
     if (statusCode != null) "AI服务返回HTTP $statusCode：" + when (statusCode) {
         401, 403 -> "请检查API Key和访问权限"
@@ -102,6 +105,11 @@ enum class AiJobState { RETRYABLE_UNSENT, SENT_UNKNOWN, SUCCEEDED, PAUSED, EMPTY
 data class AiAutoJob(val period: AiPeriod, val configRevision: Long, val generation: Long, val state: AiJobState, val attempts: Int, val notBeforeMillis: Long = 0)
 interface AiStateStore {
     suspend fun config(): AiServiceConfig?
+    /** Persistent stores must serialize this short commit with selection and invalidation writes. */
+    suspend fun <T> withCurrentConfiguration(expected: AiServiceConfig, operation: suspend () -> T): T {
+        if (!expected.isSameLocalConfiguration(config())) throw AiStaleException()
+        return operation()
+    }
     suspend fun saveConfig(address: String, model: String, key: String): AiServiceConfig
     suspend fun consents(): List<AiAutoConsent>
     suspend fun setConsent(consent: AiAutoConsent)

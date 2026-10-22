@@ -6,6 +6,8 @@
 
 每次版本更新附带[更新内容文档](CHANGELOG.md)；开发中分批结果与已发布版本分开记录，此约定已写入仓库 `AGENTS.md`。
 
+开发分支正在按已确认的[设计](docs/superpowers/specs/2026-10-22-offline-only-fast-reviews-design.md)实施纯手机离线总结与两条建议：已接入缓冲读取、独立离线设置、云端退役、短输出预算和保存保护。尚未发布新 APK；模型内容质量和 ARM 真机速度仍未通过交付门槛。[调查记录](docs/offline-only-fast-reviews-feasibility.md) · [实施验收进度](docs/offline-only-fast-reviews-acceptance.md)。下方1.3.0入口与数字是已发布旧版的记录。
+
 1.3.0/code14已发布，新增手机离线原文摘选试用。按用户选择，AI只挑原文片段，心情直接展示已填标签；模型准备好后无需电脑、网络或Key。小模型可能遗漏、重复或分错类别，不是完整总结；目前没有多数品牌真机覆盖证据。[当前验收与限制](docs/offline-ai-acceptance.md) · [模型来源](docs/offline-ai-models.md)。本轮1395项JVM、79项业务设备、5项真实离线及17项签名工具测试通过，API26/28/35覆盖升级保留23张表和应用身份；[验证汇总](docs/evidence/offline-ai-1.3.0-validation.json)。已于2026-10-22T00:11:09+08:00发布正式Latest Release（离线原文摘选功能为试用），发布源码`bca5e2f5e1c76c25a7f86c814097d223d6080246`已推送main；APK、两份模型、许可证及校验文件均经匿名完整回下载核对。
 
 [下载1.3.0 APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.3.0/rizhiya-1.3.0.apk) · [Release与模型](https://github.com/LieerTsuki/Daybud/releases/tag/v1.3.0) · [发布回执](docs/evidence/offline-ai-1.3.0-publication.json)

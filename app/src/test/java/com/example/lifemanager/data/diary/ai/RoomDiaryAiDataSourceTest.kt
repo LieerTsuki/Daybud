@@ -22,6 +22,39 @@ import kotlin.test.*
 @Config(sdk = [28], application = Application::class)
 @SQLiteMode(SQLiteMode.Mode.NATIVE)
 class RoomDiaryAiDataSourceTest {
+    @Test fun summaryProviderCannotBypassDeterministicMoodAndSourceValidation() = runBlocking {
+        V6RoomFixture().use { fixture ->
+            val generations = DataGenerationRepositoryImpl(fixture.database)
+            val maintenance = MaintenanceCoordinator(generations)
+            val repository = RoomDiaryRepository(fixture.database, maintenance, Clock.systemUTC())
+            val adapter = RoomDiaryAiDataSource(repository, maintenance, generations, fixture.database)
+            val day = LocalDate.now(Clock.systemUTC())
+            val draft = repository.createDraft(DataGeneration(0), day)
+            val saved = repository.saveDraft(draft.copy(body = "散步后准备学习。"), draft.revision, DataGeneration(0))
+            val entry = repository.commitDraft(saved.id, saved.revision, DataGeneration(0))
+            val snapshot = adapter.snapshot(day, day)
+            val ids = setOf(entry.id)
+            val sha = "a".repeat(64)
+            val sections = listOf(
+                AiReviewSection(AiSectionKind.LIFE, "记录了散步和学习安排。", ids),
+                AiReviewSection(AiSectionKind.MOOD, PhoneSummaryResultPolicy.moodText(snapshot.sources), ids),
+                AiReviewSection(AiSectionKind.MOMENTS, PhoneSummaryResultPolicy.sourceText(snapshot.sources), ids),
+                AiReviewSection(AiSectionKind.GROWTH, "参考建议：可以先整理学习资料。", ids),
+                AiReviewSection(AiSectionKind.SUPPORT, "参考建议：不妨选择一个小任务开始。", ids),
+            )
+            val review = AiDiaryReview("summary", day, day, Instant.now(), sections, mapOf(entry.id to entry.revision),
+                provider = PhoneSummaryResultPolicy.provider(sha), model = "small@$sha", inputHash = "b".repeat(64))
+            assertTrue(adapter.save(review, snapshot))
+            val wrongMood = review.copy(id = "forged-mood", sections = sections.map {
+                if (it.kind == AiSectionKind.MOOD) it.copy(text = "所有记录都非常开心。") else it
+            })
+            assertFailsWith<AiProtocolException> { adapter.save(wrongMood, snapshot) }
+            assertFailsWith<AiProtocolException> { adapter.save(review.copy(id = "forged-version", provider = "phone-summary:v999:$sha"), snapshot) }
+            assertFailsWith<AiProtocolException> { adapter.save(review.copy(id = "forged-model", model = "other-model"), snapshot) }
+            assertEquals(listOf("summary"), adapter.observeReviewSnapshots().first().second.map { it.id })
+        }
+    }
+
     @Test fun localMedicalQuoteIsSavedButForgedPhoneProseIsRejected() = runBlocking {
         V6RoomFixture().use { fixture ->
             val generations = DataGenerationRepositoryImpl(fixture.database)

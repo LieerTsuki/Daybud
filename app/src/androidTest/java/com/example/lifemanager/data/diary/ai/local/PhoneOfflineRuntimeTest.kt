@@ -9,7 +9,6 @@ import android.os.SystemClock
 import android.system.Os
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.example.lifemanager.data.diary.ai.ChatCompletionsProtocol
 import com.example.lifemanager.data.diary.ai.DiaryAiEngine
 import com.example.lifemanager.domain.diary.ai.*
 import kotlinx.coroutines.flow.flowOf
@@ -82,7 +81,7 @@ class PhoneOfflineRuntimeTest {
         }
     }
 
-    @Test fun b_actualPipelineRequiresFiveSectionsEverySourceAndRealEos() = measured("structuralGeneration") {
+    @Test fun b_actualSummaryPipelineRequiresFiveSectionsEverySourceAndRealEos() = measured("structuralGeneration") {
         val sources = listOf(
             AiDiarySource(1, 7, LocalDate.of(2026, 10, 18), "散步", "今天傍晚沿操场散步二十分钟，回来后整理了两页课程笔记。", "平静"),
             AiDiarySource(2, 9, LocalDate.of(2026, 10, 19), "实验记录", "今天检查实验日志，发现一个输入问题，还没有解决。我计划明天继续检查。没有记录心情。", null),
@@ -93,24 +92,38 @@ class PhoneOfflineRuntimeTest {
             openEventually(model).use { delegate ->
                 val recording = object : LocalInferenceSession {
                     override suspend fun countTokens(system: String, user: String) = delegate.countTokens(system, user)
-                    override suspend fun generate(system: String, user: String, grammar: String, maxOutputTokens: Int): LocalInferenceOutput =
-                        delegate.generate(system, user, grammar, maxOutputTokens).also { actualOutputs += it }
+                    override suspend fun generate(system: String, user: String, grammar: String, maxOutputTokens: Int): LocalInferenceOutput {
+                        assertTrue("Summary generation must keep its short output budget", maxOutputTokens <= 320)
+                        val material = Json.parseToJsonElement(user).jsonObject.getValue("sources").jsonArray
+                        assertEquals("All sources must reach the real model in one request", 2, material.size)
+                        return delegate.generate(system, user, grammar, maxOutputTokens).also {
+                            actualOutputs += it
+                            // Retain synthetic raw output even if structural policy later rejects it.
+                            record("structuralNativeOutputs", buildJsonObject {
+                                put("syntheticSources", true); put("semanticQualityAssessed", false)
+                                put("nativeOutputs", nativeOutputsJson(actualOutputs))
+                            })
+                        }
+                    }
                     override fun cancel() = delegate.cancel()
                     override fun close() = Unit // the outer use owns the real session
                 }
-                val sections = withTimeout(180_000) { LocalGroundedPipeline(recording).generate(sources, {}) }
-                GroundedAiResultPolicy.validate(sections, sources)
+                val sections = withTimeout(180_000) { LocalSummaryPipeline(recording).generate(sources, {}) }
+                PhoneSummaryResultPolicy.validate(sections, sources)
                 assertEquals(5, sections.size)
-                assertEquals(setOf(1L, 2L), sections.flatMap { it.sourceIds }.toSet())
-                assertTrue("No native output was produced", actualOutputs.isNotEmpty())
+                assertTrue(sections.all { it.sourceIds == setOf(1L, 2L) })
+                assertEquals("Summary pipeline must not silently split or replay sources", 1, actualOutputs.size)
+                assertEquals("已填写的心情标签（不推测正文中的情绪）：\n2026-10-18 #1：平静\n2026-10-19 #2：未填写",
+                    sections.single { it.kind == AiSectionKind.MOOD }.text)
+                assertEquals("本次回顾来源（可打开原始日记核对）：\n2026-10-18 #1\n2026-10-19 #2",
+                    sections.single { it.kind == AiSectionKind.MOMENTS }.text)
                 assertTrue("Truncated native output cannot be accepted", actualOutputs.all { it.reachedEos && it.promptTokens > 0 && it.generatedTokens > 0 })
                 record("structuralGeneration", buildJsonObject {
                     put("state", "passed"); put("elapsedMillis", SystemClock.elapsedRealtime() - started)
                     put("semanticQualityAssessed", false); put("syntheticSources", true)
-                    put("sections", ChatCompletionsProtocol.sectionsJson(sections))
-                    put("nativeOutputs", buildJsonArray { actualOutputs.forEach { output -> add(buildJsonObject {
-                        put("promptTokens", output.promptTokens); put("generatedTokens", output.generatedTokens); put("reachedEos", output.reachedEos)
-                    }) } })
+                    put("protocol", "phone-summary:v1"); put("singleCompleteRequest", true)
+                    put("sections", sectionsJson(sections))
+                    put("nativeOutputs", nativeOutputsJson(actualOutputs))
                 })
             }
         }
@@ -220,24 +233,23 @@ class PhoneOfflineRuntimeTest {
             override suspend fun putJob(job: AiAutoJob) = Unit
             override suspend fun pauseAutomatic() = Unit
         }
-        val cloud = object : AiCompletionGateway {
-            override suspend fun complete(config: AiServiceConfig, sources: List<AiDiarySource>, partials: List<AiReviewSection>, beforeSend: suspend () -> Unit): List<AiReviewSection> = error("No cloud fallback allowed")
-            override suspend fun probe(config: AiServiceConfig) = error("No cloud probe allowed")
-        }
-        val engine = DiaryAiEngine(source, state, cloud, phone = PhoneAiRunnerAdapter(context, store, LocalAiGateway(AndroidLocalInferenceClient(context))))
+        val engine = DiaryAiEngine(source, state, phone = PhoneAiRunnerAdapter(context, store, LocalAiGateway(AndroidLocalInferenceClient(context))))
         val preview = engine.preview(sources.minOf { it.date }, sources.maxOf { it.date })
         val started = SystemClock.elapsedRealtime()
         val result = engine.generate(preview)
         val millis = SystemClock.elapsedRealtime() - started
         assertNull(saved)
         assertEquals(sources.associate { it.id to it.revision }, result.sources)
-        assertTrue(result.model.endsWith("@$MODEL_SHA")); assertTrue(result.provider.startsWith("phone-offline:"))
+        assertTrue(result.model.endsWith("@$MODEL_SHA")); assertEquals("phone-summary:v1:$MODEL_SHA", result.provider)
+        PhoneSummaryResultPolicy.validate(result.sections, sources)
+        assertTrue(result.sections.all { it.sourceIds == sources.map { source -> source.id }.toSet() })
         assertTrue(engine.save(result, preview)); assertEquals(result, saved)
         record("guardedEngine", buildJsonObject {
             put("state", "passed"); put("elapsedMillis", millis); put("sourceCount", sources.size); put("hanCharacters", characters)
             put("resourceGuardPassed", capability.allowed); put("availableMemoryBytes", memory.availableMemoryBytes)
-            put("explicitSaveOnly", true); put("cloudCalled", false); put("semanticQualityAssessed", false)
-            put("sections", ChatCompletionsProtocol.sectionsJson(result.sections))
+            put("explicitSaveOnly", true); put("cloudGatewayDependencyPresent", false); put("semanticQualityAssessed", false)
+            put("protocol", "phone-summary:v1")
+            put("sections", sectionsJson(result.sections))
         })
     }
 
@@ -245,6 +257,20 @@ class PhoneOfflineRuntimeTest {
         activityManager.runningAppProcesses.orEmpty().singleOrNull {
             it.processName == context.packageName + ":diary_inference" && it.uid == Process.myUid() && it.pid != Process.myPid()
         } ?: throw AssertionError("Expected exactly one owned private inference process")
+
+    private fun sectionsJson(sections: List<AiReviewSection>) = buildJsonArray {
+        sections.forEach { section -> add(buildJsonObject {
+            put("kind", section.kind.name); put("text", section.text)
+            put("sourceIds", buildJsonArray { section.sourceIds.sorted().forEach { add(it) } })
+        }) }
+    }
+
+    private fun nativeOutputsJson(outputs: List<LocalInferenceOutput>) = buildJsonArray {
+        outputs.forEach { output -> add(buildJsonObject {
+            put("text", output.text); put("promptTokens", output.promptTokens)
+            put("generatedTokens", output.generatedTokens); put("reachedEos", output.reachedEos)
+        }) }
+    }
 
     private fun measured(name: String, operation: suspend () -> Unit) = runBlocking {
         record(name, buildJsonObject { put("state", "started") })

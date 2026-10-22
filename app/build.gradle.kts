@@ -1,5 +1,11 @@
 import com.android.build.api.dsl.ApplicationExtension
+import com.android.build.api.variant.ApplicationAndroidComponentsExtension
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.FileSystemOperations
+import org.gradle.api.provider.Property
+import org.gradle.process.ExecOperations
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import javax.inject.Inject
 
 plugins {
     alias(libs.plugins.android.application)
@@ -8,6 +14,51 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt)
 }
+
+abstract class BuildDiaryDotprodEngine : DefaultTask() {
+    @get:InputDirectory
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val sourceDirectory: DirectoryProperty
+
+    @get:Internal abstract val sdkDirectory: DirectoryProperty
+    @get:Internal abstract val ndkDirectory: DirectoryProperty
+    @get:Input abstract val cmakeVersion: Property<String>
+    @get:Input abstract val ndkVersion: Property<String>
+    @get:LocalState abstract val nativeBuildDirectory: DirectoryProperty
+    @get:OutputDirectory abstract val outputDirectory: DirectoryProperty
+    @get:Inject abstract val execOperations: ExecOperations
+    @get:Inject abstract val fileSystemOperations: FileSystemOperations
+
+    @TaskAction fun buildEngine() {
+        val executableSuffix = if (System.getProperty("os.name").startsWith("Windows")) ".exe" else ""
+        val cmakeBin = sdkDirectory.dir("cmake/${cmakeVersion.get()}/bin").get().asFile
+        val cmake = cmakeBin.resolve("cmake$executableSuffix")
+        val buildDirectory = nativeBuildDirectory.get().asFile
+        execOperations.exec {
+            commandLine(cmake, "-S", sourceDirectory.get().asFile, "-B", buildDirectory,
+                "-G", "Ninja", "-DCMAKE_BUILD_TYPE=RelWithDebInfo",
+                "-DCMAKE_MAKE_PROGRAM=${cmakeBin.resolve("ninja$executableSuffix")}",
+                "-DCMAKE_TOOLCHAIN_FILE=${ndkDirectory.file("build/cmake/android.toolchain.cmake").get().asFile}",
+                "-DANDROID_ABI=arm64-v8a", "-DANDROID_PLATFORM=android-26",
+                "-DANDROID_STL=c++_static", "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON",
+                "-DDIARY_ENGINE_VARIANT=dotprod")
+        }
+        execOperations.exec {
+            commandLine(cmake, "--build", buildDirectory, "--target", "diary_llama_dotprod", "--parallel", "2")
+        }
+        val library = buildDirectory.resolve("libdiary_llama_dotprod.so")
+        check(library.isFile) { "The dotprod candidate did not produce its expected native library" }
+        fileSystemOperations.copy {
+            from(library)
+            into(outputDirectory.dir("arm64-v8a"))
+        }
+    }
+}
+
+// Candidate-only until physical ARM correctness and latency measurements pass.
+// A normal build neither compiles nor packages the extra complete engine.
+val diaryDotprodCandidate = providers.gradleProperty("diaryDotprodCandidate")
+    .map(String::toBooleanStrict).orElse(false)
 
 extensions.configure<ApplicationExtension> {
     namespace = "com.example.lifemanager"
@@ -20,12 +71,13 @@ extensions.configure<ApplicationExtension> {
         targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = 14
         versionName = "1.3.0"
+        buildConfigField("boolean", "DIARY_DOTPROD_CANDIDATE", diaryDotprodCandidate.get().toString())
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         externalNativeBuild {
             cmake {
                 arguments += listOf("-DANDROID_STL=c++_static", "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON")
-                targets += "diary_llama"
+                targets += listOf("diary_llama", "diary_cpu_features")
             }
         }
     }
@@ -81,6 +133,23 @@ extensions.configure<ApplicationExtension> {
     }
 
     sourceSets.getByName("androidTest").assets.srcDir("$projectDir/schemas")
+}
+
+if (diaryDotprodCandidate.get()) {
+    val components = extensions.getByType<ApplicationAndroidComponentsExtension>()
+    val dotprodEngine = tasks.register<BuildDiaryDotprodEngine>("buildDiaryDotprodEngine") {
+        sourceDirectory.set(layout.projectDirectory.dir("src/main/cpp"))
+        sdkDirectory.set(components.sdkComponents.sdkDirectory)
+        ndkDirectory.set(components.sdkComponents.ndkDirectory)
+        cmakeVersion.set("3.22.1")
+        ndkVersion.set("27.2.12479018")
+        nativeBuildDirectory.set(rootProject.layout.projectDirectory.dir(".tools/native-dotprod"))
+        outputDirectory.set(layout.buildDirectory.dir("generated/offlineEngineJni"))
+    }
+    components.onVariants(components.selector().all()) { variant ->
+        // AGP establishes the generated JNI folder dependency before merging and packaging.
+        variant.sources.jniLibs?.addGeneratedSourceDirectory(dotprodEngine, BuildDiaryDotprodEngine::outputDirectory)
+    }
 }
 
 kotlin {

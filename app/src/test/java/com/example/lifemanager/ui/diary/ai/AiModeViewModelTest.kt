@@ -43,16 +43,7 @@ class AiModeViewModelTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
         val owners = ViewModelStore()
         try {
-            val cloud = object : AiStateStore {
-                override suspend fun config(): AiServiceConfig? = null
-                override suspend fun saveConfig(address: String, model: String, key: String): AiServiceConfig = error("unused")
-                override suspend fun consents() = emptyList<AiAutoConsent>()
-                override suspend fun setConsent(consent: AiAutoConsent) = Unit
-                override suspend fun jobs() = emptyList<AiAutoJob>()
-                override suspend fun putJob(job: AiAutoJob) = Unit
-                override suspend fun pauseAutomatic() = Unit
-            }
-            val modes = AiModeStore(cloud, temporary.newFolder("mode"))
+            val modes = AiModeStore(temporary.newFolder("mode"))
             val selected = LocalModelCatalog.models.first { it.id.startsWith("qwen3-1.7b") }
             modes.selectLocal(selected.id, selected.sha256)
             val source = object : DiaryAiDataSource {
@@ -91,20 +82,12 @@ class AiModeViewModelTest {
     }
 
     @Test fun newActionWaitsForCancelledGenerationToReleaseItsResources() = runBlocking {
-        Dispatchers.setMain(UnconfinedTestDispatcher())
+        val main = UnconfinedTestDispatcher()
+        Dispatchers.setMain(main)
         val owners = ViewModelStore()
         val cleanupRelease = CompletableDeferred<Unit>()
         try {
-            val cloud = object : AiStateStore {
-                override suspend fun config(): AiServiceConfig? = null
-                override suspend fun saveConfig(address: String, model: String, key: String): AiServiceConfig = error("unused")
-                override suspend fun consents() = emptyList<AiAutoConsent>()
-                override suspend fun setConsent(consent: AiAutoConsent) = Unit
-                override suspend fun jobs() = emptyList<AiAutoJob>()
-                override suspend fun putJob(job: AiAutoJob) = Unit
-                override suspend fun pauseAutomatic() = Unit
-            }
-            val modes = AiModeStore(cloud, temporary.newFolder("mode-cleanup"))
+            val modes = AiModeStore(temporary.newFolder("mode-cleanup"))
             val selected = LocalModelCatalog.models.first { it.id.startsWith("qwen3-1.7b") }
             modes.selectLocal(selected.id, selected.sha256)
             val snapshots = AtomicInteger()
@@ -145,6 +128,9 @@ class AiModeViewModelTest {
             val preview = withTimeout(10_000) { model.uiState.first { !it.busy && it.preview != null }.preview!! }
             model.generate(preview)
             withTimeout(10_000) { started.await() }
+            kotlinx.coroutines.delay(1_100)
+            main.scheduler.advanceTimeBy(1_001)
+            assertTrue(model.uiState.value.elapsedSeconds >= 1)
 
             model.cancel()
             withTimeout(10_000) { cleanupStarted.await() }
