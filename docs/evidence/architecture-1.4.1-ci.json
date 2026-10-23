@@ -1,0 +1,73 @@
+{
+  "status": "ci-passed",
+  "sourceCommit": "e536de47571798484eeee5ddd389a64aca6ae0db",
+  "runId": 39970376329,
+  "url": "https://github.com/LieerTsuki/Daybud/actions/runs/39970376329",
+  "event": "push",
+  "conclusion": "success",
+  "checkedAt": "2026-10-23T14:39:54.431858+00:00",
+  "jobs": [
+    {
+      "id": 120471148664,
+      "name": "verify",
+      "conclusion": "success",
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success"
+        },
+        {
+          "name": "Check out source",
+          "conclusion": "success"
+        },
+        {
+          "name": "Set up JDK 25",
+          "conclusion": "success"
+        },
+        {
+          "name": "Set up Gradle and validate Wrapper",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install Android SDK packages",
+          "conclusion": "success"
+        },
+        {
+          "name": "Verify current architecture and negative fixtures",
+          "conclusion": "success"
+        },
+        {
+          "name": "Unit tests, Lint, Debug and instrumentation APK compilation",
+          "conclusion": "success"
+        },
+        {
+          "name": "Upload verification reports",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Set up Gradle and validate Wrapper",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Set up JDK 25",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Check out source",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ],
+  "sourceManifest": {
+    "path": "docs/evidence/architecture-1.4.1-source-manifest.json",
+    "committedBytesSha256": "bc2ccaa847c29d41298e7a32d4589707948e5e45c666960cfd9202faddffacb8",
+    "frozenLocalBytesSha256": "ba2fb9812fc01bb5c1525192e9987299499bd0264a3d66bf60576932fae05792",
+    "mappingMatches": true,
+    "newlineNote": "Git normalizes JSON line endings; parsed path/digest mapping is identical. Source file digests normalize CRLF to LF for configured text files."
+  }
+}

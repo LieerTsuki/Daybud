@@ -1,8 +1,8 @@
 # 1.4.1 架构改进版发布验收
 
-准备日期：2026-10-23。目标版本：**1.4.1 / code17**。状态：**已完成本轮验证，待公开发布核对**。
+发布日期：2026-10-23。目标版本：**1.4.1 / code17**。状态：**已发布正式Latest Release，公开下载核对通过**。
 
-当前公开正式版本仍是1.4.0/code16。本页用于记录1.4.1本次构建、签名、覆盖升级和公开下载核对；没有执行的项目不记为通过，发布成功后补充真实时间、源码标识和下载入口。
+本页记录1.4.1本次构建、签名、覆盖升级和公开下载核对，正式APK包含本轮架构改进。
 
 ## 本次内容
 
@@ -37,7 +37,7 @@
 | 签名 | 签名工具回归、既有正式证书/轮换链、各SDK检查点 | 17项工具测试；六个SDK点及既有轮换链通过 |
 | 覆盖升级 | 1.4.0→1.4.1，不卸载、不清数据；注明真实数据与空表边界 | API26/28/35非空合成fixture；23表及两份PNG、UID和签名保留 |
 | 日记查询 | 本轮若重跑则记录20篇fixture查询数；不推断真机耗时 | 本轮设备回归重跑20篇含附件fixture：日记内容2次、联合快照4次；不推断真机耗时 |
-| 公开发布 | Release/tag/源码一致，匿名完整回下载核对APK及其他资产SHA256/字节数 | 待发布及匿名完整回下载核对 |
+| 公开发布 | Release/tag/源码一致，匿名完整回下载核对APK及其他资产SHA256/字节数 | 正式Latest Release；四个资产匿名完整回下载核对通过 |
 
 本轮正式APK为12706144字节，SHA256：`5f768bd950f3918b82711eb3aa391d7f8ff9b05d81778a41a8e7293badfdcad2`。本轮Room设备测试重跑20篇含附件fixture，日记内容2次、联合快照4次；42次来自旧实现的对照，不是本轮速度测评。首次设备执行因测试设备选择失效和SystemUI无响应作废，保留失败记录；隔离为单台API35、重启系统后重新完整执行77项通过。受影响的API26升级样本废弃，改用新建独立模拟器。没有将失败轮次计为通过。
 
@@ -45,7 +45,7 @@
 
 ## 已知限制
 
-远程CI另行核对：此前`77f48f7`的[Actions运行](https://github.com/LieerTsuki/Daybud/actions/runs/39887601511)有1项Compose测试在种子记录尚未发布时提前查找控件失败；本轮只修正测试等待目标ID/标题及世代，重新完整执行1279项JVM测试通过。新发布提交的远程CI结果待推送后记录，不能把本地结果称为远程通过。
+远程CI另行核对：此前`77f48f7`的[Actions运行](https://github.com/LieerTsuki/Daybud/actions/runs/39887601511)有1项Compose测试在种子记录尚未发布时提前查找控件失败；本轮只修正测试等待目标ID/标题及世代，重新完整执行1279项JVM测试通过。发布源码`e536de47571798484eeee5ddd389a64aca6ae0db`的[远程CI](https://github.com/LieerTsuki/Daybud/actions/runs/39970376329)已全部通过，包括Wrapper、结构正负检查、JVM测试、Lint和Debug/androidTest编译；[CI回执](evidence/architecture-1.4.1-ci.json)另列本机冻结JSON与Git规范化JSON的原始字节摘要。源文件核验使用相同的路径/摘要映射，文本CRLF规范化为LF。
 
 - 日记仍全量读取正文，未实现摘要列表/分页；统计、日历及“那年今日”维持原完整列表语义。
 - 当前仍是单Gradle模块，接口与包边界隔离不等于功能模块独立编译。
@@ -55,4 +55,4 @@
 
 ## 发布结果
 
-本轮签名和验证已完成，公开发布日期、正式下载及源码标识将在Release发布与匿名回下载通过后填写。
+已于2026-10-23T22:40:40+08:00发布正式Latest Release，发布源码`e536de47571798484eeee5ddd389a64aca6ae0db`。APK、UPDATE.md、SIGNING.json及SHA256SUMS.txt均经匿名完整回下载，字节数与SHA256一致。[下载1.4.1正式APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.4.1/rizhiya-1.4.1.apk) · [正式Release](https://github.com/LieerTsuki/Daybud/releases/tag/v1.4.1) · [公开发布回执](evidence/architecture-1.4.1-publication.json)。

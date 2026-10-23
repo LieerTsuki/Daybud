@@ -2,9 +2,9 @@
 
 本文件随每次版本更新维护。未发布区是开发进度，不代表手机安装包已经包含新功能。
 
-## 1.4.1 / code17 · 架构改进版（发布准备中）
+## 1.4.1 / code17 · 架构改进版（2026-10-23已发布）
 
-准备日期：2026-10-23。当前main的发布目标为1.4.1/code17；正式发布成功前，公开正式下载仍为下方1.4.0/code16。本区记录候选改动，不代表1.4.1已发布。
+发布日期：2026-10-23。正式版本1.4.1/code17，包含以下架构与工程改进。
 
 - 系统备份策略：关闭Android系统云备份，配置旧版备份和新版云备份/设备迁移数据排除规则；应用内完整归档导出、保护备份及确认恢复流程保持。
 - 日记读取：以轻量失效通知和同事务内容读取替代重复订阅，用批量关联查询消除逐条附件查询，并覆盖附件关联单独变化的刷新；仍保留完整列表，未实现分页。
@@ -16,6 +16,8 @@
 - 数据兼容：版本升级为1.4.1/code17，包名、正式签名身份/轮换链、Room8与V4保持；不清库、不卸载升级。关闭系统备份不删除已有本地记录、归档或旧系统备份，厂商专有迁移行为需另行验证。
 - 已完成改进的前一架构阶段验证见[架构验收](docs/architecture-foundation-acceptance.md)和[旧阶段验证摘要](docs/evidence/architecture-foundation-validation.json)。其中20篇含附件fixture的日记内容查询42→2次，联合快照4次，表示查询数量减少，不是手机性能测评。
 - 本轮重新完成1279项JVM测试、77项API35设备测试、24项结构检查及17项签名工具测试，failure/error/skipped均为0；Debug/androidTest/Release构建成功，Debug和Release Lint各0错误/23警告。正式签名六个SDK检查点及16KiB对齐通过。API26/28/35独立模拟器以非空合成数据完成1.4.0→1.4.1覆盖升级，逐值保留23张表的结构、字段类型、NULL、序列及Room身份、两份PNG附件、UID与签名，并核对安装APK及重复启动稳定性。模拟数据不代表真实用户或全部私有文件/偏好、OEM迁移和真机性能覆盖。[验证摘要](docs/evidence/architecture-1.4.1-validation.json) · [升级快照](docs/evidence/architecture-1.4.1-upgrades.json) · [发布验收](docs/architecture-1.4.1-acceptance.md)。
+
+- 已于2026-10-23T22:40:40+08:00发布正式Latest Release，发布源码`e536de47571798484eeee5ddd389a64aca6ae0db`。APK、UPDATE.md、SIGNING.json及SHA256SUMS.txt均经匿名完整回下载，字节数与SHA256一致。[下载1.4.1正式APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.4.1/rizhiya-1.4.1.apk) · [正式Release](https://github.com/LieerTsuki/Daybud/releases/tag/v1.4.1) · [公开发布回执](docs/evidence/architecture-1.4.1-publication.json)。
 
 ## 1.4.0 / code16 · 保留普通日记、移除AI（2026-10-22已发布）
 

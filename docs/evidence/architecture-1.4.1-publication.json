@@ -1,0 +1,59 @@
+{
+  "status": "publicly-verified",
+  "versionName": "1.4.1",
+  "versionCode": 17,
+  "releaseId": 421945770,
+  "releaseUrl": "https://github.com/LieerTsuki/Daybud/releases/tag/v1.4.1",
+  "tag": "v1.4.1",
+  "publishedAt": "2026-10-23T14:40:40Z",
+  "publishedAtShanghai": "2026-10-23T22:40:40+08:00",
+  "releaseSourceCommit": "e536de47571798484eeee5ddd389a64aca6ae0db",
+  "draft": false,
+  "prerelease": false,
+  "formalLatestReleaseId": 421945770,
+  "metadataAuthenticated": true,
+  "assets": [
+    {
+      "name": "rizhiya-1.4.1.apk",
+      "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.4.1/rizhiya-1.4.1.apk",
+      "assetId": 669390756,
+      "bytes": 12706144,
+      "sha256": "5f768bd950f3918b82711eb3aa391d7f8ff9b05d81778a41a8e7293badfdcad2",
+      "anonymousDownloadVerified": true,
+      "githubDigest": "sha256:5f768bd950f3918b82711eb3aa391d7f8ff9b05d81778a41a8e7293badfdcad2",
+      "verifiedAt": "2026-10-23T14:42:52.010353+00:00"
+    },
+    {
+      "name": "UPDATE.md",
+      "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.4.1/UPDATE.md",
+      "assetId": 669392126,
+      "bytes": 1657,
+      "sha256": "38ebb0a5c97392acce41b27b9a5545e8f9dedbdc5ec42494c5e8ebb6719206a8",
+      "anonymousDownloadVerified": true,
+      "githubDigest": "sha256:38ebb0a5c97392acce41b27b9a5545e8f9dedbdc5ec42494c5e8ebb6719206a8",
+      "verifiedAt": "2026-10-23T14:42:55.352952+00:00"
+    },
+    {
+      "name": "SIGNING.json",
+      "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.4.1/SIGNING.json",
+      "assetId": 669393311,
+      "bytes": 6556,
+      "sha256": "d24f0ebff7cd654b5e6aecd43ec3d7642964bbcdab29c45210784aacd9ca7dde",
+      "anonymousDownloadVerified": true,
+      "githubDigest": "sha256:d24f0ebff7cd654b5e6aecd43ec3d7642964bbcdab29c45210784aacd9ca7dde",
+      "verifiedAt": "2026-10-23T14:43:03.761084+00:00"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.4.1/SHA256SUMS.txt",
+      "assetId": 669394341,
+      "bytes": 242,
+      "sha256": "1174fa63aa2039211af843ffd88d1b158fbde90d838ed2cd8234b17594c24802",
+      "anonymousDownloadVerified": true,
+      "githubDigest": "sha256:1174fa63aa2039211af843ffd88d1b158fbde90d838ed2cd8234b17594c24802",
+      "verifiedAt": "2026-10-23T14:43:09.781563+00:00"
+    }
+  ],
+  "physicalPhoneCoverageVerified": false,
+  "downloadEvidenceFolder": ".tools/release-1.4.1/public-download-1b9faf4d59ec486aa4c41ea153e4e475"
+}

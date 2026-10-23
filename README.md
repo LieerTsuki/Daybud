@@ -4,11 +4,9 @@
 
 ## 当前版本与正式下载
 
-**当前 main 的发布目标：1.4.1 / code17，发布准备中。** 下方架构改进、本轮构建、回归、正式签名和覆盖升级验证已完成，公开发布及下载核对尚待执行。[本次更新内容](CHANGELOG.md) · [1.4.1验收进度](docs/architecture-1.4.1-acceptance.md)
+**当前正式版：1.4.1 / code17，2026-10-23发布。** 包含下方架构改进，正式APK已完成签名、设备回归和三种Android版本覆盖升级验证。
 
-**当前已发布正式版：1.4.0 / code16，2026-10-22发布。** 下列下载仍是1.4.0，不包含本轮架构改进。
-
-[下载1.4.0正式APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.4.0/rizhiya-1.4.0.apk) · [1.4.0版本说明](https://github.com/LieerTsuki/Daybud/releases/tag/v1.4.0) · [历史版本与验收记录](README.history.md)
+[下载1.4.1正式APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.4.1/rizhiya-1.4.1.apk) · [1.4.1版本说明](https://github.com/LieerTsuki/Daybud/releases/tag/v1.4.1) · [本次更新内容](CHANGELOG.md) · [发布验收](docs/architecture-1.4.1-acceptance.md) · [历史版本与验收记录](README.history.md)
 
 ## 可以做什么
 
