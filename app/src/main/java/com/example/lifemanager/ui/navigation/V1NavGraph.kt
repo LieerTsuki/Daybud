@@ -44,14 +44,16 @@ fun V1NavGraph(navigation:PlanNavigationViewModel,list:PlanViewModel,editor:Plan
     val operation=backup.uiState.collectAsStateWithLifecycle().value
     val sub=subscriptions.uiState.collectAsStateWithLifecycle().value
     val diaryState=diary?.uiState?.collectAsStateWithLifecycle()?.value
+    val planNavigationEditor=remember(editor) { PlanNavigationEditorAdapter(editor) }
+    val subscriptionNavigationEditor=remember(subscriptions) { SubscriptionNavigationEditorAdapter(subscriptions) }
     val stamp=edit.stamp // Immutable rendering stamp for every captured tab callback.
     val scope=rememberCoroutineScope()
     val pages=rememberSaveableStateHolder()
     val enabled=state.generation!=null && !state.isMaintaining && !prefs.isSaving && !prefs.isMaintaining && !edit.isBusy && !operation.busy &&
-        !sub.isBusy && !sub.isMaintaining && !sub.isExporting && !sub.isExportPending && !sub.editor.isSaving && !sub.paymentEditor.isSaving && diaryState?.busy!=true
+        !sub.blocksNavigation && diaryState?.busy!=true
     fun liveNavigationAllowed()=diary?.uiState?.value?.busy!=true && !settings.uiState.value.isSaving && !settings.uiState.value.isMaintaining &&
         !editor.uiState.value.isBusy && !editor.uiState.value.isMaintaining && !backup.uiState.value.busy &&
-        subscriptions.uiState.value.let { !it.isBusy && !it.isMaintaining && !it.isExporting && !it.isExportPending && !it.editor.isSaving && !it.paymentEditor.isSaving }
+        !subscriptionNavigationEditor.snapshot.blocksNavigation
     LaunchedEffect(prefs.settings?.planReminders,state.destination) {
         // Same-source preference changes and returning to Plan refresh hints without clearing drafts.
         if(state.destination==V1Destination.PLAN && prefs.settings!=null)editor.retryRead()
@@ -60,7 +62,7 @@ fun V1NavGraph(navigation:PlanNavigationViewModel,list:PlanViewModel,editor:Plan
         sub.generation,sub.isAvailable,sub.isLoading,sub.isBusy,sub.isMaintaining,sub.isExporting,sub.isExportPending,sub.editor,sub.paymentEditor,diaryState?.busy) {
         if(liveNavigationAllowed()) {
             if(state.pending!=null && state.pending.destination!=V1Destination.DIARY)diary?.flush()
-            navigation.deliver(editor,subscriptions)
+            navigation.deliver(planNavigationEditor,subscriptionNavigationEditor)
         }
     }
     BackHandler(enabled=state.destination!=V1Destination.PLAN || state.isMaintaining) {
@@ -112,7 +114,7 @@ fun V1NavGraph(navigation:PlanNavigationViewModel,list:PlanViewModel,editor:Plan
             state.confirmation?.let { consent ->
                 AlertDialog(onDismissRequest={ navigation.cancelLeave(consent) },title={ Text("离开前保留草稿？") },
                     text={ Text("继续编辑可保留输入，保存或关闭草稿后再处理通知。放弃草稿不会写入数据库。") },
-                    confirmButton={ TextButton({ scope.launch { if(liveNavigationAllowed())navigation.confirmLeave(consent,editor,subscriptions) } },enabled=enabled) { Text("放弃草稿并继续") } },
+                    confirmButton={ TextButton({ scope.launch { if(liveNavigationAllowed())navigation.confirmLeave(consent,planNavigationEditor,subscriptionNavigationEditor) } },enabled=enabled) { Text("放弃草稿并继续") } },
                     dismissButton={ TextButton({ navigation.cancelLeave(consent) }) { Text("继续编辑") } })
             }
         }

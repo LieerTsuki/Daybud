@@ -14,45 +14,45 @@ import kotlin.test.*
 @OptIn(ExperimentalCoroutinesApi::class)
 class PlanNavigationViewModelTest {
     @Test fun `four destination selection is retained without losing list editor owner`()=scenario { f,n ->
-        n.requestDestination(V1Destination.HABIT,f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.model)
+        n.requestDestination(V1Destination.HABIT,f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.navigationEditor)
         assertEquals(V1Destination.HABIT,n.uiState.value.destination)
-        n.requestDestination(V1Destination.PLAN,f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.model)
+        n.requestDestination(V1Destination.PLAN,f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.navigationEditor)
         assertEquals(V1Destination.PLAN,n.uiState.value.destination);assertNull(n.uiState.value.pending)
     }
     @Test fun `dirty draft requires consent and cancel changes neither route nor input`()=scenario { f,n ->
-        draft(f);n.requestDestination(V1Destination.SETTINGS,f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.model)
+        draft(f);n.requestDestination(V1Destination.SETTINGS,f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.navigationEditor)
         val consent=assertNotNull(n.uiState.value.confirmation)
         assertEquals(V1Destination.PLAN,n.uiState.value.destination)
         n.cancelLeave(consent);assertNull(n.uiState.value.pending);assertEquals("未保存草稿",f.model.uiState.value.draft!!.title)
         assertEquals(0,f.repo.writes)
     }
     @Test fun `explicit discard closes only the confirmed draft and selects destination`()=scenario { f,n ->
-        draft(f);n.requestDestination(V1Destination.SETTINGS,f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.model)
-        n.confirmLeave(assertNotNull(n.uiState.value.confirmation),f.model)
+        draft(f);n.requestDestination(V1Destination.SETTINGS,f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.navigationEditor)
+        n.confirmLeave(assertNotNull(n.uiState.value.confirmation),f.navigationEditor)
         assertEquals(V1Destination.SETTINGS,n.uiState.value.destination);assertNull(f.model.uiState.value.draft)
     }
     @Test fun `confirmation for modified draft cannot discard new content`()=scenario { f,n ->
-        draft(f);n.requestDestination(V1Destination.HABIT,f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.model)
+        draft(f);n.requestDestination(V1Destination.HABIT,f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.navigationEditor)
         val old=assertNotNull(n.uiState.value.confirmation)
         f.model.change(PlanField.DESCRIPTION,"后来添加",f.model.uiState.value.stamp)
-        n.confirmLeave(old,f.model)
+        n.confirmLeave(old,f.navigationEditor)
         assertEquals(V1Destination.PLAN,n.uiState.value.destination);assertEquals("后来添加",f.model.uiState.value.draft!!.description)
     }
     @Test fun `new notification waits for draft save then opens actual id once`()=scenario { f,n ->
         f.repo.rows.value=listOf(Plan(id=7,title="通知目标",timeZone="UTC",createdAt=f.now,updatedAt=f.now))
         draft(f);n.receive(PlanNotificationClick.Detail(PlanReminderToken(7,f.token,java.time.LocalDate.parse("2026-10-14"),f.now)))
-        advanceUntilIdle();n.deliver(f.model);n.cancelLeave(assertNotNull(n.uiState.value.confirmation))
+        advanceUntilIdle();n.deliver(f.navigationEditor);n.cancelLeave(assertNotNull(n.uiState.value.confirmation))
         assertNotNull(n.uiState.value.pending);assertEquals("未保存草稿",f.model.uiState.value.draft!!.title)
-        n.deliver(f.model);assertNull(n.uiState.value.confirmation)
-        f.model.save(f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.model);advanceUntilIdle()
+        n.deliver(f.navigationEditor);assertNull(n.uiState.value.confirmation)
+        f.model.save(f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.navigationEditor);advanceUntilIdle()
         assertEquals(7,f.model.uiState.value.detail!!.id);assertNull(n.uiState.value.pending)
-        f.model.requestClose(f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.model)
+        f.model.requestClose(f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.navigationEditor)
         assertEquals(PlanPane.LIST,f.model.uiState.value.pane)
     }
     @Test fun `legacy notification cannot use reused old numeric identity`()=scenario { f,n ->
         f.repo.rows.value=listOf(Plan(id=7,title="新身份",timeZone="UTC",createdAt=f.now,updatedAt=f.now))
-        n.requestDestination(V1Destination.HABIT,f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.model)
-        n.receive(PlanNotificationClick.Legacy);advanceUntilIdle();n.deliver(f.model)
+        n.requestDestination(V1Destination.HABIT,f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.navigationEditor)
+        n.receive(PlanNotificationClick.Legacy);advanceUntilIdle();n.deliver(f.navigationEditor)
         assertEquals(V1Destination.PLAN,n.uiState.value.destination);assertEquals(PlanPane.LIST,f.model.uiState.value.pane)
         assertNull(f.model.uiState.value.detail);assertTrue(n.uiState.value.message!!.contains("失效"))
     }
@@ -60,24 +60,24 @@ class PlanNavigationViewModelTest {
         val old=f.model.uiState.value.stamp
         f.generations.commit(f.token) {};advanceUntilIdle()
         n.receive(PlanNotificationClick.Detail(PlanReminderToken(7,f.token,java.time.LocalDate.parse("2026-10-14"),f.now)))
-        n.requestDestination(V1Destination.HABIT,old);advanceUntilIdle();n.deliver(f.model)
+        n.requestDestination(V1Destination.HABIT,old);advanceUntilIdle();n.deliver(f.navigationEditor)
         assertNull(n.uiState.value.pending);assertEquals(V1Destination.PLAN,n.uiState.value.destination)
     }
     @Test fun `arrival and tab click during maintenance are rejected without replay`()=scenario { f,n ->
         val release=CompletableDeferred<Unit>();val task=launch { f.coordinator.withSession { release.await() } };runCurrent()
         n.receive(PlanNotificationClick.Legacy);n.requestDestination(V1Destination.HABIT,f.model.uiState.value.stamp);runCurrent()
-        release.complete(Unit);task.join();advanceUntilIdle();n.deliver(f.model)
+        release.complete(Unit);task.join();advanceUntilIdle();n.deliver(f.navigationEditor)
         assertNull(n.uiState.value.pending);assertEquals(V1Destination.PLAN,n.uiState.value.destination)
     }
     @Test fun `old consent cannot confirm a superseding destination`()=scenario { f,n ->
-        draft(f);n.requestDestination(V1Destination.HABIT,f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.model)
+        draft(f);n.requestDestination(V1Destination.HABIT,f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.navigationEditor)
         val old=assertNotNull(n.uiState.value.confirmation)
-        n.requestDestination(V1Destination.SETTINGS,f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.model)
-        n.confirmLeave(old,f.model);assertEquals(V1Destination.PLAN,n.uiState.value.destination);assertNotNull(f.model.uiState.value.draft)
-        n.confirmLeave(assertNotNull(n.uiState.value.confirmation),f.model);assertEquals(V1Destination.SETTINGS,n.uiState.value.destination)
+        n.requestDestination(V1Destination.SETTINGS,f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.navigationEditor)
+        n.confirmLeave(old,f.navigationEditor);assertEquals(V1Destination.PLAN,n.uiState.value.destination);assertNotNull(f.model.uiState.value.draft)
+        n.confirmLeave(assertNotNull(n.uiState.value.confirmation),f.navigationEditor);assertEquals(V1Destination.SETTINGS,n.uiState.value.destination)
     }
     @Test fun `clicking selected tab does not ask to discard its own draft`()=scenario { f,n ->
-        draft(f);n.requestDestination(V1Destination.PLAN,f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.model)
+        draft(f);n.requestDestination(V1Destination.PLAN,f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.navigationEditor)
         assertNull(n.uiState.value.pending);assertNull(n.uiState.value.confirmation)
         assertEquals("未保存草稿",f.model.uiState.value.draft!!.title)
     }
@@ -90,33 +90,33 @@ class PlanNavigationViewModelTest {
         } finally { release.complete(Unit);job.join() };advanceUntilIdle()
     }
     @Test fun `newer arrival supersedes old consent before its enqueue can publish`()=scenario { f,n ->
-        draft(f);n.requestDestination(V1Destination.HABIT,f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.model)
+        draft(f);n.requestDestination(V1Destination.HABIT,f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.navigationEditor)
         val old=assertNotNull(n.uiState.value.confirmation)
         val entered=CompletableDeferred<Unit>();val release=CompletableDeferred<Unit>();var calls=0
         f.generations.beforeCurrent={ if(++calls==1) { entered.complete(Unit);release.await() } }
         n.requestDestination(V1Destination.SETTINGS,f.model.uiState.value.stamp);runCurrent();assertTrue(entered.isCompleted)
-        try { n.confirmLeave(old,f.model);assertNotNull(f.model.uiState.value.draft);assertEquals(V1Destination.PLAN,n.uiState.value.destination) }
+        try { n.confirmLeave(old,f.navigationEditor);assertNotNull(f.model.uiState.value.draft);assertEquals(V1Destination.PLAN,n.uiState.value.destination) }
         finally { release.complete(Unit);f.generations.beforeCurrent={} };advanceUntilIdle()
     }
     @Test fun `failed plan detail read does not block recovery navigation to settings`()=scenario { f,n ->
         f.repo.rows.value=listOf(Plan(id=7,title="读取失败目标",timeZone="UTC",createdAt=f.now,updatedAt=f.now))
         f.model.open(7,f.token);advanceUntilIdle();f.repo.readsFail=true;f.model.retryRead();advanceUntilIdle()
         assertFalse(f.model.uiState.value.isAvailable)
-        n.requestDestination(V1Destination.SETTINGS,f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.model)
+        n.requestDestination(V1Destination.SETTINGS,f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.navigationEditor)
         assertEquals(V1Destination.SETTINGS,n.uiState.value.destination)
     }
     @Test fun `rejected stale notification removes superseded dialog without discarding draft`()=scenario { f,n ->
-        draft(f);n.requestDestination(V1Destination.HABIT,f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.model)
+        draft(f);n.requestDestination(V1Destination.HABIT,f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.navigationEditor)
         val old=assertNotNull(n.uiState.value.confirmation)
         n.receive(PlanNotificationClick.Detail(PlanReminderToken(7,DataGeneration(3),java.time.LocalDate.parse("2026-10-14"),f.now)))
         advanceUntilIdle();assertNull(n.uiState.value.confirmation);assertNull(n.uiState.value.pending)
-        n.confirmLeave(old,f.model);assertEquals("未保存草稿",f.model.uiState.value.draft!!.title)
-        n.requestDestination(V1Destination.SETTINGS,f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.model)
+        n.confirmLeave(old,f.navigationEditor);assertEquals("未保存草稿",f.model.uiState.value.draft!!.title)
+        n.requestDestination(V1Destination.SETTINGS,f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.navigationEditor)
         val fresh=assertNotNull(n.uiState.value.confirmation);n.cancelLeave(fresh)
         assertNull(n.uiState.value.confirmation);assertEquals(0,f.repo.writes)
     }
     @Test fun `rejected destination enqueue removes superseded consent and keeps input`()=scenario { f,n ->
-        draft(f);n.requestDestination(V1Destination.HABIT,f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.model)
+        draft(f);n.requestDestination(V1Destination.HABIT,f.model.uiState.value.stamp);advanceUntilIdle();n.deliver(f.navigationEditor)
         assertNotNull(n.uiState.value.confirmation)
         f.generations.nextCurrentFailures.add(IllegalStateException("read unavailable"))
         n.requestDestination(V1Destination.SETTINGS,f.model.uiState.value.stamp);advanceUntilIdle()

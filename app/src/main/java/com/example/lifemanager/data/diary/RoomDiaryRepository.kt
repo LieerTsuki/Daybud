@@ -2,6 +2,7 @@ package com.example.lifemanager.data.diary
 
 import android.database.Cursor
 import androidx.room.withTransaction
+import androidx.room.InvalidationTracker
 import androidx.sqlite.db.SimpleSQLiteQuery
 import com.example.lifemanager.data.local.LifeManagerDatabase
 import com.example.lifemanager.domain.diary.*
@@ -15,6 +16,9 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.channels.awaitClose
 
 class RoomDiaryRepository(
     private val database: LifeManagerDatabase,
@@ -24,8 +28,10 @@ class RoomDiaryRepository(
 ) : DiaryRepository {
     private val dao get() = database.diaryDao()
 
-    override fun observeEntries(): Flow<List<DiaryEntry>> = dao.observeEntries().map { database.withTransaction { dao.entries().map { entry(it) } } }
-    override fun observeDrafts(): Flow<List<DiaryDraft>> = dao.observeDrafts().map { database.withTransaction { dao.drafts().map { draft(it) } } }
+    override fun observeChanges(): Flow<Unit> = changes("diary_entries","diary_drafts","diary_entry_media","diary_draft_media","diary_media")
+    override suspend fun readContent(): DiaryContentSnapshot = database.withTransaction { DiaryContentSnapshot(entries(),drafts()) }
+    override fun observeEntries(): Flow<List<DiaryEntry>> = changes("diary_entries","diary_entry_media","diary_media").map { database.withTransaction { entries() } }
+    override fun observeDrafts(): Flow<List<DiaryDraft>> = changes("diary_drafts","diary_draft_media","diary_media").map { database.withTransaction { drafts() } }
     override fun observeReviews(): Flow<List<DiaryReview>> = dao.observeReviews().map { database.withTransaction { dao.reviews().map { review(it) } } }
     override suspend fun readEntry(id: Long): DiaryEntry? = database.withTransaction { dao.entry(id)?.let { entry(it) } }
     override suspend fun readDraft(id: String): DiaryDraft? = database.withTransaction { dao.draft(id)?.let { draft(it) } }
@@ -89,14 +95,14 @@ class RoomDiaryRepository(
         database.withTransaction {
             checkGeneration(expectedGeneration)
             require(from <= to) { "日期范围无效" }
-            DiarySnapshot(from,to,dao.entries().filter { it.date in from.toEpochDay()..to.toEpochDay() }.map { entry(it).copy(media=emptyList()) },expectedGeneration)
+            DiarySnapshot(from,to,dao.entriesInRange(from.toEpochDay(),to.toEpochDay()).map { it.domain(emptyList()) },expectedGeneration)
         }
     }
 
     override suspend fun saveReview(review: DiaryReview, snapshot: DiarySnapshot): DiaryReview = mutate(snapshot.generation) {
         DiaryBackupValidator.validateReviewSections(review)
         require(review.from == snapshot.from && review.to == snapshot.to && !review.needsUpdate) { "回顾范围无效" }
-        val current = dao.entries().filter { it.date in snapshot.from.toEpochDay()..snapshot.to.toEpochDay() }.map { entry(it).copy(media=emptyList()) }
+        val current = dao.entriesInRange(snapshot.from.toEpochDay(),snapshot.to.toEpochDay()).map { it.domain(emptyList()) }
         if (current != snapshot.entries) throw DiaryRevisionException()
         val revisions = current.associate { it.id to it.revision }
         require(review.sources.isNotEmpty() && review.sources.map { it.entryId }.distinct().size == review.sources.size && review.sources.all { revisions[it.entryId] == it.revision }) { "回顾引用无效" }
@@ -112,8 +118,8 @@ class RoomDiaryRepository(
 
     override suspend fun backupSnapshotWithinExistingTransaction(): DiaryBackupSnapshot {
         check(database.inTransaction()) { "日记快照必须在已有Room事务中执行" }
-        val entries = dao.entries().map { entry(it) }
-        val drafts = dao.drafts().map { draft(it) }
+        val entries = entries()
+        val drafts = drafts()
         val referenced = (entries.flatMap { it.media } + drafts.flatMap { it.media }).map { it.id }.toSet()
         val media = dao.media().filter { it.id in referenced }.map { it.domain() }
         val sequence = database.backupSnapshotDao().read(SimpleSQLiteQuery("SELECT seq FROM sqlite_sequence WHERE name='diary_entries'")).use { cursor -> if (cursor.moveToFirst()) cursor.getLong(0) else 0L }
@@ -139,8 +145,29 @@ class RoomDiaryRepository(
         database.openHelper.writableDatabase.execSQL("DELETE FROM sqlite_sequence WHERE name='diary_entries'")
     }
 
-    private suspend fun entry(value: DiaryEntryEntity): DiaryEntry = value.domain(dao.entryMedia(value.id).map { requireNotNull(dao.medium(it.mediaId)) { "日记附件引用缺失" }.domain(it.position) })
-    private suspend fun draft(value: DiaryDraftEntity): DiaryDraft = value.domain(dao.draftMedia(value.id).map { requireNotNull(dao.medium(it.mediaId)) { "草稿附件引用缺失" }.domain(it.position) })
+    private fun changes(vararg tables: String): Flow<Unit> = callbackFlow {
+        val observer=object:InvalidationTracker.Observer(tables) {
+            override fun onInvalidated(tables:Set<String>) { trySend(Unit) }
+        }
+        // Register before the initial signal so a concurrent write cannot be lost.
+        database.invalidationTracker.addObserver(observer)
+        trySend(Unit)
+        awaitClose { database.invalidationTracker.removeObserver(observer) }
+    }.conflate()
+    private fun DiaryEntryMediaRow.domain() = requireNotNull(medium) { "日记附件引用缺失" }.domain(reference.position)
+    private fun DiaryDraftMediaRow.domain() = requireNotNull(medium) { "草稿附件引用缺失" }.domain(reference.position)
+    private suspend fun entries(): List<DiaryEntry> {
+        val rows=dao.entries()
+        val media=dao.entryMediaRows().groupBy { it.reference.entryId }
+        return rows.map { row -> row.domain(media[row.id].orEmpty().map { it.domain() }) }
+    }
+    private suspend fun drafts(): List<DiaryDraft> {
+        val rows=dao.drafts()
+        val media=dao.draftMediaRows().groupBy { it.reference.draftId }
+        return rows.map { row -> row.domain(media[row.id].orEmpty().map { it.domain() }) }
+    }
+    private suspend fun entry(value: DiaryEntryEntity): DiaryEntry = value.domain(dao.entryMediaRows(value.id).map { it.domain() })
+    private suspend fun draft(value: DiaryDraftEntity): DiaryDraft = value.domain(dao.draftMediaRows(value.id).map { it.domain() })
     private suspend fun review(value: DiaryReviewEntity): DiaryReview = value.domain(dao.sources(value.id).map { DiarySourceRevision(it.entryId,it.revision) })
     private suspend fun requireDraft(id: String, revision: Long): DiaryDraft {
         val stored = dao.draft(id) ?: throw DiaryRevisionException()

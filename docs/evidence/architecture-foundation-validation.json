@@ -1,0 +1,100 @@
+{
+  "date": "2026-10-23",
+  "status": "passed",
+  "branch": "improve/architecture-foundation",
+  "baseCommit": "6c7b031",
+  "versionName": "1.4.0",
+  "versionCode": 16,
+  "roomVersion": 8,
+  "backupFormat": 4,
+  "schemaChanges": [],
+  "jvm": {
+    "reportFiles": 121,
+    "tests": 1279,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "api35Device": {
+    "reportFiles": 1,
+    "tests": 77,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "lintDebug": {
+    "errors": 0,
+    "warnings": 23
+  },
+  "structuralFixtureTests": 24,
+  "actionlint": {
+    "version": "1.7.12",
+    "result": "passed"
+  },
+  "gradleCommand": ".\\gradlew.bat --offline --no-daemon \"-Pandroid.injected.device.serial=emulator-5580\" :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug :app:testDebugUnitTest :app:connectedDebugAndroidTest",
+  "gradleLog": ".tools/architecture-full-green.log",
+  "runtime": {
+    "jdk": "Temurin25.0.3+9",
+    "gradle": "9.4.1",
+    "compileSdk": 35,
+    "buildTools": "36.0.0",
+    "avd": "Architecture_API35",
+    "serial": "emulator-5580",
+    "api": 35,
+    "abi": "x86_64",
+    "freshTestAvd": true
+  },
+  "sourceScope": "app/src, app/schemas, gradle, .github, build scripts, wrapper and current checker/tests",
+  "sourceFiles": 443,
+  "sourceSha256": "60892381ceb6a4228b01fe4b6f15c198e2d178ee89aa41f586b2246402093bb2",
+  "artifacts": [
+    {
+      "path": "app/build/outputs/apk/debug/app-debug.apk",
+      "bytes": 19810972,
+      "sha256": "8794be9bb257d2987392b4519cdaf237b65e46fc89398b3947645d0cf7639a24"
+    },
+    {
+      "path": "app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+      "bytes": 1523302,
+      "sha256": "4522be7a336bd3d93de151299799fa62f1198a0515e04cf9a02e69de5a32b1a1"
+    }
+  ],
+  "apkBoundary": {
+    "internetPermission": false,
+    "detectedActiveAiComponents": false,
+    "allowBackup": false,
+    "backupRulesPackaged": true
+  },
+  "wrapper": {
+    "jarSha256": "55243ef57851f12b070ad14f7f5bb8302daceeebc5bce5ece5fa6edb23e1145c",
+    "distributionSha256": "2ab2958f2a1e51120c326cad6f385153bb11ee93b3c216c5fccebfdfbb7ec6cb",
+    "cacheNote": "Initial Java download timed out; existing archive verified against official SHA256 before populating local Wrapper cache. Successful validation ran committed Wrapper offline."
+  },
+  "limitations": [
+    "Not published; no signed release APK",
+    "Remote GitHub Actions results are outside this local validation",
+    "No physical device, OEM transfer or performance acceptance",
+    "No pagination; diary still loads full content",
+    "Single Gradle module with package boundaries"
+  ],
+  "reviews": {
+    "diary": {
+      "approved": true,
+      "score": 9
+    },
+    "navigationBackupMedia": {
+      "approved": true,
+      "score": 8
+    },
+    "buildPlan": {
+      "approved": true,
+      "score": 9
+    }
+  },
+  "cleanup": {
+    "testEmulator": "stopped",
+    "temporaryAvdDirectory": ".tools/architecture-20261023/avds",
+    "directory": "retained",
+    "reason": "Automatic approval rejected recursive directory cleanup: blocked by policy"
+  }
+}

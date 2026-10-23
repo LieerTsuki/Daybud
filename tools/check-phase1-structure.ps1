@@ -1,3 +1,4 @@
+Write-Warning 'Historical Phase 1 snapshot only; use tools/check-project-structure.ps1 for the current project. This historical check may fail after later phases.'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $required = @(
     'settings.gradle.kts',

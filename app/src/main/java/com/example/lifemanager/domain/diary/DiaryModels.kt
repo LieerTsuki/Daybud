@@ -9,6 +9,7 @@ data class DiaryMedia(val id: String, val mimeType: String, val bytes: Long, val
 data class DiaryEntry(val id: Long, val date: LocalDate, val title: String, val body: String, val mood: DiaryMood?, val media: List<DiaryMedia>, val createdAt: Instant, val updatedAt: Instant, val revision: Long)
 data class DiaryDraft(val id: String, val entryId: Long?, val baseRevision: Long?, val date: LocalDate, val title: String, val body: String, val mood: DiaryMood?, val media: List<DiaryMedia>, val createdAt: Instant, val updatedAt: Instant, val revision: Long)
 data class DiaryStatistics(val streakDays: Int, val monthEntries: Int, val monthDays: Int)
+data class DiaryContentSnapshot(val entries: List<DiaryEntry>, val drafts: List<DiaryDraft>)
 data class DiarySourceRevision(val entryId: Long, val revision: Long)
 data class DiarySnapshot(val from: LocalDate, val to: LocalDate, val entries: List<DiaryEntry>, val generation: DataGeneration)
 data class DiaryReviewSection(val title: String, val text: String, val sourceIds: List<Long>)

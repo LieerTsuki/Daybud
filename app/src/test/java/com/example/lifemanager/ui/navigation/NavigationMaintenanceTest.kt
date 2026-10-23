@@ -80,7 +80,7 @@ class NavigationMaintenanceTest {
     @Test fun maintenanceDrainsTheActualMainNavigationEffect() = scenario { f,n,main ->
         n.requestDestination(V1Destination.HABIT,f.model.uiState.value.stamp);advanceUntilIdle()
         main.pauseNext=true
-        val delivery=async { n.deliver(f.model) };runCurrent()
+        val delivery=async { n.deliver(f.navigationEditor) };runCurrent()
         assertTrue(main.hasHeldPublication)
         val release=CompletableDeferred<Unit>()
         val owner=launch { f.coordinator.withSession { release.await() } }
@@ -94,7 +94,7 @@ class NavigationMaintenanceTest {
     @Test fun newerArrivalPreventsOlderMainEffectFromSelectingDestination() = scenario { f,n,main ->
         n.requestDestination(V1Destination.HABIT,f.model.uiState.value.stamp);advanceUntilIdle()
         main.pauseNext=true
-        val delivery=async { n.deliver(f.model) };runCurrent()
+        val delivery=async { n.deliver(f.navigationEditor) };runCurrent()
         try {
             assertTrue(main.hasHeldPublication)
             n.receive(PlanNotificationClick.Subscription(42,f.token));runCurrent()

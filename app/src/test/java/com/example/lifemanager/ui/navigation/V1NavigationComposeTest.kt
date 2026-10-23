@@ -54,7 +54,8 @@ class V1NavigationComposeTest {
     private val backupWorld=V1BackupSettingsViewModelTest.World(Dispatchers.IO,f.generations,f.coordinator)
     private val backup=backupWorld.model
     private val habit=HabitViewModel(EmptyHabits(),Dispatchers.IO,access)
-    private val subscription=SubscriptionViewModel(EmptySubscriptions(),object:SubscriptionReminderSchedulerContract {
+    private val subscriptionRows=MutableStateFlow(emptyList<Subscription>())
+    private val subscription=SubscriptionViewModel(EmptySubscriptions(subscriptionRows),object:SubscriptionReminderSchedulerContract {
         override fun cancel(subscriptionId:Long,reminderDays:Set<Int>) {};override fun cancelAll(subscriptionId:Long) {}
     },prefs,Dispatchers.IO,access)
     @After fun cleanup() { listOf(f.model,list,calendar,settings,nav,habit,subscription,backup).forEach { it.viewModelScope.cancel() } }
@@ -131,6 +132,28 @@ class V1NavigationComposeTest {
         compose.runOnIdle { subscription.closeEditor(f.token) }
         waitFor { nav.uiState.value.destination==V1Destination.PLAN }
         assertTrue(nav.uiState.value.message!!.contains("失效"))
+    }
+    @Test fun `old navigation consent cannot discard changed payment draft and fresh consent closes it`() {
+        val today=LocalDate.parse("2026-10-23")
+        subscriptionRows.value=listOf(Subscription(id=42,appName="测试订阅",amountMinor=1200,currency="CNY",
+            billingCycle=BillingCycle.MONTHLY,nextBillingDate=today,startDate=today,createdAt=f.now,updatedAt=f.now))
+        show();compose.onNodeWithContentDescription("订阅入口").performClick()
+        waitFor { nav.uiState.value.destination==V1Destination.SUBSCRIPTION && subscription.uiState.value.subscriptions.size==1 }
+        compose.runOnIdle { subscription.openPaymentEditor(42,generation=f.token) }
+        waitFor { subscription.uiState.value.paymentEditor.isOpen }
+        compose.runOnIdle { nav.receive(PlanNotificationClick.Legacy) }
+        waitFor { nav.uiState.value.confirmation!=null }
+        val old=assertNotNull(nav.uiState.value.confirmation)
+        val oldConfirm=compose.onNodeWithText("放弃草稿并继续").fetchSemanticsNode().config[SemanticsActions.OnClick].action!!
+        compose.runOnIdle { subscription.updatePaymentEditor(f.token) { it.copy(note="后来补充的付款备注") };oldConfirm() }
+        assertEquals("后来补充的付款备注",subscription.uiState.value.paymentEditor.note)
+        assertTrue(subscription.uiState.value.paymentEditor.isOpen)
+        assertEquals(V1Destination.SUBSCRIPTION,nav.uiState.value.destination)
+        waitFor { nav.uiState.value.confirmation!=null && nav.uiState.value.confirmation!=old }
+        compose.onNodeWithText("放弃草稿并继续").performClick()
+        waitFor { nav.uiState.value.destination==V1Destination.PLAN }
+        assertFalse(subscription.uiState.value.paymentEditor.isOpen)
+        assertEquals(null,nav.uiState.value.pending)
     }
     @Test fun `old generation subscription notification and busy arrival cannot route after maintenance`() {
         show()
@@ -307,13 +330,13 @@ private class EmptyHabits:HabitRepository {
     override suspend fun deleteHabit(id:Long)=error("not exercised")
     override suspend fun toggleRecord(habitId:Long,date:LocalDate):Boolean=error("not exercised")
 }
-private class EmptySubscriptions:SubscriptionRepository {
-    override fun observeSubscriptions()=flowOf(emptyList<Subscription>())
+private class EmptySubscriptions(private val rows:StateFlow<List<Subscription>>):SubscriptionRepository {
+    override fun observeSubscriptions()=rows
     override fun observeAllPayments()=flowOf(emptyList<SubscriptionPayment>())
     override fun observePayments(subscriptionId:Long)=flowOf(emptyList<SubscriptionPayment>())
     override fun observeReminders(subscriptionId:Long)=flowOf(emptySet<Int>())
-    override suspend fun getSubscriptions()=emptyList<Subscription>()
-    override suspend fun getSubscription(id:Long):Subscription?=null
+    override suspend fun getSubscriptions()=rows.value
+    override suspend fun getSubscription(id:Long):Subscription?=rows.value.firstOrNull { it.id==id }
     override suspend fun getReminderDays(subscriptionId:Long)=emptySet<Int>()
     override suspend fun saveSubscription(subscription:Subscription,reminderDays:Set<Int>):Long=error("not exercised")
     override suspend fun savePayment(payment:SubscriptionPayment):Long=error("not exercised")

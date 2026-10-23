@@ -7,8 +7,8 @@ import com.example.lifemanager.data.diary.ai.LegacyCloudRetirement
 import com.example.lifemanager.data.local.LifeManagerDatabase
 import com.example.lifemanager.domain.backup.*
 import com.example.lifemanager.domain.diary.DiaryRepository
+import com.example.lifemanager.domain.diary.DiaryMediaAccess
 import com.example.lifemanager.domain.maintenance.*
-import com.example.lifemanager.ui.diary.AndroidDiaryMediaAccess
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,7 +24,7 @@ object DiaryModule {
     @Provides @Singleton fun storage(@ApplicationContext context:Context)=FileDiaryStorage(File(context.filesDir,"diary-media"))
     @Provides @Singleton fun diary(database:LifeManagerDatabase,maintenance:MaintenanceCoordinator,clock:Clock,storage:FileDiaryStorage):DiaryRepository =
         RoomDiaryRepository(database,maintenance,clock,storage)
-    @Provides @Singleton fun media(@ApplicationContext context:Context,storage:FileDiaryStorage)=AndroidDiaryMediaAccess(context,storage)
+    @Provides @Singleton fun media(@ApplicationContext context:Context,storage:FileDiaryStorage):DiaryMediaAccess=AndroidDiaryMediaAccess(context,storage)
     @Provides @Singleton fun retiredCloud(@ApplicationContext context:Context)=LegacyCloudRetirement(File(context.noBackupFilesDir,"diary-ai")) { alias ->
         java.security.KeyStore.getInstance("AndroidKeyStore").apply { load(null) }.deleteEntry(alias)
     }

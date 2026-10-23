@@ -1,0 +1,5 @@
+# Keep the Unix Wrapper executable readable by sh after Windows checkouts.
+gradlew text eol=lf
+gradlew.bat text eol=crlf
+gradle/wrapper/*.properties text eol=lf
+gradle/wrapper/*.jar binary

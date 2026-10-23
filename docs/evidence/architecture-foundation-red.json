@@ -1,0 +1,34 @@
+{
+  "phase": "red-before-production-changes",
+  "baseCommit": "6c7b031",
+  "date": "2026-10-23",
+  "suites": 121,
+  "tests": 1273,
+  "failures": 4,
+  "errors": 0,
+  "skipped": 0,
+  "expectedFailures": [
+    {
+      "suite": "com.example.lifemanager.data.backup.SystemBackupPolicyTest",
+      "test": "personalRecordsDoNotOptIntoSystemCloudBackup",
+      "message": "java.lang.AssertionError: expected:<0> but was:<32768>"
+    },
+    {
+      "suite": "com.example.lifemanager.data.diary.DiaryRepositoryRoomTest",
+      "test": "entryObservationRefreshesWhenOnlyAttachmentReferencesChange",
+      "message": "kotlinx.coroutines.TimeoutCancellationException: Timed out waiting for 5000 ms"
+    },
+    {
+      "suite": "com.example.lifemanager.data.diary.DiaryRepositoryRoomTest",
+      "test": "draftObservationRefreshesWhenOnlyAttachmentReferencesChange",
+      "message": "kotlinx.coroutines.TimeoutCancellationException: Timed out waiting for 5000 ms"
+    },
+    {
+      "suite": "com.example.lifemanager.data.diary.DiaryRepositoryRoomTest",
+      "test": "readingEntriesUsesBoundedQueriesAsRecordsGrow",
+      "message": "java.lang.AssertionError: Reading 20 entries must batch attachment lookups; executed 42 queries"
+    }
+  ],
+  "log": ".tools/architecture-baseline.log",
+  "note": "1269 existing tests passed; four new regression tests failed for expected pre-change behavior."
+}

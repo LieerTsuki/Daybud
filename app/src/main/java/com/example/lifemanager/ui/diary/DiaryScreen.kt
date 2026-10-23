@@ -1,5 +1,7 @@
 package com.example.lifemanager.ui.diary
 
+import com.example.lifemanager.platform.media.decodeDiaryImage
+
 import android.app.DatePickerDialog
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever

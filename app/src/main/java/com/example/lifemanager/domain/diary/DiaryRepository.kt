@@ -6,6 +6,10 @@ import kotlinx.coroutines.flow.Flow
 
 /** Normal operations own global admission. Maintenance methods require the caller's gate and transaction. */
 interface DiaryRepository {
+    /** Signals only; consumers read and publish content under their generation admission. */
+    fun observeChanges(): Flow<Unit>
+    /** Entries and drafts from one database transaction. */
+    suspend fun readContent(): DiaryContentSnapshot
     fun observeEntries(): Flow<List<DiaryEntry>>
     fun observeDrafts(): Flow<List<DiaryDraft>>
     fun observeReviews(): Flow<List<DiaryReview>>

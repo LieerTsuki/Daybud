@@ -51,20 +51,20 @@ class DiaryViewModel(
         observer?.cancel()
         observer=viewModelScope.launch {
             try {
-                combine(access.generations,access.maintenance,repository.observeEntries(),repository.observeDrafts()) { generation,phase,_,_ -> generation to phase }
+                combine(access.generations,access.maintenance,repository.observeChanges()) { generation,phase,_ -> generation to phase }
                     .collectLatest { (generation,phase) ->
                         if(state.value.stamp.generation!=generation) invalidate(generation)
                         state.update { it.copy(maintaining=phase!=MaintenanceState.IDLE) }
                         if(phase!=MaintenanceState.IDLE)return@collectLatest
-                        access.read({ repository.observeEntries().first() to repository.observeDrafts().first() }) { token,data ->
+                        access.read({ repository.readContent() }) { token,data ->
                             if(state.value.stamp.generation!=token)invalidate(token)
                             val today=LocalDate.now(clock)
-                            val entries=DiaryRules.ordered(data.first)
+                            val entries=DiaryRules.ordered(data.entries)
                             val memories=DiaryRules.onThisDay(entries,today)
                             state.update { current ->
                                 val detail=current.detail?.let { old->entries.find { it.id==old.id } }
                                 val changed=current.detail!=detail
-                                current.copy(entries=entries,drafts=data.second,loading=false,readFailed=false,today=today,detail=detail,
+                                current.copy(entries=entries,drafts=data.drafts,loading=false,readFailed=false,today=today,detail=detail,
                                     error=if(current.readFailed)null else current.error,
                                     stamp=if(changed)current.stamp.copy(revision=current.stamp.revision+1)else current.stamp,
                                     confirmDelete=if(changed)false else current.confirmDelete,

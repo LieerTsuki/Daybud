@@ -1,0 +1,13 @@
+{
+  "phase": "focused-green",
+  "date": "2026-10-23",
+  "suites": 11,
+  "tests": 96,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "log": ".tools/architecture-focused-green.log",
+  "queryEvidence": [
+    "Diary reads for 20 entries: 2 entry SELECTs, 4 combined snapshot SELECTs\n"
+  ]
+}

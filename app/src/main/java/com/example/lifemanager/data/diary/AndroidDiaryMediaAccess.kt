@@ -1,26 +1,19 @@
-package com.example.lifemanager.ui.diary
+package com.example.lifemanager.data.diary
 
 import android.content.Context
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.media.MediaExtractor
 import android.media.MediaCodecList
 import android.media.MediaFormat
 import android.net.Uri
-import com.example.lifemanager.data.diary.FileDiaryStorage
 import com.example.lifemanager.domain.diary.DiaryMedia
-import java.io.Closeable
+import com.example.lifemanager.domain.diary.DiaryMediaAccess
+import com.example.lifemanager.domain.diary.DiaryImportedAttachment
+import com.example.lifemanager.platform.media.decodeDiaryImage
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-
-/** A pin keeps a completed import alive until its draft reference reaches disk. */
-data class DiaryImportedAttachment(val media:DiaryMedia,val pin:Closeable)
-interface DiaryMediaAccess {
-    suspend fun importSource(source:String,remainingBytes:Long):DiaryImportedAttachment
-    fun file(media:DiaryMedia):File
-}
 
 class AndroidDiaryMediaAccess(context:Context,private val storage:FileDiaryStorage):DiaryMediaAccess {
     private val resolver=context.applicationContext.contentResolver
@@ -60,16 +53,4 @@ class AndroidDiaryMediaAccess(context:Context,private val storage:FileDiaryStora
     }
     override fun file(media:DiaryMedia)=storage.file(media)
 }
-
-/** Image memory is bounded by the requested presentation size, including the full-screen viewer. */
-internal fun decodeDiaryImage(file:File,maxSide:Int):Bitmap? {
-    val options=BitmapFactory.Options().apply { inJustDecodeBounds=true }
-    BitmapFactory.decodeFile(file.absolutePath,options)
-    if(options.outWidth<=0 || options.outHeight<=0) return null
-    var sample=1
-    while(options.outWidth/sample>maxSide || options.outHeight/sample>maxSide) sample*=2
-    options.inJustDecodeBounds=false;options.inSampleSize=sample
-    return BitmapFactory.decodeFile(file.absolutePath,options)
-}
-
 

@@ -1,7 +1,10 @@
 package com.example.lifemanager.data.diary
 
 import android.app.Application
+import androidx.room.Room
+import androidx.room.RoomDatabase
 import androidx.room.withTransaction
+import com.example.lifemanager.data.local.LifeManagerDatabase
 import com.example.lifemanager.data.local.V6RoomFixture
 import com.example.lifemanager.data.repository.DataGenerationRepositoryImpl
 import com.example.lifemanager.domain.diary.*
@@ -11,7 +14,13 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.collect
+import java.util.concurrent.Executor
+import java.util.concurrent.CopyOnWriteArrayList
+import org.robolectric.RuntimeEnvironment
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -23,6 +32,127 @@ import kotlin.test.*
 @Config(sdk=[28], application=Application::class)
 @SQLiteMode(SQLiteMode.Mode.NATIVE)
 class DiaryRepositoryRoomTest {
+    @Test fun contentSnapshotKeepsSharedAttachmentPositionsPerOwner(): Unit = runBlocking {
+        V6RoomFixture().use { fixture ->
+            val dao=fixture.database.diaryDao()
+            dao.insertEntry(DiaryEntryEntity(1,0,"记录","正文",null,1,1,1))
+            dao.insertDraft(DiaryDraftEntity("draft",1,1,0,"","草稿",null,1,1,1))
+            listOf("a","b").forEach { dao.insertMedia(DiaryMediaEntity(it,"image/jpeg",1,it.repeat(64))) }
+            dao.insertEntryMedia(listOf(DiaryEntryMediaEntity(1,"a",0),DiaryEntryMediaEntity(1,"b",1)))
+            dao.insertDraftMedia(listOf(DiaryDraftMediaEntity("draft","b",0),DiaryDraftMediaEntity("draft","a",1)))
+            val repository=RoomDiaryRepository(fixture.database,MaintenanceCoordinator(DataGenerationRepositoryImpl(fixture.database)),Clock.systemUTC())
+            val content=repository.readContent()
+            assertEquals(listOf("a" to 0,"b" to 1),content.entries.single().media.map { it.id to it.position })
+            assertEquals(listOf("b" to 0,"a" to 1),content.drafts.single().media.map { it.id to it.position })
+            assertEquals(content.entries.single(),repository.readEntry(1))
+            assertEquals(content.drafts.single(),repository.readDraft("draft"))
+        }
+    }
+
+    @Test fun contentSnapshotsNeverMixBeforeAndAfterDraftCommit(): Unit = runBlocking {
+        V6RoomFixture().use { fixture ->
+            val repository=RoomDiaryRepository(fixture.database,MaintenanceCoordinator(DataGenerationRepositoryImpl(fixture.database)),Clock.systemUTC())
+            val draft=repository.createDraft(DataGeneration(0),LocalDate.now(Clock.systemUTC()))
+            val saved=repository.saveDraft(draft.copy(body="提交时保持一致"),draft.revision,DataGeneration(0))
+            val before=repository.readContent()
+            assertTrue(before.entries.isEmpty());assertEquals(listOf(saved),before.drafts)
+            coroutineScope {
+                val writer=async(Dispatchers.Default) { repository.commitDraft(saved.id,saved.revision,DataGeneration(0)) }
+                repeat(30) {
+                    val snapshot=repository.readContent()
+                    assertEquals(1,snapshot.entries.size+snapshot.drafts.size,"A snapshot must contain either the pending draft or its committed entry")
+                }
+                writer.await()
+            }
+            val after=repository.readContent()
+            assertTrue(after.drafts.isEmpty());assertEquals("提交时保持一致",after.entries.single().body)
+        }
+    }
+
+    @Test fun batchedReadsRejectDanglingAttachmentReferences(): Unit = runBlocking {
+        V6RoomFixture().use { fixture ->
+            val dao=fixture.database.diaryDao()
+            dao.insertEntry(DiaryEntryEntity(1,0,"记录","正文",null,1,1,1))
+            dao.insertDraft(DiaryDraftEntity("draft",null,null,0,"","草稿",null,1,1,1))
+            dao.insertMedia(DiaryMediaEntity("photo","image/jpeg",1,"a".repeat(64)))
+            dao.insertEntryMedia(listOf(DiaryEntryMediaEntity(1,"photo",0)))
+            dao.insertDraftMedia(listOf(DiaryDraftMediaEntity("draft","photo",0)))
+            // Model an externally damaged file; ordinary Room writes enforce these foreign keys.
+            fixture.database.openHelper.writableDatabase.execSQL("PRAGMA foreign_keys=OFF")
+            fixture.database.openHelper.writableDatabase.execSQL("DELETE FROM diary_media")
+            val repository=RoomDiaryRepository(fixture.database,MaintenanceCoordinator(DataGenerationRepositoryImpl(fixture.database)),Clock.systemUTC())
+            assertFailsWith<IllegalArgumentException> { repository.readEntry(1) }
+            assertFailsWith<IllegalArgumentException> { repository.readDraft("draft") }
+            assertFailsWith<IllegalArgumentException> { repository.readContent() }
+            assertFailsWith<IllegalArgumentException> { repository.observeEntries().first() }
+            assertFailsWith<IllegalArgumentException> { repository.observeDrafts().first() }
+        }
+    }
+
+    @Test fun entryObservationRefreshesWhenOnlyAttachmentReferencesChange(): Unit = runBlocking {
+        V6RoomFixture().use { fixture ->
+            val dao=fixture.database.diaryDao()
+            dao.insertEntry(DiaryEntryEntity(1,0,"记录","正文",null,1,1,1))
+            dao.insertMedia(DiaryMediaEntity("photo","image/jpeg",1,"a".repeat(64)))
+            val repository=RoomDiaryRepository(fixture.database,MaintenanceCoordinator(DataGenerationRepositoryImpl(fixture.database)),Clock.systemUTC())
+            val updates=Channel<List<DiaryEntry>>(Channel.UNLIMITED)
+            val observer=launch(Dispatchers.Default) { repository.observeEntries().collect { updates.send(it) } }
+            try {
+                assertTrue(withTimeout(5_000) { updates.receive() }.single().media.isEmpty())
+                dao.insertEntryMedia(listOf(DiaryEntryMediaEntity(1,"photo",0)))
+                val updated=withTimeout(5_000) { var next=updates.receive();while(next.single().media.isEmpty())next=updates.receive();next }
+                assertEquals(listOf("photo"),updated.single().media.map { it.id })
+            } finally { observer.cancelAndJoin();updates.close() }
+        }
+    }
+
+    @Test fun draftObservationRefreshesWhenOnlyAttachmentReferencesChange(): Unit = runBlocking {
+        V6RoomFixture().use { fixture ->
+            val dao=fixture.database.diaryDao()
+            dao.insertDraft(DiaryDraftEntity("draft",null,null,0,"","正文",null,1,1,1))
+            dao.insertMedia(DiaryMediaEntity("photo","image/jpeg",1,"a".repeat(64)))
+            val repository=RoomDiaryRepository(fixture.database,MaintenanceCoordinator(DataGenerationRepositoryImpl(fixture.database)),Clock.systemUTC())
+            val updates=Channel<List<DiaryDraft>>(Channel.UNLIMITED)
+            val observer=launch(Dispatchers.Default) { repository.observeDrafts().collect { updates.send(it) } }
+            try {
+                assertTrue(withTimeout(5_000) { updates.receive() }.single().media.isEmpty())
+                dao.insertDraftMedia(listOf(DiaryDraftMediaEntity("draft","photo",0)))
+                val updated=withTimeout(5_000) { var next=updates.receive();while(next.single().media.isEmpty())next=updates.receive();next }
+                assertEquals(listOf("photo"),updated.single().media.map { it.id })
+            } finally { observer.cancelAndJoin();updates.close() }
+        }
+    }
+
+    @Test fun readingEntriesUsesBoundedQueriesAsRecordsGrow(): Unit = runBlocking {
+        val queries=CopyOnWriteArrayList<String>()
+        val database=Room.inMemoryDatabaseBuilder(RuntimeEnvironment.getApplication(),LifeManagerDatabase::class.java)
+            .addCallback(LifeManagerDatabase.INITIALIZE)
+            .setQueryCallback(object:RoomDatabase.QueryCallback {
+                override fun onQuery(sqlQuery:String,bindArgs:List<Any?>) { queries.add(sqlQuery) }
+            },Executor { it.run() }).build()
+        try {
+            val dao=database.diaryDao()
+            dao.insertMedia(DiaryMediaEntity("photo","image/jpeg",1,"a".repeat(64)))
+            repeat(20) { index ->
+                val id=index.toLong()+1
+                dao.insertEntry(DiaryEntryEntity(id,0,"记录$id","正文",null,id,id,1))
+                dao.insertEntryMedia(listOf(DiaryEntryMediaEntity(id,"photo",0)))
+            }
+            val repository=RoomDiaryRepository(database,MaintenanceCoordinator(DataGenerationRepositoryImpl(database)),Clock.systemUTC())
+            queries.clear()
+            val entries=repository.observeEntries().first()
+            assertEquals(20,entries.size)
+            assertTrue(entries.all { it.media.single().id=="photo" })
+            val contentQueries=queries.filter { it.trimStart().startsWith("SELECT",ignoreCase=true) && it.contains("diary_",ignoreCase=true) }
+            assertTrue(contentQueries.size<=3,"Reading 20 entries must batch attachment lookups; executed ${contentQueries.size} queries")
+            queries.clear()
+            assertEquals(20,repository.readContent().entries.size)
+            val snapshotQueries=queries.count { it.trimStart().startsWith("SELECT",ignoreCase=true) && it.contains("diary_",ignoreCase=true) }
+            assertTrue(snapshotQueries<=4,"Entries and drafts must use bounded batched queries; executed $snapshotQueries queries")
+            println("Diary reads for 20 entries: ${contentQueries.size} entry SELECTs, $snapshotQueries combined snapshot SELECTs")
+        } finally { database.close() }
+    }
+
     @Test fun entriesAndObservationUseRecordDateThenCreationTimeThenId(): Unit = runBlocking {
         V6RoomFixture().use { fixture ->
             val dao=fixture.database.diaryDao()

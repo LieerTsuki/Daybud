@@ -16,7 +16,6 @@ import com.example.lifemanager.data.repository.DataGenerationRepositoryImpl
 import com.example.lifemanager.domain.backup.*
 import com.example.lifemanager.domain.diary.*
 import com.example.lifemanager.domain.maintenance.MaintenanceCoordinator
-import com.example.lifemanager.ui.diary.AndroidDiaryMediaAccess
 import java.io.File
 import java.security.MessageDigest
 import java.time.Clock

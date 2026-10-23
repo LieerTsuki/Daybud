@@ -55,6 +55,8 @@ GitHub 访问不畅时，也可以在电脑下载 APK，再通过 USB 文件传�
 
 备份文件未加密，SHA256 校验不等于加密，请把包含个人记录和照片的备份保存在可信位置。[备份格式与兼容说明](docs/backup-format-v4.md)
 
+**开发分支未发布改进：** 源码已关闭Android系统云备份，并通过旧/新规则排除系统备份及标准设备迁移中的应用数据；换机继续使用应用内完整归档。规则不删除已有系统备份，也不能保证控制所有厂商专有迁移工具。公开1.4.0安装包尚不包含本轮改动，验证状态见[架构改进验收](docs/architecture-foundation-acceptance.md)。
+
 ## 开发与构建
 
 源码使用 Kotlin、Jetpack Compose / Material 3、Room、Hilt 和 WorkManager，沿用 domain / data / ui 分层。架构与文件位置见 [ARCHITECTURE.md](ARCHITECTURE.md) 和 [CODEBASE_MAP.md](CODEBASE_MAP.md)。
@@ -66,12 +68,23 @@ git clone https://github.com/LieerTsuki/Daybud.git
 cd Daybud
 ```
 
-本仓库尚未提供 Gradle Wrapper。先自行安装上述 JDK、Gradle 和 Android SDK，在 `local.properties` 中配置本机的 `sdk.dir`，并将 `JAVA_HOME` 指向 JDK 25，然后执行：
+仓库提供固定Gradle9.4.1及官方分发包SHA256的Wrapper，无需预先安装Gradle。准备JDK25、Android SDK Platform35及Build Tools36.0.0，在 `local.properties` 中配置本机的 `sdk.dir`，并将 `JAVA_HOME` 指向JDK25。Windows执行：
 
 ```powershell
-gradle --no-daemon :app:assembleDebug
-gradle --no-daemon :app:testDebugUnitTest :app:lintDebug
+.\gradlew.bat --no-daemon :app:assembleDebug
+.\gradlew.bat --no-daemon :app:testDebugUnitTest :app:lintDebug :app:assembleDebugAndroidTest
 ```
+
+macOS/Linux将`.\gradlew.bat`替换为`bash ./gradlew`。首次Wrapper运行需要下载Gradle；依赖与Robolectric运行时仍需分别缓存。
+
+当前架构检查入口（Python3.10+；Windows可用`py -3`）：
+
+```powershell
+py -3 -m unittest discover -s tools -p test_project_structure.py
+py -3 tools/check_project_structure.py
+```
+
+也可执行`powershell -File tools/check-project-structure.ps1 -Python <python.exe的完整路径>`。检查约束domain/UI依赖、迁移与AI退役边界；静态检查不替代业务或设备测试。`.github/workflows/android.yml`在推送/PR时执行这些检查及JVM、Lint和APK编译，设备测试单独运行。历史Phase1–4脚本仅反映当时结构，文末旧命令不能用于当前版本验收。
 
 Debug 安装包输出到 `app/build/outputs/apk/debug/app-debug.apk`。正式发布包使用独立签名流程，见 [发布签名说明](docs/release-signing.md)；私钥与口令不在仓库中。
 

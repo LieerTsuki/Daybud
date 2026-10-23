@@ -1,0 +1,52 @@
+# 项目架构
+
+1.4.0/code16普通日记版已发布为正式Latest：生产依赖图仅创建普通DiaryViewModel，日记和设置均无AI入口；移除AI域/运行/页面、模型管理、Binder服务、INTERNET权限及CMake/NDK推理构建。Room8/V4和历史回顾类型仍保留，仅用于旧数据兼容；旧Worker无执行退役类和旧凭据定向清理类继续保留。备份恢复/清空不再依赖AI配置。README改为用户说明，原历史完整归档。当前进度见docs/diary-only-1.4.0-acceptance.md。以下AI架构内容属于历史版本，不能作为当前功能说明。
+
+## 历史架构记录（以下为当时状态）
+
+更新：2026-10-22；当前Latest Release为1.3.0/code14，新增手机离线原文摘选试用，沿用日记与AI回顾架构及正式签名；Room8与备份V4不变。
+
+1.3.1-preview测试版已按用户后续发布指令公开，1.3.0仍为正式Latest。新版本接入纯离线短总结，质量和ARM速度限制仍保留。AiModeStore独立读取noBackup离线配置，生产DI不再构造AiPrivateStore/CloudSendGate/ChatCompletionsClient；LegacyCloudRetirement定向清理旧专用凭据，旧Worker保留为无网络退役实现，仅取消旧AI唯一工作。LocalModelStore使用BoundedModelReader减少GGUF单字节磁盘读取，完整摘要和张量检查不变。LocalSummaryPipeline按真实token一次处理全部有效来源，最多16篇、输出320token；PhoneSummaryResultPolicy执行版本化结构、长度、来源和确定心情校验。Engine用本地输入摘要及生成收据约束保存，Room另核对完整来源；旧原文策略仍单独校验历史结果。结构规则不能证明模型事实准确，当前内容质量及ARM真机速度尚未过门槛，见docs/offline-only-fast-reviews-acceptance.md。
+
+离线最终保存采用短配置准入：AiModeStore.withCurrentConfiguration与selectLocal/invalidateRequests共用Mutex，锁内不再调用config或guard。该锁只跨source.save，不跨模型校验、加载或推理。此专用准入先取配置锁后申请MaintenanceCoordinator普通准入；维护已冻结时普通准入立即抛错，不排队。维护先drain已准入写入，再执行invalidateRequests，因此不与配置锁形成等待环；真实维护回归覆盖两个方向。storage/Room锁序仍由仓库负责，调用方不得额外嵌套全局准入。
+
+ARM dotprod为默认关闭的独立候选，显式构建参数才打包。基线libdiary_cpu_features先检查HWCAP，再在首次JNI解析前只加载一种完整引擎；加载失败不会换载第二个同名JNI库。固定b5501/16KiB要求不变；构建、ELF或模拟器结果均不代表手机加速已验证。
+
+以下1.3.0的云端/摘选描述为已发布旧版架构，开发分支变化以上述段落为准。
+
+1.3.0已发布，离线功能为原文摘选试用：手机离线AI增加独立本地配置类型、模型管理与提供方路由。AiModeStore在noBackup目录保存模式、配置修订和模型摘要，云端凭据仍由AiPrivateStore保管；切换模式暂停旧云端自动授权。CloudSendGate与模式变更共享发送准入，覆盖最终配置核对至实际connect/write边界，避免模式切换完成后旧请求再上传。DiaryAiEngine继续统一来源快照、世代/修订校验、五段校验与Room原子保存，回顾记录本地模型摘要，不自动退回云端。Room8与备份V4契约保持。
+
+LocalModelStore在noBackup目录流式导入并校验固定模型，临时文件通过摘要和GGUF检查后启用；只读FD租约保护正在使用的文件，删除模型撤销就绪状态并延迟回收有租约字节。LocalGroundedPipeline按实际分词和UTF8预算处理全部原文，最多16篇/8片；模型受GBNF约束只能选本篇片段编号，结果按稳定顺序收敛为每篇每类最多一段原文，不能生成新的事实句或情绪。GroundedAiResultPolicy在生成、Engine保存和Room保存三个边界逐字核对日期、字段、连续原句及引用，心情仅从标签重建；云端保持原自由生成规则。设备能力检查结合64位进程、可用内存与磁盘条件，不承诺某个总内存档位必然可用。
+
+原生CPU引擎固定llama.cpp b5501提交与源码归档SHA-256，CMake可从相同摘要的本地归档离线构建。arm64-v8a使用armv8-a基线，x86_64不依赖AVX；armeabi-v7a/x86只提供明确拒绝推理的JNI兼容层以保留原有业务安装。推理服务运行在不导出的私有进程，通过有界Binder消息传递文字与只读模型FD，原生层使用真实Jinja模板、禁用思考、分词及GBNF采样，跨线程取消并清理会话。LifeManagerApp移除急切业务字段注入，仅确认主进程后通过延迟Hilt EntryPoint获取业务图；私有进程死亡由客户端识别，加载或推理取消超时仅终止该推理进程。
+
+验证边界：自由生成候选出现内容偏差，1.7B在模拟器长材料上超时，故按用户选择收缩为原文摘选试用。逐字摘录不保证分类、代表性或上下文完整；12组人工核对与实际CPU设备证据、最终签名升级状态见docs/offline-ai-acceptance.md，不能将有限模拟器结果写成已适配市场大多数手机。
+
+1.2.1/code13页面调整已于2026-10-20发布正式版：PlanScreen完整渲染未完成列表，仅已完成保留折叠状态；DiaryDao两个查询与DiaryRules.ordered统一按记录日期、创建时间、ID倒序，DiaryViewModel沿用该规则。AI回顾由AiReviewDateInput提供只读框与右侧日期选择器，UTC转换civil date，禁用时清除临时选择；确认仍调用原range流程清除旧预览与未保存结果。Room8、V4及签名身份不变。页面调整历史验收见docs/page-polish-1.2.1-acceptance.md；本轮离线验收见docs/offline-ai-acceptance.md。
+
+当前版本使用Room8、计划/打卡/日记/订阅/设置五入口。7→8仅新增七张日记表，旧15张Room表定义不变；DiaryViewModel与DiaryAiViewModel由Activity保留的独立工厂创建。DiaryScreen组合列表/日历、草稿箱、详情、编辑和媒体查看，草稿落Room且1秒空闲/5秒连续输入保存；回调捕获原世代/会话/修订，普通写入由仓库内部获取全局准入，调用方不得再嵌套。
+
+FileDiaryStorage统一持有私有不可变媒体、临时文件与pin，锁序为全局准入或维护会话→storage gate→Room事务。完整快照在同一Room事务中读取旧模块与日记，gate内pin后释放普通准入进行慢I/O；恢复媒体先完整准备、摘要校验和promote，数据库在同一维护事务替换并推进一次世代。文件回收读取提交后的真实引用，pin保护并行导出与预览。
+
+生产完整备份为format4/schema8流式ZIP，V4ArchiveContainer处理有界流/ZIP条目，V4BackupManifest处理严格清单，V4ArchiveFiles处理文档提供方与本机媒体租约，V4BackupRepository/Mutation扩展既有维护端口。内部V2类型名继续作为共享载体，但日记只允许V4导出；V1–V3冻结校验，旧恢复保留日记/草稿/媒体/回顾。详见docs/backup-format-v4.md。
+
+AI采用独立domain/data/ui端口，RoomDiaryAiDataSource仅暴露确认范围的正式文字与心情，保存时原子核对整个来源快照。HTTPS Chat Completions客户端禁止重定向、限制请求/响应与超时；Key由Keystore AES/GCM保护并放noBackup，授权和调用账本不进入归档。周期Worker最多每轮一个、只看最近两个完整周期，默认关闭；授权绑定配置来源/版本及数据世代，未知发送结果不重试。来源编辑使回顾过期，删除任一来源移除整份回顾；生成中失效清除未保存结果。具体已验证范围见docs/diary-acceptance.md。
+
+
+1.1.4正式版仅调整版本与发布流程，业务架构不变。tools/release在Gradle输出之外完成16KiB对齐、旧→新证书轮换签名和独立apksig校验；私密配置及新旧密钥均在仓库外。API26/27保留旧v2证书，API28+采用固定专用v3证书；详见docs/release-signing.md。
+
+设置主页由PreferenceContent的主题/提醒卡片、V1BackupSettingsControls的数据操作行与SettingsPlatformSection的权限/关于入口组成。详细权限状态、版本与许可证只在弹窗展示；权限恢复重读、真实系统Intent、备份会话票据和独立确认保持。DatePresentation固定YYYY-MM-DD及HH:mm，仍按指定ZoneId转换Instant；旧DateFormat枚举、持久值和历史备份严格契约保留，当前导航不再注入旧格式。
+
+Android Kotlin + Jetpack Compose；1.1.x历史版本使用Room数据库schema7，计划、打卡、订阅、设置四个入口。应用身份com.example.lifemanager。已发布1.1.0为schema7；互动森林不改数据库或备份格式。6→7只增加habit_trees/habit_waterings，历史迁移保持。历史交付见docs/v1-delivery-acceptance.md。
+
+订阅改版1.1.2沿用原SubscriptionViewModel/Repository及世代保护。SubscriptionWorkspace组合使用中列表、取消项目与月份账单，SubscriptionBills按指定月份从原锚点推导CNY明细，以Long精确累加预计/实际；图表退役。新建固定人民币，旧币种与隐藏字段保留；日期选择器在独立SubscriptionDateInput中。提醒为所有有效订阅派生扣费日0天/当地09:00策略，0只属于调度身份，不写入Room或备份；历史1/3/7数据仍原样往返，旧闹钟及通知退役。权限、总开关、维护及当日等待/消费协议保持。
+
+互动森林由ForestSection组合共享ForestScene、树木查找和底部详情；ForestLandscape绘制连续山丘草地、小路池塘，TreeIllustration在场景中省去独立徽章背景。视角和选中状态只属于UI，按数据世代失效，不写数据库；所有浇水/种植仍走原ViewModel世代保护与Room事务。
+
+打卡沿用HabitRepository与受世代保护的HabitViewModel。树种选择保存在既有iconKey的tree:前缀值中，未展示颜色保留。树与打卡记录通过habit_waterings(recordId主键)关联，一条记录只能浇水一次，成长由COUNT关联记录推导，上限20；撤销记录级联回退对应树。新建任务和种子、手动浇水、成熟后重种均用Room事务，水滴不能跨任务使用。统计保留月历并用全部任务的林场替换热力图。Compose Canvas绘制六树种及五阶段，不依赖网络图片或字母占位。
+
+1.1.x历史完整备份为format3/schema7，覆盖新增两表、同任务引用和20次上限。历史V1/V2 codec与白名单冻结，旧文件先按原hash严格验证，再转换为含未浇水种子的当前结构。SQL快照/恢复/清空/序列与总字节行数保护扩展至林场；内部V2命名DTO/port沿用但当时生产入口消费V3契约。详情见docs/backup-format-v3.md。
+
+计划展示由PlanWorkspace组合四象限列表、内嵌月历、详情和编辑。Activity ViewModelStore保留各ViewModel；写入通过PlanUseCases、维护世代和Repository事务核对，界面回调携带不可变世代/会话戳。PlanDraft保留未展示的历史字段，保存前严格验证。
+
+PlanCalendarViewModel按范围、模式、完成状态和展示时区去重查询；同月选日仅更新选中态，跨月/世代清空旧事实，刷新期间保留已核对月历但禁用动作。PlanPresentation固定上海时间展示，既有存储时区及实际时刻保持。有效固定偏移历史记录仅同ID且原时区未改时允许编辑，最终在事务内以真实记录复核；新计划仍严格IANA。

@@ -14,6 +14,10 @@ import kotlin.test.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class DiaryViewModelTest {
+    @Test fun `initial publication reads diary content only once`() = scenario { w ->
+        assertFalse(w.model.uiState.value.loading)
+        assertEquals(1,w.contentReads)
+    }
     @Test fun `idle input persists after one second and explicit leave flushes latest text`() = scenario { w ->
         w.model.newEntry(w.model.uiState.value.stamp); runCurrent()
         w.model.changeBody("第一段", w.model.uiState.value.stamp)
@@ -129,13 +133,16 @@ class DiaryViewModelTest {
         var persisted=DiaryDraft("draft",null,null,LocalDate.parse("2026-10-19"),"","",null,emptyList(),now,now,0)
         var failSave=false
         var mediaReads=0
+        var contentReads=0
         var importMedia:suspend (String,Long)->DiaryImportedAttachment={ _,_->error("stale selection must never import") }
         val drafts=MutableStateFlow<List<DiaryDraft>>(emptyList())
         // This boundary substitutes only disk persistence; the ViewModel, timers and generation admission are real.
         val repository=Proxy.newProxyInstance(DiaryRepository::class.java.classLoader,arrayOf(DiaryRepository::class.java)) { _, method,args ->
             when(method.name.substringBefore('-')) {
-                "observeEntries" -> MutableStateFlow(emptyList<DiaryEntry>())
+                "observeEntries" -> flow { contentReads++;emit(emptyList<DiaryEntry>()) }
                 "observeDrafts" -> drafts
+                "observeChanges" -> drafts.map { Unit }
+                "readContent" -> { contentReads++;DiaryContentSnapshot(emptyList(),drafts.value) }
                 "createDraft" -> persisted.also { drafts.value=listOf(it) }
                 "readDraft" -> persisted
                 "saveDraft" -> {

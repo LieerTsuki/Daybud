@@ -5,8 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.example.lifemanager.domain.maintenance.*
 import com.example.lifemanager.domain.plan.PlanReminderToken
 import com.example.lifemanager.ui.common.GenerationAccess
-import com.example.lifemanager.ui.plan.*
-import com.example.lifemanager.ui.subscription.SubscriptionViewModel
+import com.example.lifemanager.ui.plan.PlanDraft
+import com.example.lifemanager.ui.plan.PlanEditorStamp
+import com.example.lifemanager.ui.plan.PlanEditorState
+import com.example.lifemanager.ui.plan.PlanPane
 import com.example.lifemanager.ui.subscription.SubscriptionEditorState
 import com.example.lifemanager.ui.subscription.PaymentEditorState
 import kotlinx.coroutines.*
@@ -94,14 +96,14 @@ class PlanNavigationViewModel(private val access:GenerationAccess,private val di
             } } } catch(error:Exception) { if(error is CancellationException)throw error }
         }
     }
-    suspend fun deliver(editor:PlanEditorViewModel,subscriptions:SubscriptionViewModel?=null):Boolean {
+    suspend fun deliver(editor:PlanNavigationEditor,subscriptions:SubscriptionNavigationEditor?=null):Boolean {
         val action=state.value.pending ?: return false
         return effect(action) {
-            val current=editor.uiState.value
+            val current=editor.snapshot
             if(!ready(current,action))return@effect false
-            val sub=subscriptions?.uiState?.value
+            val sub=subscriptions?.snapshot
             if(action.subscriptionId!=null && (sub==null || sub.generation!=action.generation || !sub.isAvailable || sub.isLoading))return@effect false
-            if(sub?.let { it.isBusy || it.isMaintaining || it.isExporting || it.isExportPending || it.editor.isSaving || it.paymentEditor.isSaving }==true)return@effect false
+            if(sub?.blocksNavigation==true)return@effect false
             if(action.rendered!=null && current.stamp!=action.rendered) { reject(action);return@effect false }
             val leavingSubscription=action.destination!=V1Destination.SUBSCRIPTION && sub?.let { it.editor.isOpen || it.paymentEditor.isOpen }==true
             if(state.value.waitingForDraft && (current.pane==PlanPane.EDIT || leavingSubscription))return@effect false
@@ -111,23 +113,23 @@ class PlanNavigationViewModel(private val access:GenerationAccess,private val di
             } else apply(action,editor,subscriptions)
         }
     }
-    suspend fun confirmLeave(confirmation:PlanNavigationConfirmation,editor:PlanEditorViewModel,subscriptions:SubscriptionViewModel?=null):Boolean {
+    suspend fun confirmLeave(confirmation:PlanNavigationConfirmation,editor:PlanNavigationEditor,subscriptions:SubscriptionNavigationEditor?=null):Boolean {
         val action=state.value.pending ?: return false
         if(state.value.confirmation!=confirmation || confirmation.ticket!=action.ticket || confirmation.ticket!=sequence)return false
         return effect(action) {
-            val current=editor.uiState.value
+            val current=editor.snapshot
             if(!ready(current,action) || current.stamp!=confirmation.stamp)return@effect false
-            val sub=subscriptions?.uiState?.value
+            val sub=subscriptions?.snapshot
             if(action.subscriptionId!=null && (sub==null || sub.generation!=action.generation || !sub.isAvailable || sub.isLoading))return@effect false
-            if(sub?.let { it.isBusy || it.isMaintaining || it.isExporting || it.isExportPending || it.editor.isSaving || it.paymentEditor.isSaving }==true)return@effect false
+            if(sub?.blocksNavigation==true)return@effect false
             if(confirmation.subscriptionEditor!=null || confirmation.paymentEditor!=null) {
                 if(sub==null || sub.editor!=confirmation.subscriptionEditor || sub.paymentEditor!=confirmation.paymentEditor)return@effect false
                 subscriptions.closeEditor(action.generation)
                 subscriptions.closePaymentEditor(action.generation)
             }
             editor.requestClose(current.stamp)
-            if(editor.uiState.value.confirmClose)editor.confirmClose(editor.uiState.value.stamp)
-            if(editor.uiState.value.pane!=PlanPane.LIST)return@effect false
+            if(editor.snapshot.confirmClose)editor.confirmClose(editor.snapshot.stamp)
+            if(editor.snapshot.pane!=PlanPane.LIST)return@effect false
             // A detail open needs the fresh post-close snapshot; retain only the original event.
             state.update { it.copy(confirmation=null,waitingForDraft=false,pending=action.copy(rendered=null)) }
             if(action.planId!=null)false else apply(action,editor,subscriptions)
@@ -143,19 +145,19 @@ class PlanNavigationViewModel(private val access:GenerationAccess,private val di
         (action.planId==null || (current.isAvailable && !current.isLoading)) && !current.isBusy && !current.isMaintaining && !current.confirmClose &&
         current.pendingMode==null && current.conflicts==null && !current.confirmDelete
     private fun dirty(current:PlanEditorState)=current.draft?.let { it!=PlanDraft(it.base) }==true
-    private fun apply(action:PlanNavigationAction,editor:PlanEditorViewModel,subscriptions:SubscriptionViewModel?=null):Boolean {
+    private fun apply(action:PlanNavigationAction,editor:PlanNavigationEditor,subscriptions:SubscriptionNavigationEditor?=null):Boolean {
         if(action.subscriptionId!=null) {
             if(subscriptions==null)return false
             subscriptions.openNotificationDetail(action.subscriptionId,action.generation)
         }
         if(action.planId!=null) {
-            val before=editor.uiState.value.stamp
+            val before=editor.snapshot.stamp
             editor.open(action.planId,action.generation)
-            val accepted=editor.uiState.value
+            val accepted=editor.snapshot
             if(accepted.pane!=PlanPane.DETAIL || accepted.stamp.session==before.session)return false
-        } else if(action.legacy && editor.uiState.value.pane!=PlanPane.LIST) {
-            editor.requestClose(editor.uiState.value.stamp)
-            if(editor.uiState.value.pane!=PlanPane.LIST)return false
+        } else if(action.legacy && editor.snapshot.pane!=PlanPane.LIST) {
+            editor.requestClose(editor.snapshot.stamp)
+            if(editor.snapshot.pane!=PlanPane.LIST)return false
         }
         return finish(action)
     }

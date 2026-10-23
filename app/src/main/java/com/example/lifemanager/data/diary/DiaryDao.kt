@@ -12,6 +12,7 @@ interface DiaryDao {
     @Query("SELECT * FROM diary_drafts ORDER BY updatedAt DESC,id DESC") fun observeDrafts(): Flow<List<DiaryDraftEntity>>
     @Query("SELECT * FROM diary_reviews ORDER BY createdAt DESC,id DESC") fun observeReviews(): Flow<List<DiaryReviewEntity>>
     @Query("SELECT * FROM diary_entries ORDER BY date DESC,createdAt DESC,id DESC") suspend fun entries(): List<DiaryEntryEntity>
+    @Query("SELECT * FROM diary_entries WHERE date BETWEEN :from AND :to ORDER BY date DESC,createdAt DESC,id DESC") suspend fun entriesInRange(from: Long, to: Long): List<DiaryEntryEntity>
     @Query("SELECT * FROM diary_drafts ORDER BY updatedAt DESC,id DESC") suspend fun drafts(): List<DiaryDraftEntity>
     @Query("SELECT * FROM diary_media ORDER BY id") suspend fun media(): List<DiaryMediaEntity>
     @Query("SELECT * FROM diary_reviews ORDER BY createdAt DESC,id DESC") suspend fun reviews(): List<DiaryReviewEntity>
@@ -20,6 +21,14 @@ interface DiaryDao {
     @Query("SELECT * FROM diary_media WHERE id=:id") suspend fun medium(id: String): DiaryMediaEntity?
     @Query("SELECT * FROM diary_entry_media WHERE entryId=:id ORDER BY position") suspend fun entryMedia(id: Long): List<DiaryEntryMediaEntity>
     @Query("SELECT * FROM diary_draft_media WHERE draftId=:id ORDER BY position") suspend fun draftMedia(id: String): List<DiaryDraftMediaEntity>
+    @Query("SELECT r.*,m.id AS medium_id,m.mimeType AS medium_mimeType,m.bytes AS medium_bytes,m.sha256 AS medium_sha256 FROM diary_entry_media r LEFT JOIN diary_media m ON m.id=r.mediaId ORDER BY r.entryId,r.position")
+    suspend fun entryMediaRows(): List<DiaryEntryMediaRow>
+    @Query("SELECT r.*,m.id AS medium_id,m.mimeType AS medium_mimeType,m.bytes AS medium_bytes,m.sha256 AS medium_sha256 FROM diary_draft_media r LEFT JOIN diary_media m ON m.id=r.mediaId ORDER BY r.draftId,r.position")
+    suspend fun draftMediaRows(): List<DiaryDraftMediaRow>
+    @Query("SELECT r.*,m.id AS medium_id,m.mimeType AS medium_mimeType,m.bytes AS medium_bytes,m.sha256 AS medium_sha256 FROM diary_entry_media r LEFT JOIN diary_media m ON m.id=r.mediaId WHERE r.entryId=:id ORDER BY r.position")
+    suspend fun entryMediaRows(id: Long): List<DiaryEntryMediaRow>
+    @Query("SELECT r.*,m.id AS medium_id,m.mimeType AS medium_mimeType,m.bytes AS medium_bytes,m.sha256 AS medium_sha256 FROM diary_draft_media r LEFT JOIN diary_media m ON m.id=r.mediaId WHERE r.draftId=:id ORDER BY r.position")
+    suspend fun draftMediaRows(id: String): List<DiaryDraftMediaRow>
     @Query("SELECT * FROM diary_review_sources WHERE reviewId=:id ORDER BY entryId") suspend fun sources(id: String): List<DiaryReviewSourceEntity>
     @Query("SELECT mediaId FROM diary_entry_media UNION SELECT mediaId FROM diary_draft_media") suspend fun referencedMediaIds(): List<String>
     @Insert suspend fun insertEntry(value: DiaryEntryEntity): Long

@@ -39,12 +39,12 @@ class NotificationSourceNavigationTest {
         f.model.openNew(f.token);advanceUntilIdle()
         f.model.change(PlanField.TITLE,"保留输入",f.model.uiState.value.stamp)
         val click=PlanNotificationClick.Detail(PlanReminderToken(42,f.token,LocalDate.parse("2026-10-14"),f.now))
-        n.receive(click);advanceUntilIdle();n.deliver(f.model)
+        n.receive(click);advanceUntilIdle();n.deliver(f.navigationEditor)
         val old=assertNotNull(n.uiState.value.confirmation)
-        n.receive(click);advanceUntilIdle();n.deliver(f.model)
+        n.receive(click);advanceUntilIdle();n.deliver(f.navigationEditor)
         val fresh=assertNotNull(n.uiState.value.confirmation)
         assertNotEquals(old.ticket,fresh.ticket)
-        assertFalse(n.confirmLeave(old,f.model))
+        assertFalse(n.confirmLeave(old,f.navigationEditor))
         assertEquals(fresh,n.uiState.value.confirmation)
         assertEquals("保留输入",f.model.uiState.value.draft!!.title)
     }
@@ -53,7 +53,7 @@ class NotificationSourceNavigationTest {
         f.model.change(PlanField.TITLE,"等待决定",f.model.uiState.value.stamp)
         n.receive(PlanNotificationClick.Subscription(42,f.token));advanceUntilIdle()
         // A missing/unready subscription owner must leave the original event pending.
-        assertFalse(n.deliver(f.model));assertNotNull(n.uiState.value.pending)
+        assertFalse(n.deliver(f.navigationEditor));assertNotNull(n.uiState.value.pending)
         f.coordinator.withSession { session ->
             assertEquals(MaintenanceState.READY,f.coordinator.state.value)
             f.coordinator.withMaintenance(session) { f.generations.commit(session.generation) {} }
@@ -71,10 +71,10 @@ class NotificationSourceNavigationTest {
         try {
             assertTrue(f.model.uiState.value.isBusy)
             n.receive(PlanNotificationClick.Legacy);runCurrent()
-            assertFalse(n.deliver(f.model))
+            assertFalse(n.deliver(f.navigationEditor))
             assertEquals(f.token,assertNotNull(n.uiState.value.pending).generation)
         } finally { release.complete(Unit) }
-        advanceUntilIdle();assertTrue(n.deliver(f.model));advanceUntilIdle()
+        advanceUntilIdle();assertTrue(n.deliver(f.navigationEditor));advanceUntilIdle()
         assertEquals(PlanPane.LIST,f.model.uiState.value.pane)
         assertNull(n.uiState.value.pending);assertEquals(1,f.repo.writes)
     }

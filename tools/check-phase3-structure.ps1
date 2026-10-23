@@ -1,3 +1,4 @@
+Write-Warning 'Historical Phase 3 snapshot only; use tools/check-project-structure.ps1 for the current project. This historical check may fail after later phases.'
 $ErrorActionPreference = 'Stop'
 
 $required = @(
