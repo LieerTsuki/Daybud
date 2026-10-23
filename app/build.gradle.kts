@@ -17,8 +17,8 @@ extensions.configure<ApplicationExtension> {
         applicationId = "com.example.lifemanager"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 16
-        versionName = "1.4.0"
+        versionCode = 17
+        versionName = "1.4.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }

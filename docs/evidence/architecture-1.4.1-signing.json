@@ -1,0 +1,207 @@
+{
+  "name": "rizhiya-1.4.1.apk",
+  "bytes": 12706144,
+  "sha256": "5f768bd950f3918b82711eb3aa391d7f8ff9b05d81778a41a8e7293badfdcad2",
+  "versionName": "1.4.1",
+  "versionCode": 17,
+  "debuggable": false,
+  "zipalign16KiB": true,
+  "legacyCertificateSha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+  "certificateSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+  "rotationMinSdk": 28,
+  "lineage": {
+    "status": "verified",
+    "mode": "lineage",
+    "evidence": {
+      "certificates": [
+        {
+          "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+          "installedData": true,
+          "sharedUid": true,
+          "permission": true,
+          "rollback": false,
+          "auth": true
+        },
+        {
+          "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+          "installedData": true,
+          "sharedUid": true,
+          "permission": true,
+          "rollback": false,
+          "auth": true
+        }
+      ]
+    }
+  },
+  "verification": {
+    "status": "verified",
+    "mode": "apk",
+    "evidence": {
+      "rotationMinSdk": 28,
+      "embeddedLineage": {
+        "certificates": [
+          {
+            "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+            "installedData": true,
+            "sharedUid": true,
+            "permission": true,
+            "rollback": false,
+            "auth": true
+          },
+          {
+            "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+            "installedData": true,
+            "sharedUid": true,
+            "permission": true,
+            "rollback": false,
+            "auth": true
+          }
+        ]
+      },
+      "platforms": [
+        {
+          "sdk": 26,
+          "verified": true,
+          "effectiveSignerSha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+          "v1": false,
+          "v2": true,
+          "v3": false,
+          "v31": false,
+          "warnings": [],
+          "lineage": null
+        },
+        {
+          "sdk": 27,
+          "verified": true,
+          "effectiveSignerSha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+          "v1": false,
+          "v2": true,
+          "v3": false,
+          "v31": false,
+          "warnings": [],
+          "lineage": null
+        },
+        {
+          "sdk": 28,
+          "verified": true,
+          "effectiveSignerSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+          "v1": false,
+          "v2": false,
+          "v3": true,
+          "v31": false,
+          "warnings": [],
+          "lineage": {
+            "certificates": [
+              {
+                "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+                "installedData": true,
+                "sharedUid": true,
+                "permission": true,
+                "rollback": false,
+                "auth": true
+              },
+              {
+                "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+                "installedData": true,
+                "sharedUid": true,
+                "permission": true,
+                "rollback": false,
+                "auth": true
+              }
+            ]
+          }
+        },
+        {
+          "sdk": 32,
+          "verified": true,
+          "effectiveSignerSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+          "v1": false,
+          "v2": false,
+          "v3": true,
+          "v31": false,
+          "warnings": [],
+          "lineage": {
+            "certificates": [
+              {
+                "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+                "installedData": true,
+                "sharedUid": true,
+                "permission": true,
+                "rollback": false,
+                "auth": true
+              },
+              {
+                "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+                "installedData": true,
+                "sharedUid": true,
+                "permission": true,
+                "rollback": false,
+                "auth": true
+              }
+            ]
+          }
+        },
+        {
+          "sdk": 33,
+          "verified": true,
+          "effectiveSignerSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+          "v1": false,
+          "v2": false,
+          "v3": true,
+          "v31": false,
+          "warnings": [],
+          "lineage": {
+            "certificates": [
+              {
+                "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+                "installedData": true,
+                "sharedUid": true,
+                "permission": true,
+                "rollback": false,
+                "auth": true
+              },
+              {
+                "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+                "installedData": true,
+                "sharedUid": true,
+                "permission": true,
+                "rollback": false,
+                "auth": true
+              }
+            ]
+          }
+        },
+        {
+          "sdk": 35,
+          "verified": true,
+          "effectiveSignerSha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+          "v1": false,
+          "v2": false,
+          "v3": true,
+          "v31": false,
+          "warnings": [],
+          "lineage": {
+            "certificates": [
+              {
+                "sha256": "55384b8e26f776f9389df25721a3cd955752a03bc7cdf8e94c0f249829dfa16c",
+                "installedData": true,
+                "sharedUid": true,
+                "permission": true,
+                "rollback": false,
+                "auth": true
+              },
+              {
+                "sha256": "04d67f1f2d46129cd3ec33ce26eabf53b86e4149dc870dd13ab081a78a5cbb8a",
+                "installedData": true,
+                "sharedUid": true,
+                "permission": true,
+                "rollback": false,
+                "auth": true
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

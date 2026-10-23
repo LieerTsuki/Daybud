@@ -1,0 +1,116 @@
+{
+  "status": "validated-release",
+  "validatedAt": "2026-10-23T14:29:39.090458+00:00",
+  "versionName": "1.4.1",
+  "versionCode": 17,
+  "roomSchema": 8,
+  "backupFormat": 4,
+  "jvm": {
+    "tests": 1279,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 121
+  },
+  "device": {
+    "tests": 77,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 1,
+    "sdk": 35,
+    "avd": "Rizhiya_141_UI_API35"
+  },
+  "signingTools": {
+    "tests": 17,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "structure": {
+    "tests": 24,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "builds": {
+    "debug": true,
+    "androidTest": true,
+    "release": true
+  },
+  "lint": {
+    "debug": {
+      "errors": 0,
+      "warnings": 23
+    },
+    "release": {
+      "errors": 0,
+      "warnings": 23
+    }
+  },
+  "apk": {
+    "sha256": "5f768bd950f3918b82711eb3aa391d7f8ff9b05d81778a41a8e7293badfdcad2",
+    "bytes": 12706144
+  },
+  "apkBoundary": {
+    "status": "verified",
+    "sha256": "5f768bd950f3918b82711eb3aa391d7f8ff9b05d81778a41a8e7293badfdcad2",
+    "allowBackup": false,
+    "backupRulesPackaged": true,
+    "backupResourcePaths": {
+      "backup_rules": {
+        "resourceId": "0x7f0f0000",
+        "path": "res/Qq.xml",
+        "exclusions": 9
+      },
+      "data_extraction_rules": {
+        "resourceId": "0x7f0f0001",
+        "path": "res/4j.xml",
+        "exclusions": 18
+      }
+    },
+    "internetPermission": false,
+    "activeAiComponents": false
+  },
+  "sourceManifestSha256": "ba2fb9812fc01bb5c1525192e9987299499bd0264a3d66bf60576932fae05792",
+  "upgrades": {
+    "26": {
+      "proofPath": ".tools/release-1.4.1/api26-upgrade-19a9b4b8d8df4750a3ca2c1015ca5368/verified.json",
+      "sha256": "41e300b6c61fcfe3b4591d11618b79c42ca8015efb2a92561fa48243e5c5d187"
+    },
+    "28": {
+      "proofPath": ".tools/release-1.4.1/api28-upgrade-ec43ab3ba9434e279e8fac5b0c725753/verified.json",
+      "sha256": "d668112732ed0c49f8be9cb34afbc238c10375f407f8fe4217631561079665a7"
+    },
+    "35": {
+      "proofPath": ".tools/release-1.4.1/api35-upgrade-d032029408f24ba182c49cd417367bb3/verified.json",
+      "sha256": "c37534778da09b694d91348114a2e2545f088898719ccc3765979685a9dceaed"
+    }
+  },
+  "evidence": {
+    "buildLog": ".tools/release-1.4.1/build-validation.log",
+    "deviceLog": ".tools/release-1.4.1/device-validation.log",
+    "jvmAfterCiSynchronizationFixLog": ".tools/release-1.4.1/jvm-ci-sync-validation.log",
+    "signingToolsLog": ".tools/release-1.4.1/signing-tool-tests.log",
+    "publicUpgradeSnapshots": "docs/evidence/architecture-1.4.1-upgrades.json"
+  },
+  "sourceChangeAfterSigning": {
+    "scope": "test-only",
+    "file": "app/src/test/java/com/example/lifemanager/ui/plan/PlanWorkspaceComposeTest.kt",
+    "reason": "Wait for exact seeded row and generation before scroll; CI previously read the initial empty snapshot",
+    "runtimeAndBuildInputsUnchanged": true,
+    "fullJvmRerun": true
+  },
+  "readmeHistory": {
+    "sha256": "2f92e2fee12f558c7b0ba8bdaf8a72892fe738cde031f01663dff1c4d6e01b2c",
+    "byteExact": true,
+    "sourceCommit": "77f48f703e871ea64e3796e7f511178aed8a831a"
+  },
+  "limits": [
+    "Synthetic nonempty emulator fixtures, not real-user or physical-phone coverage",
+    "OEM migration and cloud restore not exercised",
+    "No ARM phone performance conclusion",
+    "No full private-file/shared-preference preservation conclusion",
+    "Remote CI status separately reported"
+  ]
+}

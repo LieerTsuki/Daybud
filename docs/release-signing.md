@@ -1,6 +1,6 @@
 # 发布签名与密钥恢复
 
-日子芽从1.1.4/code11开始使用专用发布密钥。包名仍为`com.example.lifemanager`，minSdk26，Room7、format3/schema7备份保持。本次只调整版本与发布流程，界面沿用1.1.3。
+日子芽从1.1.4/code11开始使用专用发布密钥。包名为`com.example.lifemanager`，minSdk26；当前1.4.1/code17沿用Room8及V4完整归档，签名身份和轮换链保持。1.1.4当时采用Room7和format3/schema7，属于历史版本状态。
 
 ## 固定证书与兼容边界
 

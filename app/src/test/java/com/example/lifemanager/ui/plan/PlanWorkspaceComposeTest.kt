@@ -64,7 +64,11 @@ class PlanWorkspaceComposeTest {
     }
     @Test fun `opening actual list record edits same row and toggles completion in detail`() {
         f.repo.rows.value=listOf(Plan(id=7,title="旧目标",timeZone="Asia/Shanghai",createdAt=f.now,updatedAt=f.now))
-        show();scroll(hasText("旧目标"));compose.onNodeWithText("旧目标").performClick()
+        show()
+        waitFor { val state=list.uiState.value
+            state.isAvailable && !state.isLoading && state.generation==f.token &&
+                state.rows.any { it.plan.id==7L && it.plan.title=="旧目标" } }
+        scroll(hasText("旧目标"));compose.onNodeWithText("旧目标").performClick()
         waitFor { f.model.uiState.value.detail?.id==7L }
         scroll(hasText("编辑计划"));compose.onNodeWithText("编辑计划").performClick()
         compose.onNodeWithContentDescription("计划标题").performTextReplacement("编辑后的目标")

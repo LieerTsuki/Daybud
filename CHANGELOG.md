@@ -2,15 +2,20 @@
 
 本文件随每次版本更新维护。未发布区是开发进度，不代表手机安装包已经包含新功能。
 
-## 未发布 · 架构基础改进（2026-10-23）
+## 1.4.1 / code17 · 架构改进版（发布准备中）
+
+准备日期：2026-10-23。当前main的发布目标为1.4.1/code17；正式发布成功前，公开正式下载仍为下方1.4.0/code16。本区记录候选改动，不代表1.4.1已发布。
 
 - 系统备份策略：关闭Android系统云备份，配置旧版备份和新版云备份/设备迁移数据排除规则；应用内完整归档导出、保护备份及确认恢复流程保持。
 - 日记读取：以轻量失效通知和同事务内容读取替代重复订阅，用批量关联查询消除逐条附件查询，并覆盖附件关联单独变化的刷新；仍保留完整列表，未实现分页。
 - 导航：通过编辑器端口和真实ViewModel适配器处理离开确认及通知，保留世代、渲染戳、草稿与消费保护。
 - 媒体端口移至domain、Android导入实现移至data，共用解码放入platform；增加当前架构边界检查及负向验证。
 - 提供固定Gradle9.4.1 Wrapper和官方分发包摘要、GitHub Actions检查入口；重建当前架构/索引并完整归档历史文档。
-- 数据兼容：沿用1.4.0/code16、Room8与V4；不清库、不发布APK。关闭系统备份不删除已有本地记录或已有系统备份，厂商专有迁移行为需另行验证。
-- 本轮1279项JVM、77项独立API35设备及24项结构检查通过，Debug/测试APK构建通过；Lint0错误/23警告。日记20篇附件fixture内容查询42→2次、联合快照4次。远程CI以实际运行记录为准，未进行正式发布或厂商迁移实测。[架构改进验收](docs/architecture-foundation-acceptance.md)与[验证摘要](docs/evidence/architecture-foundation-validation.json)记录本轮结果和限制。
+- 修正计划界面Compose回归测试的异步列表等待条件，避免尚未收到目标记录时直接查找控件；不改变应用运行逻辑。
+- README首页重新介绍完整应用，明确当前main进度、正式下载及本轮改进；原README全文复制到根目录[README.history.md](README.history.md)，保留原相对链接语境、历史Release与全部记录。
+- 数据兼容：版本升级为1.4.1/code17，包名、正式签名身份/轮换链、Room8与V4保持；不清库、不卸载升级。关闭系统备份不删除已有本地记录、归档或旧系统备份，厂商专有迁移行为需另行验证。
+- 已完成改进的前一架构阶段验证见[架构验收](docs/architecture-foundation-acceptance.md)和[旧阶段验证摘要](docs/evidence/architecture-foundation-validation.json)。其中20篇含附件fixture的日记内容查询42→2次，联合快照4次，表示查询数量减少，不是手机性能测评。
+- 本轮重新完成1279项JVM测试、77项API35设备测试、24项结构检查及17项签名工具测试，failure/error/skipped均为0；Debug/androidTest/Release构建成功，Debug和Release Lint各0错误/23警告。正式签名六个SDK检查点及16KiB对齐通过。API26/28/35独立模拟器以非空合成数据完成1.4.0→1.4.1覆盖升级，逐值保留23张表的结构、字段类型、NULL、序列及Room身份、两份PNG附件、UID与签名，并核对安装APK及重复启动稳定性。模拟数据不代表真实用户或全部私有文件/偏好、OEM迁移和真机性能覆盖。[验证摘要](docs/evidence/architecture-1.4.1-validation.json) · [升级快照](docs/evidence/architecture-1.4.1-upgrades.json) · [发布验收](docs/architecture-1.4.1-acceptance.md)。
 
 ## 1.4.0 / code16 · 保留普通日记、移除AI（2026-10-22已发布）
 
