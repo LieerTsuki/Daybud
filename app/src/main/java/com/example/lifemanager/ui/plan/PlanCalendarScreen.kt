@@ -144,7 +144,7 @@ private fun MonthDateCell(date: LocalDate, rows: List<PlanListRow>, isSelected: 
 private fun MonthTaskTitle(date: LocalDate, row: PlanListRow, taskFontSize: TextUnit) {
     val originalTitle = row.plan.title.ifBlank { "（历史空标题）" }
     val displayTitle = originalTitle.replace(Regex("[\\r\\n]+"), " ")
-    val palette = quadrantPalette(row.plan.priority)
+    val palette = calendarTaskPalette(row.plan.priority, row.plan.isCompleted)
     val style = MaterialTheme.typography.labelSmall
     Surface(color = palette.container, contentColor = palette.content, shape = RoundedCornerShape(4.dp),
         modifier = Modifier.fillMaxWidth()) {

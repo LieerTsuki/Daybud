@@ -1,6 +1,6 @@
 # 发布签名与密钥恢复
 
-日子芽从1.1.4/code11开始使用专用发布密钥。包名为`com.example.lifemanager`，minSdk26；当前1.4.1/code17沿用Room8及V4完整归档，签名身份和轮换链保持。1.1.4当时采用Room7和format3/schema7，属于历史版本状态。
+日子芽从1.1.4/code11开始使用专用发布密钥。包名为`com.example.lifemanager`，minSdk26；1.4.2/code18沿用Room8及V4完整归档，签名身份和轮换链保持。1.1.4当时采用Room7和format3/schema7，属于历史版本状态。
 
 ## 固定证书与兼容边界
 
@@ -31,9 +31,9 @@ Android官方提示较旧平台存在签名比较相关限制；本应用未配�
 $env:JAVA_HOME='D:\jdk'
 python tools/release/release.py `
   --config C:/Users/LENOVO/.daybud-signing/release-20261019/signing-private.json `
-  --sdk .tools/android-sdk/build-tools/35.0.0 --java-home D:/jdk `
+  --sdk C:/Users/LENOVO/AppData/Local/Android/Sdk/build-tools/36.0.0 --java-home D:/jdk `
   --input app/build/outputs/apk/release/app-release-unsigned.apk `
-  --output .tools/delivery-stable/rizhiya-1.1.4.apk --version 1.1.4 --code 11
+  --output .tools/release-1.4.2/delivery/rizhiya-1.4.2.apk --version 1.4.2 --code 18
 ```
 
 后续版本需替换版本、code与输出名，保留证书配置。工具拒绝仓库内私密配置/密钥、现有输出、调试包、错误包名/版本/SDK和不同发布证书；口令只经子进程环境传递，失败不回显原始工具输出。签名前验证外部轮换链；签名后独立验证APK内证明链、六个精确SDK点26/27/28/32/33/35的有效证书以及16KiB对齐，再以独占创建写出APK和公开签名回执。

@@ -8,6 +8,8 @@
 
 [下载1.4.1正式APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.4.1/rizhiya-1.4.1.apk) · [1.4.1版本说明](https://github.com/LieerTsuki/Daybud/releases/tag/v1.4.1) · [本次更新内容](CHANGELOG.md) · [发布验收](docs/architecture-1.4.1-acceptance.md) · [历史版本与验收记录](README.history.md)
 
+**1.4.2 / code18（待发布）：** 计划月历的已完成任务标签统一显示为灰色，适配明暗主题；撤销完成后恢复原四象限配色。发布进度记录在[更新日志](CHANGELOG.md)和[本次验收](docs/calendar-completed-colors-acceptance.md)。
+
 ## 可以做什么
 
 | 功能 | 用途 |
