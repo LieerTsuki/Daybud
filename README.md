@@ -4,11 +4,11 @@
 
 ## 当前版本与正式下载
 
-**当前正式版：1.4.1 / code17，2026-10-23发布。** 包含下方架构改进，正式APK已完成签名、设备回归和三种Android版本覆盖升级验证。
+**当前正式版：1.4.2 / code18，2026-10-27发布。** 计划月历中的已完成任务标签改为灰色，撤销完成后恢复原四象限配色；正式APK已完成签名、回归及API35覆盖升级验证。
 
-[下载1.4.1正式APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.4.1/rizhiya-1.4.1.apk) · [1.4.1版本说明](https://github.com/LieerTsuki/Daybud/releases/tag/v1.4.1) · [本次更新内容](CHANGELOG.md) · [发布验收](docs/architecture-1.4.1-acceptance.md) · [历史版本与验收记录](README.history.md)
+[下载1.4.2正式APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.4.2/rizhiya-1.4.2.apk) · [1.4.2版本说明](https://github.com/LieerTsuki/Daybud/releases/tag/v1.4.2) · [本次更新内容](CHANGELOG.md) · [发布验收](docs/calendar-completed-colors-acceptance.md) · [历史版本与验收记录](README.history.md)
 
-**1.4.2 / code18（待发布）：** 计划月历的已完成任务标签统一显示为灰色，适配明暗主题；撤销完成后恢复原四象限配色。发布进度记录在[更新日志](CHANGELOG.md)和[本次验收](docs/calendar-completed-colors-acceptance.md)。
+本次配色适配明暗主题，任务原有象限和日期保持。APK及三个说明/校验附件已完整回下载核对字节数与SHA256，见[公开发布回执](docs/evidence/calendar-1.4.2-publication.json)。
 
 ## 可以做什么
 
@@ -43,7 +43,7 @@
 
 ## 保存数据与换机
 
-定期到“设置”导出完整备份。当前沿用 **Room8 / V4完整归档**，包含计划、打卡、订阅、日记、草稿、日记附件与设置，保留历史兼容字段；1.4.1不升级数据库结构或备份格式。
+定期到“设置”导出完整备份。当前沿用 **Room8 / V4完整归档**，包含计划、打卡、订阅、日记、草稿、日记附件与设置，保留历史兼容字段；1.4.2不升级数据库结构或备份格式。
 
 恢复前会校验文件，并要求保存当前数据的保护备份和独立确认；恢复是完整替换，不合并。备份文件未加密，SHA256校验不等于加密，请保存在可信位置。换机后在新手机恢复归档，手机之间不会自动同步。[备份格式与兼容说明](docs/backup-format-v4.md)
 

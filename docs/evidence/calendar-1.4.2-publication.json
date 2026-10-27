@@ -1,0 +1,35 @@
+{
+  "version": "1.4.2",
+  "versionCode": 18,
+  "url": "https://github.com/LieerTsuki/Daybud/releases/tag/v1.4.2",
+  "publishedAt": "2026-10-27T00:30:37Z",
+  "sourceCommit": "408f0871e0c89a9bffffff26b0e34dae239c6f45",
+  "latest": true,
+  "assets": [
+    {
+      "name": "rizhiya-1.4.2.apk",
+      "bytes": 12706144,
+      "sha256": "713ffe9aa877e6acf4f9223e042926919ac5b390a431782f03dd21b60ec3438a",
+      "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.4.2/rizhiya-1.4.2.apk"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "bytes": 242,
+      "sha256": "e618650bfc096099b7c6b81918e9b9e71c0ce56d2b43902dff60be08d33efde5",
+      "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.4.2/SHA256SUMS.txt"
+    },
+    {
+      "name": "SIGNING.json",
+      "bytes": 6556,
+      "sha256": "97adcdf5c62e515b19e43f45e393503281bf04c125975a0ac3bb68746a5f9469",
+      "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.4.2/SIGNING.json"
+    },
+    {
+      "name": "UPDATE.md",
+      "bytes": 1090,
+      "sha256": "5bff18a79dac444f37ec6a5d3c4ce31b8d3879fec9f4b9700e29e3c30906b689",
+      "url": "https://github.com/LieerTsuki/Daybud/releases/download/v1.4.2/UPDATE.md"
+    }
+  ],
+  "verification": "anonymous complete downloads matched local bytes and SHA256"
+}

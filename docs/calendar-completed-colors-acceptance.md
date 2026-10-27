@@ -1,6 +1,6 @@
 # 计划月历已完成任务灰色显示验收
 
-验收日期：2026-10-27。目标版本：1.4.2/code18。状态：本地发布验证通过，待公开发布；当前正式版仍为1.4.1/code17。
+验收日期：2026-10-27。正式版本：1.4.2/code18。状态：已发布正式Latest Release，公开下载核对通过。
 
 ## 实现范围
 
@@ -42,3 +42,9 @@
 - 本轮未运行完整设备自动化、API26/28实际覆盖升级或真机回归；六个SDK签名检查不等于六种设备实测。
 - 升级为合成数据样本，任务表非空，其他业务表多为空；空表逐值相等不能证明真实非空日记、附件、习惯或订阅数据覆盖。未核对所有私有文件/偏好、附件或厂商系统行为。
 - 远程CI、公开发布与下载核对另行记录，不沿用历史版本的测试数字作为本轮结果。
+
+## 公开发布结果
+
+已于2026-10-27T08:30:37+08:00发布正式Latest Release，发布源码`408f0871e0c89a9bffffff26b0e34dae239c6f45`已推送main。APK、UPDATE.md、SIGNING.json和SHA256SUMS.txt均经匿名完整回下载，与本地字节及SHA256一致。[下载APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.4.2/rizhiya-1.4.2.apk) · [正式Release](https://github.com/LieerTsuki/Daybud/releases/tag/v1.4.2) · [公开发布回执](evidence/calendar-1.4.2-publication.json)。
+
+发布回执记录时，发布源码的[远程CI](https://github.com/LieerTsuki/Daybud/actions/runs/40426861323)仍在运行，尚不作通过结论；上方测试与构建数字来自本地本轮报告。远程状态以运行页面为准。

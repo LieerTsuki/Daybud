@@ -2,11 +2,12 @@
 
 本文件随每次版本更新维护。未发布区是开发进度，不代表手机安装包已经包含新功能。
 
-## 1.4.2 / code18 · 月历完成状态配色（2026-10-27，待发布）
+## 1.4.2 / code18 · 月历完成状态配色（2026-10-27已发布）
 
 - 计划月历：已完成的有日期任务名称标签统一显示为灰色，适配明暗主题；撤销完成后恢复原四象限配色。只调整月历显示，任务所属象限、日期和数据保持不变。
 - 目标版本1.4.2/code18，沿用包名、正式签名与轮换链、Room8及V4备份，无数据库迁移；使用同签名APK覆盖升级，不卸载或清数据。
 - 本轮1279项JVM测试、24项结构测试及17项签名工具测试通过；Debug、Release、androidTest构建通过，Debug/Release Lint各0错误、35警告。独立API35模拟器以8条四象限合成任务验证1.4.1→1.4.2覆盖升级，全部表的结构、字段值、类型、NULL、序列及Room身份、应用UID保持；签名包明暗主题灰色显示、撤销完成恢复原色已实测。未运行本轮完整设备自动化或真机回归，空业务表不代表非空用户数据覆盖，见[验收记录](docs/calendar-completed-colors-acceptance.md)及[验证摘要](docs/evidence/calendar-1.4.2-validation.json)。
+- 已于2026-10-27T08:30:37+08:00发布正式Latest Release，发布源码`408f0871e0c89a9bffffff26b0e34dae239c6f45`已推送main。APK、UPDATE.md、SIGNING.json与SHA256SUMS.txt四个附件匿名完整回下载，字节数与SHA256全部一致。[下载1.4.2正式APK](https://github.com/LieerTsuki/Daybud/releases/download/v1.4.2/rizhiya-1.4.2.apk) · [正式Release](https://github.com/LieerTsuki/Daybud/releases/tag/v1.4.2) · [发布回执](docs/evidence/calendar-1.4.2-publication.json)。
 
 ## 1.4.1 / code17 · 架构改进版（2026-10-23已发布）
 
